@@ -1,0 +1,30 @@
+# LastMile-Sec Dependencies
+# Section 1: Ingestion Pipeline
+
+# PDF Parsing
+PyMuPDF>=1.23.0          # Fast PDF text extraction (fitz)
+pdfplumber>=0.10.0       # Alternative PDF parser with table support
+
+# LLM-based Extraction (Alternative PDF parser)
+langextract>=0.1.0       # Gemini-powered information extraction
+google-generativeai>=0.5.0  # Gemini API client
+
+# CSV Parsing
+pandas>=2.1.0            # DataFrame operations for CSV
+
+# PCAP Parsing
+scapy>=2.5.0             # Network packet analysis
+
+# Data Validation & Schemas
+pydantic>=2.5.0          # Type-safe data models with JSON serialization
+
+# Configuration
+pyyaml>=6.0              # YAML config file support
+
+# Utilities
+python-dateutil>=2.8.0   # Date parsing utilities
+uuid7>=0.1.0             # UUIDv7 for time-sortable IDs
+
+# Development
+pytest>=7.4.0            # Testing framework
+black>=23.0.0            # Code formatting

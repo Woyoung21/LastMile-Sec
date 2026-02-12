@@ -1,0 +1,54 @@
+# LastMile-Sec .gitignore
+
+# Large files (GitHub limit is 100MB)
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Test data - DO NOT commit client files
+data/raw/*
+!data/raw/.gitkeep
+
+# Processed output (may contain client info)
+data/processed/*
+!data/processed/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables (API keys)
+.env
+.env.local
+
+# Pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
