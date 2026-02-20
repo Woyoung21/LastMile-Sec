@@ -20,6 +20,10 @@ Example:
     >>> packet = normalizer.ingest("report.pdf")
 """
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from .schemas import (
     Finding,
     IngestedPacket,

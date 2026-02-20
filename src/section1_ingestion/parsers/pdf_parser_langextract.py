@@ -101,98 +101,33 @@ Extract findings in order of appearance in the document."""
         """
         Get few-shot examples for LangExtract.
         
-        These examples teach the model what to extract and how to structure it.
+        Minimal examples to guide extraction without excessive API calls.
         """
         import langextract as lx
         
         return [
-            # Example 1: Critical finding with CVE
+            # Single example: vulnerability with key fields
             lx.data.ExampleData(
-                text="""CRITICAL - SQL Injection in Authentication Module
-                
-Host: 192.168.1.50 (web-server-01)
+                text="""CRITICAL - SQL Injection Vulnerability
+
+Host: 192.168.1.50
 CVSS Score: 9.8
 CVE: CVE-2024-1234
 
-Description: The login form at /api/auth/login is vulnerable to SQL injection attacks. 
-An attacker can bypass authentication by injecting malicious SQL code into the username parameter.
-
-Evidence: Parameter 'username' accepts: ' OR '1'='1' --
-
-Recommendation: Implement parameterized queries and input validation. Update to the latest 
-version of the authentication library.""",
+The login form is vulnerable to SQL injection. Attacker can bypass authentication.
+Recommendation: Implement parameterized queries.""",
                 extractions=[
                     lx.data.Extraction(
                         extraction_class="vulnerability",
-                        extraction_text="SQL Injection in Authentication Module",
+                        extraction_text="SQL Injection Vulnerability",
                         attributes={
                             "severity": "critical",
-                            "title": "SQL Injection in Authentication Module",
-                            "description": "The login form at /api/auth/login is vulnerable to SQL injection attacks. An attacker can bypass authentication by injecting malicious SQL code into the username parameter.",
-                            "affected_hosts": ["192.168.1.50", "web-server-01"],
+                            "title": "SQL Injection Vulnerability",
+                            "description": "The login form is vulnerable to SQL injection",
+                            "affected_hosts": ["192.168.1.50"],
                             "cve_ids": ["CVE-2024-1234"],
                             "cvss_score": 9.8,
-                            "remediation": "Implement parameterized queries and input validation. Update to the latest version of the authentication library."
-                        }
-                    )
-                ]
-            ),
-            # Example 2: Medium finding without CVE
-            lx.data.ExampleData(
-                text="""MEDIUM - Missing Security Headers
-
-Affected Systems: 10.0.0.5, 10.0.0.6, 10.0.0.7
-CVSS: 5.3
-
-The web application does not implement recommended security headers including:
-- X-Content-Type-Options
-- X-Frame-Options  
-- Content-Security-Policy
-
-This could allow clickjacking attacks and MIME type sniffing.
-
-Remediation: Configure the web server to return appropriate security headers on all responses.""",
-                extractions=[
-                    lx.data.Extraction(
-                        extraction_class="vulnerability",
-                        extraction_text="Missing Security Headers",
-                        attributes={
-                            "severity": "medium",
-                            "title": "Missing Security Headers",
-                            "description": "The web application does not implement recommended security headers including: X-Content-Type-Options, X-Frame-Options, Content-Security-Policy. This could allow clickjacking attacks and MIME type sniffing.",
-                            "affected_hosts": ["10.0.0.5", "10.0.0.6", "10.0.0.7"],
-                            "cve_ids": [],
-                            "cvss_score": 5.3,
-                            "remediation": "Configure the web server to return appropriate security headers on all responses."
-                        }
-                    )
-                ]
-            ),
-            # Example 3: Low/Info finding
-            lx.data.ExampleData(
-                text="""LOW - Server Version Disclosure
-
-Target: 172.16.0.100
-Risk: Low
-
-The server reveals its version information in HTTP response headers:
-Server: Apache/2.4.41 (Ubuntu)
-
-This information could assist attackers in identifying known vulnerabilities.
-
-Fix: Configure the server to suppress version information in responses.""",
-                extractions=[
-                    lx.data.Extraction(
-                        extraction_class="vulnerability",
-                        extraction_text="Server Version Disclosure",
-                        attributes={
-                            "severity": "low",
-                            "title": "Server Version Disclosure",
-                            "description": "The server reveals its version information in HTTP response headers: Server: Apache/2.4.41 (Ubuntu). This information could assist attackers in identifying known vulnerabilities.",
-                            "affected_hosts": ["172.16.0.100"],
-                            "cve_ids": [],
-                            "cvss_score": None,
-                            "remediation": "Configure the server to suppress version information in responses."
+                            "remediation": "Implement parameterized queries"
                         }
                     )
                 ]
@@ -292,17 +227,25 @@ Fix: Configure the server to suppress version information in responses.""",
         try:
             import langextract as lx
             
-            # Configure API key
-            import google.generativeai as genai
-            genai.configure(api_key=self.api_key)
+            # Configure API key for LangExtract
+            # LangExtract looks for LANGEXTRACT_API_KEY env var
+            if "LANGEXTRACT_API_KEY" not in os.environ:
+                os.environ["LANGEXTRACT_API_KEY"] = self.api_key
             
-            # Run extraction
-            result = lx.extract(
-                text_or_documents=self.full_text,
-                prompt_description=self._get_extraction_prompt(),
-                examples=self._get_few_shot_examples(),
-                model_id=self.model_id,
-            )
+            # Run extraction with LangExtract
+            # (Suppresses the FutureWarning about deprecated google.generativeai)
+            # max_workers=1 serializes all API calls to avoid burst protection limits
+            # This will be slower but more reliable with Google's rate limiting
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=FutureWarning)
+                result = lx.extract(
+                    text_or_documents=self.full_text,
+                    prompt_description=self._get_extraction_prompt(),
+                    examples=self._get_few_shot_examples(),
+                    model_id=self.model_id,
+                    max_workers=1,  # Single worker - serializes all chunks to avoid burst protection
+                )
             
             # Convert extractions to findings
             if hasattr(result, 'extractions'):

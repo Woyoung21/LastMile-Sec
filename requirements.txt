@@ -20,6 +20,7 @@ pydantic>=2.5.0          # Type-safe data models with JSON serialization
 
 # Configuration
 pyyaml>=6.0              # YAML config file support
+python-dotenv>=1.0.0     # Load .env environment variables
 
 # Utilities
 python-dateutil>=2.8.0   # Date parsing utilities

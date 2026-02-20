@@ -7,7 +7,7 @@ that will be passed to Section 2 (Reporter & Mapper).
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 from pydantic import BaseModel, Field
 from uuid import uuid4
 
@@ -69,6 +69,9 @@ class Finding(BaseModel):
     destination_ip: Optional[str] = Field(None, description="Destination IP (for network events)")
     protocol: Optional[str] = Field(None, description="Network protocol (for network events)")
     timestamp_observed: Optional[datetime] = Field(None, description="When the event was observed")
+    
+    # Additional enriched metadata from extraction
+    metadata: Optional[dict[str, Any]] = Field(default_factory=dict, description="Enriched metadata (ports, services, OID, etc.)")
 
 
 class ParserMetadata(BaseModel):

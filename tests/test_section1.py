@@ -2,8 +2,13 @@
 Tests for Section 1: Ingestion Pipeline
 """
 
-import pytest
+import sys
 from pathlib import Path
+
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import pytest
 import json
 
 from src.section1_ingestion.schemas import (
@@ -183,16 +188,35 @@ class TestSeverityEnum:
 class TestIntegration:
     """Integration tests that require sample files."""
     
-    @pytest.mark.skip(reason="Requires sample PDF file")
-    def test_pdf_ingestion(self, tmp_path):
+    def test_pdf_ingestion(self):
         """Test full PDF ingestion pipeline."""
-        # This test would require a sample PDF file
-        pass
+        pdf_path = Path(__file__).parent.parent / "data" / "raw" / "Vulnerability Scan Report (By Device).pdf"
+        
+        if pdf_path.exists():
+            normalizer = Normalizer()
+            packet = normalizer.ingest(str(pdf_path))
+            
+            assert packet is not None
+            assert packet.source_type == SourceType.VULNERABILITY_REPORT
+            assert len(packet.findings) > 0
+            print(f"PDF Test: Ingested {len(packet.findings)} findings")
+        else:
+            pytest.skip("Requires sample PDF file")
     
-    @pytest.mark.skip(reason="Requires sample CSV file")  
-    def test_csv_ingestion(self, tmp_path):
+    def test_csv_ingestion(self):
         """Test full CSV ingestion pipeline."""
-        pass
+        csv_path = Path(__file__).parent.parent / "data" / "raw" / "Vulnerability Scan Report CSV.csv"
+        
+        if csv_path.exists():
+            normalizer = Normalizer()
+            packet = normalizer.ingest(str(csv_path))
+            
+            assert packet is not None
+            assert packet.source_type == SourceType.CSV_LOG
+            assert len(packet.findings) > 0
+            print(f"CSV Test: Ingested {len(packet.findings)} findings")
+        else:
+            pytest.skip("Requires sample CSV file")
 
 
 if __name__ == "__main__":

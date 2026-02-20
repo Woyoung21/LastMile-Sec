@@ -20,6 +20,8 @@ __pycache__/
 
 # Test data - DO NOT commit client files
 data/raw/*
+data/processed/*
+data/cache/*
 !data/raw/.gitkeep
 
 # Processed output (may contain client info)
