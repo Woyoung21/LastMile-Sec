@@ -1,77 +1,69 @@
-#!/usr/bin/env python3
-"""Run Reporter on the full JSON packet to generate and save summaries."""
+import copy
 
-import sys
-import json
-from pathlib import Path
-
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
+from src.section2_report_map.config import ReporterConfig
 from src.section2_report_map.reporter import Reporter
 
 
-def run_reporter_on_full_packet():
-    """Run Reporter on all findings from the latest enhanced JSON."""
-    
-    # Find the latest enhanced JSON file
-    processed_dir = Path("data/processed")
-    enhanced_files = sorted(processed_dir.glob("*enhanced*.json"), reverse=True)
-    
-    if not enhanced_files:
-        print("❌ No enhanced JSON files found")
-        return
-    
-    json_file = enhanced_files[0]
-    print(f"📄 Processing file: {json_file.name}\n")
-    
-    # Load the JSON
-    with open(json_file) as f:
-        packet_data = json.load(f)
-    
-    print(f"Total findings in packet: {len(packet_data.get('findings', []))}")
-    
-    # Initialize Reporter
-    try:
-        reporter = Reporter()
-        print("✅ Reporter initialized successfully\n")
-    except Exception as e:
-        print(f"❌ Failed to initialize Reporter: {e}")
-        return
-    
-    # Process ALL findings
-    max_findings = None
-    print(f"🔄 Processing ALL findings in the packet...\n")
-    
-    try:
-        enriched_packet = reporter.process_packet(packet_data, max_findings=max_findings)
-        
-        # ACTUALLY SAVE THE FILE TO DISK
-        saved_file = reporter.save_enriched_packet(enriched_packet, processed_dir)
-        
-        # Display results
-        print(f"\n✅ Successfully generated summaries and saved file!\n")
-        print("=" * 80)
-        
-        findings = enriched_packet.get('findings', [])
-        for i, finding in enumerate(findings, 1):
-            metadata = finding.get('metadata', {})
-            if 'technical_summary' in metadata:
-                summary = metadata['technical_summary']
-                # Only print the AI-generated single sentence
-                print(f"[Finding {i}]: {summary}")
-        
-        print("\n" + "=" * 80)
-        print("\nReporter Stats:")
-        stats = reporter.get_stats()
-        for key, val in stats.items():
-            print(f"  {key}: {val}")
-            
-    except Exception as e:
-        print(f"❌ Error during processing: {e}")
-        import traceback
-        traceback.print_exc()
+class FakeResponse:
+    def __init__(self, text: str):
+        self.text = text
 
 
-if __name__ == "__main__":
-    run_reporter_on_full_packet()
+class FakeModels:
+    def __init__(self, text: str):
+        self.text = text
+        self.calls = 0
+
+    def generate_content(self, **kwargs):
+        self.calls += 1
+        return FakeResponse(self.text)
+
+
+class FakeClient:
+    def __init__(self, text: str):
+        self.models = FakeModels(text)
+
+
+def _packet_fixture() -> dict:
+    return {
+        "source_file": "sample.json",
+        "findings": [
+            {
+                "title": "OpenBSD OpenSSH < 9.3p2 RCE Vulnerability (CVSS: 9.8)",
+                "description": "OpenSSH forwarded ssh-agent support can be abused for code execution.",
+                "raw_excerpt": "Vulnerability Insight: PKCS#11 libraries can be abused via a forwarded agent socket.",
+                "cve_ids": ["CVE-2023-38408"],
+                "metadata": {
+                    "services": ["ssh"],
+                    "ports": ["22/tcp"],
+                },
+            }
+        ],
+    }
+
+
+def test_reporter_sample_processes_packet_with_mocked_client(tmp_path):
+    packet = copy.deepcopy(_packet_fixture())
+    client = FakeClient(
+        "OpenSSH forwarded ssh-agent handling can allow remote code execution through PKCS#11 library abuse."
+    )
+    reporter = Reporter(
+        client=client,
+        cache_dir=tmp_path,
+        enable_cache=False,
+        sleep_seconds_between_requests=0,
+    )
+
+    enriched = reporter.process_packet(packet)
+
+    finding = enriched["findings"][0]
+    metadata = finding["metadata"]
+    stats = enriched["metadata"]["reporter_stats"]
+
+    assert metadata["technical_summary"].endswith(".")
+    assert "CVSS" not in metadata["technical_summary"]
+    assert metadata["summary_source"] == "llm"
+    assert metadata["summary_prompt_version"] == ReporterConfig.SUMMARY_PROMPT_VERSION
+    assert metadata["summary_model"] == ReporterConfig.GEMINI_MODEL
+    assert stats["total_findings_summarized"] == 1
+    assert client.models.calls == 1

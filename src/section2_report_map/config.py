@@ -1,7 +1,8 @@
 """
 Configuration for Section 2: Report & Mapper
 
-Handles API credentials, model settings, and processing parameters.
+Handles API credentials, model settings, cache versioning,
+and processing parameters.
 """
 
 import os
@@ -18,52 +19,62 @@ except ImportError:
 
 class ReporterConfig:
     """Configuration for the Reporter module."""
-    
+
     # Gemini/Google AI settings
     GEMINI_API_KEY: Optional[str] = os.getenv("GOOGLE_API_KEY")
-    GEMINI_MODEL: str = "gemini-2.0-flash"  # Cost-effective model for batch processing
-    
+    # Gemini 2.0 Flash is deprecated. Use 2.5 Flash as the default replacement.
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+
+    # Bump this whenever you materially change:
+    # - reporter prompt text
+    # - model choice
+    # - summary validation logic
+    # - evidence formatting / cache key inputs
+    SUMMARY_PROMPT_VERSION: str = "summary_v2"
+
     # Generation parameters
     SUMMARY_MAX_TOKENS: int = 150
     SUMMARY_TEMPERATURE: float = 0.3  # Lower = more deterministic
     SUMMARY_TOP_P: float = 0.9
-    
+
     # Processing
-    MAX_CONCURRENT_REQUESTS: int = 1  # Respect rate limits like before
+    # Kept for future expansion if you later batch or parallelize requests.
+    MAX_CONCURRENT_REQUESTS: int = 1
     REQUEST_TIMEOUT_SECONDS: int = 30
     RETRY_ATTEMPTS: int = 3
     RETRY_DELAY_SECONDS: int = 2
-    
+
     # Cache settings (to avoid re-summarizing same findings)
     ENABLE_CACHE: bool = True
     CACHE_DIR: Path = Path(__file__).parent.parent.parent / "data" / "cache"
-    
+
     @classmethod
     def ensure_cache_dir(cls):
         """Create cache directory if it doesn't exist."""
         cls.CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     @classmethod
     def validate(cls) -> bool:
         """Validate configuration is properly set up."""
         if not cls.GEMINI_API_KEY:
-            print("⚠️  Warning: GOOGLE_API_KEY not set. Gemini integration will fail.")
+            print("⚠️ Warning: GOOGLE_API_KEY not set. Gemini integration will fail.")
             print("   Set via: export GOOGLE_API_KEY='your-key-here'")
             return False
         return True
 
 
 class ATTACKMapperConfig:
-    """Configuration for the MITRE ATT&CK Mapper (future use)."""
-    
+    """Configuration for the MITRE ATT&CK Mapper."""
+
     # MITRE ATT&CK enterprise framework version
     ATTACK_FRAMEWORK: str = "enterprise"
-    ATTACK_VERSION: str = "13.0"  # Latest as of Feb 2026
-    
+    # Current ATT&CK content version as of Feb 2026.
+    ATTACK_VERSION: str = "18.1"
+
     # Technique mapping settings
     MIN_CONFIDENCE_THRESHOLD: float = 0.7
     MAX_TECHNIQUES_PER_FINDING: int = 5
-    
+
     # Tactic categories to consider
     ENABLED_TACTICS = [
         "initial-access",

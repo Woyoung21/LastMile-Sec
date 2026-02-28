@@ -1,139 +1,87 @@
-#!/usr/bin/env python3
-"""Test Reporter structure with mock Gemini responses"""
-
-import sys
-import json
-from pathlib import Path
-
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+from src.section2_report_map.reporter import Reporter
 
 
-class MockReporter:
-    """Mock Reporter for testing without Gemini API."""
-    
-    def __init__(self):
-        self.report_count = 0
-        
-    def generate_summary(self, finding_dict: dict) -> str:
-        """Generate mock summary (in real version, uses Gemini)."""
-        title = finding_dict.get('title', '')
-        severity = finding_dict.get('severity', 'unknown')
-        cvss = finding_dict.get('cvss_score', 'unknown')
-        cves = finding_dict.get('cve_ids', [])
-        
-        # Generate a simple summary
-        cve_str = f" ({', '.join(cves[:2])})" if cves else ""
-        summary = f"[{severity.upper()}] {title} with CVSS {cvss}{cve_str} requires immediate remediation."
-        return summary
-    
-    def process_packet(self, packet_data: dict, max_findings=None):
-        """Process packet with mock summaries."""
-        findings = packet_data.get('findings', [])
-        
-        if max_findings and len(findings) > max_findings:
-            findings = findings[:max_findings]
-            print(f"\n📋 Processing first {max_findings} findings (MOCK MODE)...")
-        else:
-            print(f"\n📋 Processing packet with {len(findings)} findings (MOCK MODE)...")
-        
-        for i, finding in enumerate(findings, 1):
-            summary = self.generate_summary(finding)
-            
-            if 'metadata' not in finding:
-                finding['metadata'] = {}
-            
-            finding['metadata']['technical_summary'] = summary
-            finding['metadata']['summary_source'] = 'mock'
-            
-            if i % 5 == 0 or i == 1:
-                print(f"  ✓ {i}/{len(findings)} findings processed")
-        
-        self.report_count += len(findings)
-        
-        if 'metadata' not in packet_data:
-            packet_data['metadata'] = {}
-        
-        packet_data['metadata']['reporter_stats'] = {
-            'total_findings_summarized': len(findings),
-            'mock_mode': True,
-        }
-        
-        return packet_data
-    
-    def get_stats(self):
-        return {'total_findings_processed': self.report_count, 'mode': 'mock'}
+class FakeResponse:
+    def __init__(self, text: str):
+        self.text = text
 
 
-def test_reporter_mock():
-    """Test Reporter with mock summaries on first 3-6 findings."""
-    
-    # Find the latest enhanced JSON file
-    processed_dir = Path("data/processed")
-    enhanced_files = sorted(processed_dir.glob("*enhanced*.json"), reverse=True)
-    
-    if not enhanced_files:
-        print("❌ No enhanced JSON files found")
-        return
-    
-    json_file = enhanced_files[0]
-    print(f"📄 Testing with: {json_file.name}\n")
-    
-    # Load the JSON
-    with open(json_file) as f:
-        packet_data = json.load(f)
-    
-    print(f"Total findings in packet: {len(packet_data.get('findings', []))}")
-    
-    # Initialize Mock Reporter
-    reporter = MockReporter()
-    print("✅ Mock Reporter initialized (DEMO MODE)\n")
-    
-    # Process with limit (first 5 findings)
-    max_findings = 5
-    
-    try:
-        enriched_packet = reporter.process_packet(packet_data, max_findings=max_findings)
-        
-        # Display results
-        print(f"\n✅ Successfully generated mock summaries!\n")
-        print("=" * 90)
-        
-        findings = enriched_packet.get('findings', [])[:max_findings]
-        for i, finding in enumerate(findings, 1):
-            print(f"\n📌 [Finding {i}]")
-            print(f"   Title: {finding.get('title', 'N/A')[:72]}")
-            print(f"   Severity: {finding.get('severity', 'N/A').upper()}")
-            print(f"   CVSS: {finding.get('cvss_score', 'N/A')}")
-            
-            metadata = finding.get('metadata', {})
-            if 'technical_summary' in metadata:
-                summary = metadata['technical_summary']
-                print(f"   Summary: {summary}")
-            
-            if 'nvt_oid' in metadata:
-                print(f"   OID: {metadata['nvt_oid']}")
-            if 'ports' in metadata and metadata['ports']:
-                print(f"   Ports: {metadata['ports']}")
-            if 'services' in metadata and metadata['services']:
-                print(f"   Services: {', '.join(metadata['services'])}")
-        
-        print("\n" + "=" * 90)
-        print("\nReporter Stats:")
-        stats = reporter.get_stats()
-        for key, val in stats.items():
-            print(f"  {key}: {val}")
-        
-        print("\n💡 This is MOCK MODE - using placeholder summaries.")
-        print("   To enable Gemini API:")
-        print("   1. Set: $env:GOOGLE_API_KEY='sk-...'")
-        print("   2. Run: python test_reporter_sample.py\n")
-        
-    except Exception as e:
-        print(f"❌ Error during processing: {e}")
-        import traceback
-        traceback.print_exc()
+class SequenceModels:
+    def __init__(self, response_text: str = "", error: Exception | None = None):
+        self.response_text = response_text
+        self.error = error
+        self.calls = 0
+
+    def generate_content(self, **kwargs):
+        self.calls += 1
+        if self.error is not None:
+            raise self.error
+        return FakeResponse(self.response_text)
 
 
-if __name__ == "__main__":
-    test_reporter_mock()
+class FakeClient:
+    def __init__(self, response_text: str = "", error: Exception | None = None):
+        self.models = SequenceModels(response_text=response_text, error=error)
+
+
+def _finding_fixture() -> dict:
+    return {
+        "title": "OpenBSD OpenSSH < 9.3p2 RCE Vulnerability (CVSS: 9.8)",
+        "description": "OpenSSH forwarded ssh-agent support can be abused for code execution.",
+        "raw_excerpt": "Vulnerability Insight: PKCS#11 libraries can be abused via a forwarded agent socket.",
+        "cve_ids": ["CVE-2023-38408"],
+        "metadata": {
+            "services": ["ssh"],
+            "ports": ["22/tcp"],
+        },
+    }
+
+
+def test_reporter_uses_cached_summary_without_calling_model(tmp_path):
+    finding = _finding_fixture()
+    warm_client = FakeClient(
+        "OpenSSH forwarded ssh-agent handling can allow remote code execution through PKCS#11 library abuse."
+    )
+    warm_reporter = Reporter(
+        client=warm_client,
+        cache_dir=tmp_path,
+        enable_cache=True,
+        sleep_seconds_between_requests=0,
+    )
+
+    first_summary, first_cache_hit = warm_reporter.generate_summary(finding)
+
+    cold_client = FakeClient(error=RuntimeError("model should not be called"))
+    cached_reporter = Reporter(
+        client=cold_client,
+        cache_dir=tmp_path,
+        enable_cache=True,
+        sleep_seconds_between_requests=0,
+    )
+
+    second_summary, second_cache_hit = cached_reporter.generate_summary(finding)
+
+    assert first_cache_hit is False
+    assert second_cache_hit is True
+    assert second_summary == first_summary
+    assert cold_client.models.calls == 0
+
+
+def test_reporter_does_not_cache_fallback_summaries(tmp_path):
+    finding = _finding_fixture()
+    failing_client = FakeClient(error=RuntimeError("network down"))
+    reporter = Reporter(
+        client=failing_client,
+        cache_dir=tmp_path,
+        enable_cache=True,
+        sleep_seconds_between_requests=0,
+    )
+
+    first_summary, first_cache_hit = reporter.generate_summary(finding)
+    second_summary, second_cache_hit = reporter.generate_summary(finding)
+
+    assert first_cache_hit is False
+    assert second_cache_hit is False
+    assert first_summary == second_summary
+    assert reporter.cache_hits == 0
+    assert reporter.cache_misses == 2
