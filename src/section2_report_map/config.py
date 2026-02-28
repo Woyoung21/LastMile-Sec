@@ -66,6 +66,21 @@ class ReporterConfig:
 class ATTACKMapperConfig:
     """Configuration for the MITRE ATT&CK Mapper."""
 
+    ROUTING_MODE: str = os.getenv("ATTACK_MAPPER_ROUTING_MODE", "local")
+
+    # Cloud routing
+    CLOUD_MODEL: str = "gemini-2.5-flash"
+
+    # Local routing
+    LOCAL_BASE_MODEL: str = "mistralai/Mistral-7B-Instruct-v0.2"
+    LOCAL_ADAPTER_PATH: Path = Path("/content/drive/MyDrive/CSC699/HF/final_adapter")
+
+    # Retrieval / embeddings
+    EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
+    VECTOR_DB_TOP_K: int = 2
+    VECTOR_DB_ADDRESS: str = os.getenv("ATTACK_MAPPER_VECTOR_DB_ADDRESS", "localhost:50051")
+    VECTOR_DB_COLLECTION: str = os.getenv("ATTACK_MAPPER_VECTOR_DB_COLLECTION", "mitre_v18_1")
+
     # MITRE ATT&CK enterprise framework version
     ATTACK_FRAMEWORK: str = "enterprise"
     # Current ATT&CK content version as of Feb 2026.
@@ -90,3 +105,20 @@ class ATTACKMapperConfig:
         "command-and-control",
         "impact",
     ]
+
+    # Bootstrap registry used when a full Enterprise 18.1 export is not configured.
+    DEFAULT_ENTERPRISE_18_1_TECHNIQUE_IDS = {
+        "T1003",
+        "T1021",
+        "T1040",
+        "T1046",
+        "T1055",
+        "T1059",
+        "T1071",
+        "T1078",
+        "T1110",
+        "T1133",
+        "T1190",
+        "T1499",
+        "T1548",
+    }

@@ -122,3 +122,29 @@ CVSS Score: {cvss_score}
 Use the normalized summary as the primary evidence.
 Treat severity and CVSS as contextual only, not as mapping drivers.
 Return ONLY the JSON object."""
+
+    CLOUD_RAG_USER_PROMPT_TEMPLATE = """Map this Reporter Agent finding to MITRE ATT&CK Enterprise techniques.
+
+Reference Examples from Database:
+{db_results}
+
+Finding from Reporter Agent:
+Technical Summary: {technical_summary}
+Severity Score: {severity_score}
+Source Metadata: {source_metadata}
+
+Use the historical examples only as context.
+Return ONLY the JSON object using the required schema."""
+
+    LOCAL_USER_PROMPT_TEMPLATE = """<s>
+### Instruction:
+You are a cybersecurity mapping expert. You have received the following security finding from the Reporter Agent. Use the provided historical examples to assign the most appropriate MITRE ATT&CK technique ID(s).
+
+### Reference Examples from Database:
+{db_results}
+
+### Finding from Reporter Agent:
+{technical_summary}
+
+### Response:
+"""

@@ -18,6 +18,14 @@ scapy>=2.5.0             # Network packet analysis
 # Data Validation & Schemas
 pydantic>=2.5.0          # Type-safe data models with JSON serialization
 
+# Section 2: Hybrid Mapper
+sentence-transformers>=3.0.0  # Embeddings for VectorAI retrieval
+actiancortex>=0.1.0         # Actian VectorAI cortex client
+transformers>=4.45.0      # Local Mistral inference
+peft>=0.13.0              # LoRA adapter loading
+accelerate>=0.34.0        # Device mapping for local inference
+bitsandbytes>=0.43.0      # 4-bit NF4 quantization
+
 # Configuration
 pyyaml>=6.0              # YAML config file support
 python-dotenv>=1.0.0     # Load .env environment variables
