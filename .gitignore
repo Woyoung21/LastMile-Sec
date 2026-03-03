@@ -28,6 +28,10 @@ data/cache/*
 data/processed/*
 !data/processed/.gitkeep
 
+# Mapped output (contains enriched findings with MITRE IDs)
+data/mapped/*
+!data/mapped/.gitkeep
+
 # IDE
 .idea/
 .vscode/

@@ -12,12 +12,12 @@ Translating vulnerability/penetration test reports into concrete hardening steps
 
 A 4-stage AI pipeline that automates the "last mile" of security remediation:
 
-| Section | Description |
-|---------|-------------|
-| **1. Ingestion** | Parse PDFs, CSV, PCAP → Normalized JSON |
-| **2. Reporter & Mapper** | Summarize events → Map to MITRE ATT&CK IDs |
-| **3. Correlation + RAG** | Add client context → Query vendor docs → Generate remediation |
-| **4. Output** | Step-by-step instructions for L1/L2 engineers |
+| Section | Description | Status |
+|---------|-------------|--------|
+| **1. Ingestion** | Parse PDFs, CSV, PCAP → Normalized JSON | Complete |
+| **2. Reporter & Mapper** | Summarize events (Gemini) → Map to MITRE ATT&CK IDs (Mistral LoRA + Actian VectorAI RAG) | Complete |
+| **3. Correlation + RAG** | Add client context → Query vendor docs → Generate remediation | Planned |
+| **4. Output** | Step-by-step instructions for L1/L2 engineers | Planned |
 
 ## Setup
 
@@ -39,51 +39,73 @@ pip install -r requirements.txt
 
 ```
 LastMile-Sec/
-├── run.py                         # CLI tool to parse files
+├── run.py                         # Section 1 CLI (parse files)
+├── run_reporter.py                # Section 2 Reporter-only CLI
+├── run_section2.py                # Section 2 full pipeline CLI (Reporter + Mapper)
 ├── requirements.txt
 ├── src/
-│   └── section1_ingestion/
-│       ├── schemas.py             # Pydantic data models
-│       ├── normalizer.py          # Orchestrator
-│       └── parsers/
-│           ├── base_parser.py     # Abstract base class
-│           ├── csv_parser.py      # CSV vulnerability reports
-│           ├── pcap_parser.py     # Network packet captures
-│           ├── pdf_parser.py      # PDF (regex-based)
-│           └── pdf_parser_langextract.py  # PDF (LLM-powered)
+│   ├── section1_ingestion/
+│   │   ├── schemas.py             # Pydantic data models
+│   │   ├── normalizer.py          # Orchestrator
+│   │   └── parsers/
+│   │       ├── base_parser.py     # Abstract base class
+│   │       ├── csv_parser.py      # CSV vulnerability reports
+│   │       ├── pcap_parser.py     # Network packet captures
+│   │       ├── pdf_parser.py      # PDF (regex-based)
+│   │       └── pdf_parser_langextract.py  # PDF (LLM-powered)
+│   └── section2_report_map/
+│       ├── reporter.py            # Reporter Agent (Gemini summaries)
+│       ├── mapper.py              # Mapper Agent (Mistral LoRA + VectorAI RAG)
+│       ├── config.py              # API keys, models, thresholds
+│       └── prompts.py             # LLM prompt templates
 ├── tests/
-│   └── test_section1.py           # Unit tests
+│   ├── test_section1.py           # Section 1 unit tests
+│   ├── test_reporter.py           # Reporter unit tests
+│   ├── test_mapper.py             # Mapper unit tests
+│   └── manual_integration_test.py # End-to-end pipeline test
 ├── data/
 │   ├── raw/                       # Input files (not committed)
-│   └── processed/                 # Output JSON packets
+│   ├── processed/                 # Section 1 output (normalized JSON)
+│   ├── mapped/                    # Section 2 output (enriched with MITRE IDs)
+│   └── cache/                     # Reporter summary cache
 └── Weekly Review/                 # Project documentation
 ```
 
 ## Usage
 
-### Quick Start - Parse Any File
+### Section 1: Parse Raw Files
 
 ```powershell
-# Activate virtual environment
 .\venv\Scripts\activate
 
-# Parse a CSV vulnerability report
 python run.py "data/raw/your_report.csv"
-
-# Parse a PCAP network capture
 python run.py "data/raw/your_capture.pcap"
-
-# Parse a PDF report
 python run.py "data/raw/your_report.pdf"
 ```
 
-Output is saved to `data/processed/` as JSON.
+Output is saved to `data/processed/` as normalized JSON.
+
+### Section 2: Reporter + Mapper Pipeline
+
+```powershell
+# Set Gemini API key
+$env:GOOGLE_API_KEY = "your-key"
+
+# Run full pipeline (Reporter -> Mapper) on a Section 1 output file
+python run_section2.py "data/processed/report.json"
+
+# Limit findings for testing
+python run_section2.py "data/processed/report.json" --max-findings 5
+
+# Output saved to data/mapped/ with MITRE ATT&CK IDs per finding
+```
 
 ### Run Tests
 
 ```powershell
 .\venv\Scripts\activate
 python -m pytest tests/ -v
+python tests/manual_integration_test.py
 ```
 
 ### Using in Python Code

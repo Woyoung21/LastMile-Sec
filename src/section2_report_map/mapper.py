@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import google.genai
 from pydantic import BaseModel, Field
@@ -21,11 +22,22 @@ from .prompts import AttackMapperPrompts
 
 
 class FindingReport(BaseModel):
-    """Normalized input expected from the upstream Reporter Agent."""
+    """Normalized input expected from the upstream Reporter Agent.
+
+    The Reporter enriches each finding with a ``technical_summary`` stored
+    inside ``finding["metadata"]["technical_summary"]``.  The extra fields
+    below let the Mapper carry forward context that the LoRA / cloud model
+    can use for higher-confidence mapping.
+    """
 
     technical_summary: str = Field(..., min_length=1)
     source_metadata: dict[str, Any] = Field(default_factory=dict)
     severity_score: float | None = Field(default=None, ge=0.0, le=10.0)
+
+    title: str = Field(default="", description="Finding title from the ingested report")
+    cve_ids: list[str] = Field(default_factory=list, description="CVE identifiers associated with the finding")
+    services: list[str] = Field(default_factory=list, description="Affected services (e.g. SSH, HTTP)")
+    ports: list[str] = Field(default_factory=list, description="Affected ports")
 
 
 class ReferenceExample(BaseModel):
@@ -103,7 +115,15 @@ class ActianVectorAIDBClient:
 
         from cortex import CortexClient, CortexError, DistanceMetric
 
+        # Initialize the client
         self.client = CortexClient(address=ATTACKMapperConfig.VECTOR_DB_ADDRESS)
+        
+        try:
+            self.client.connect()
+        except Exception as e:
+            print(f"Warning: Could not connect to Actian VectorAI: {e}")
+            # Non-fatal — Mapper can still run in zero-shot mode without RAG
+
         self._distance_metric = getattr(DistanceMetric, "COSINE", None)
         self._cortex_error_cls = CortexError
 
@@ -223,33 +243,141 @@ class Mapper:
             },
         )
 
+    def process_packet(
+        self,
+        packet_data: dict,
+        max_findings: Optional[int] = None,
+    ) -> dict:
+        """Map every Reporter-enriched finding in a packet to MITRE ATT&CK IDs.
+
+        Mirrors ``Reporter.process_packet()`` so the two can be chained:
+
+            packet = reporter.process_packet(packet)
+            packet = mapper.process_packet(packet)
+
+        Each finding receives ``mitre_mapping`` inside its ``metadata`` dict.
+        """
+        findings = packet_data.get("findings", [])
+
+        if max_findings and len(findings) > max_findings:
+            findings = findings[:max_findings]
+            print(f"\nMapping first {max_findings} findings (testing mode)...")
+        else:
+            print(f"\nMapping {len(findings)} findings to MITRE ATT&CK...")
+
+        mapped_count = 0
+        skipped_count = 0
+
+        for index, finding in enumerate(findings, 1):
+            metadata = finding.get("metadata") or {}
+            technical_summary = metadata.get("technical_summary")
+
+            if not technical_summary:
+                skipped_count += 1
+                continue
+
+            try:
+                result = self.map_finding(finding)
+                if "metadata" not in finding:
+                    finding["metadata"] = {}
+                finding["metadata"]["mitre_mapping"] = {
+                    "mitre_ids": result.mitre_ids,
+                    "validation_passed": result.validation_passed,
+                    "routing_mode": result.routing_mode,
+                    "mapping_agent": result.metadata.get("mapping_agent", ""),
+                    "db_context": result.metadata.get("db_context", ""),
+                    "framework": result.metadata.get("framework", ""),
+                    "retrieved_examples": result.metadata.get("retrieved_examples", 0),
+                    "raw_model_output": result.raw_model_output,
+                    "mapped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                mapped_count += 1
+            except Exception as exc:
+                if "metadata" not in finding:
+                    finding["metadata"] = {}
+                finding["metadata"]["mitre_mapping"] = {
+                    "mitre_ids": [],
+                    "error": str(exc),
+                    "mapped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                print(f"  WARNING: mapping failed for finding {index}: {exc}")
+
+            if index % 5 == 0 or index == 1:
+                print(f"  OK {index}/{len(findings)} findings mapped")
+
+        if "metadata" not in packet_data:
+            packet_data["metadata"] = {}
+
+        packet_data["metadata"]["mapper_stats"] = {
+            "total_findings_mapped": mapped_count,
+            "skipped_no_summary": skipped_count,
+            "routing_mode": self.routing_mode,
+            "processing_timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "framework": f"{ATTACKMapperConfig.ATTACK_FRAMEWORK} {ATTACKMapperConfig.ATTACK_VERSION}",
+        }
+
+        return packet_data
+
+    def save_mapped_packet(self, packet_data: dict, output_dir: str | Path) -> Optional[Path]:
+        """Save the fully mapped packet to disk."""
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        source_file = packet_data.get("source_file", "unknown")
+        clean_name = Path(source_file).stem
+        output_file = output_dir / f"{clean_name}_mapped_{timestamp}.json"
+
+        try:
+            with open(output_file, "w", encoding="utf-8") as handle:
+                json.dump(packet_data, handle, indent=2)
+            print(f"Saved mapped packet to: {output_file.name}")
+            return output_file
+        except Exception as exc:
+            print(f"ERROR: saving mapped packet failed: {exc}")
+            return None
+
     def _coerce_finding_report(self, finding_report: FindingReport | dict[str, Any]) -> FindingReport:
-        """Accept either a FindingReport or equivalent Reporter JSON."""
+        """Accept a FindingReport, a top-level dict with ``technical_summary``,
+        or a Reporter-enriched finding dict (summary inside ``metadata``)."""
         if isinstance(finding_report, FindingReport):
             return finding_report
 
         if not isinstance(finding_report, dict):
             raise TypeError("finding_report must be a FindingReport or dict")
 
-        if "technical_summary" in finding_report:
-            payload = finding_report
-        else:
-            metadata = finding_report.get("metadata") or {}
-            payload = {
-                "technical_summary": metadata.get("technical_summary") or finding_report.get("technical_summary"),
-                "source_metadata": finding_report.get("source_metadata")
-                or {
-                    key: value
-                    for key, value in {
-                        "hostname": metadata.get("hostname") or finding_report.get("hostname"),
-                        "log_source": metadata.get("log_source") or finding_report.get("log_source"),
-                        "source_ip": finding_report.get("source_ip"),
-                        "destination_ip": finding_report.get("destination_ip"),
-                    }.items()
-                    if value is not None
-                },
-                "severity_score": finding_report.get("severity_score", finding_report.get("cvss_score")),
-            }
+        metadata = finding_report.get("metadata") or {}
+
+        technical_summary = (
+            finding_report.get("technical_summary")
+            or metadata.get("technical_summary")
+        )
+        if not technical_summary:
+            raise ValueError(
+                "Cannot coerce finding to FindingReport: "
+                "no technical_summary found at top level or inside metadata"
+            )
+
+        source_metadata = finding_report.get("source_metadata") or {
+            key: value
+            for key, value in {
+                "hostname": metadata.get("hostname") or finding_report.get("hostname"),
+                "log_source": metadata.get("log_source") or finding_report.get("log_source"),
+                "source_ip": finding_report.get("source_ip"),
+                "destination_ip": finding_report.get("destination_ip"),
+            }.items()
+            if value is not None
+        }
+
+        payload = {
+            "technical_summary": technical_summary,
+            "source_metadata": source_metadata,
+            "severity_score": finding_report.get("severity_score", finding_report.get("cvss_score")),
+            "title": finding_report.get("title", ""),
+            "cve_ids": finding_report.get("cve_ids") or [],
+            "services": metadata.get("services") or [],
+            "ports": metadata.get("ports") or [],
+        }
 
         return FindingReport.model_validate(payload)
 
@@ -303,28 +431,39 @@ class Mapper:
         prompt = AttackMapperPrompts.CLOUD_RAG_USER_PROMPT_TEMPLATE.format(
             db_results=self._format_db_results(reference_examples),
             technical_summary=report.technical_summary,
+            title=report.title or "N/A",
+            cves=", ".join(report.cve_ids) if report.cve_ids else "N/A",
+            services=", ".join(report.services) if report.services else "N/A",
+            ports=", ".join(report.ports) if report.ports else "N/A",
             severity_score=report.severity_score if report.severity_score is not None else "N/A",
             source_metadata=json.dumps(report.source_metadata, sort_keys=True),
         )
 
+        from google.genai import types
+
         response = self.cloud_client.models.generate_content(
             model=ATTACKMapperConfig.CLOUD_MODEL,
             contents=prompt,
-            config={
-                "system_instruction": AttackMapperPrompts.SYSTEM_PROMPT,
-                "temperature": 0.1,
-                "top_p": 0.9,
-                "max_output_tokens": 300,
-            },
+            config=types.GenerateContentConfig(
+                system_instruction=AttackMapperPrompts.SYSTEM_PROMPT,
+                temperature=0.1,
+                top_p=0.9,
+                max_output_tokens=300,
+                thinking_config=types.ThinkingConfig(thinking_budget=0),
+            ),
         )
 
         return (response.text or "").strip()
 
     def _run_local_mapping(self, report: FindingReport, reference_examples: list[ReferenceExample]) -> str:
-        """Map using the local fine-tuned Mistral LoRA adapter."""
+        """Map using the local fine-tuned Mistral-7B LoRA adapter."""
         prompt = AttackMapperPrompts.LOCAL_USER_PROMPT_TEMPLATE.format(
             db_results=self._format_db_results(reference_examples),
             technical_summary=report.technical_summary,
+            title=report.title or "N/A",
+            cves=", ".join(report.cve_ids) if report.cve_ids else "N/A",
+            services=", ".join(report.services) if report.services else "N/A",
+            ports=", ".join(report.ports) if report.ports else "N/A",
         )
 
         generator = self._get_local_generator()
@@ -360,15 +499,21 @@ class Mapper:
             bnb_4bit_compute_dtype=torch.float16,
         )
 
+        print(f"🧠 Loading Base Model: {ATTACKMapperConfig.LOCAL_BASE_MODEL}")
         tokenizer = AutoTokenizer.from_pretrained(ATTACKMapperConfig.LOCAL_BASE_MODEL)
         base_model = AutoModelForCausalLM.from_pretrained(
             ATTACKMapperConfig.LOCAL_BASE_MODEL,
             quantization_config=quantization_config,
             device_map="auto",
         )
+
+        # FIX: Resolve Windows path to POSIX-style (forward slashes) for PEFT
+        adapter_path = ATTACKMapperConfig.LOCAL_ADAPTER_PATH.resolve().as_posix()
+        print(f"🔗 Attaching LoRA Adapter from: {adapter_path}")
+        
         adapter_model = PeftModel.from_pretrained(
             base_model,
-            str(ATTACKMapperConfig.LOCAL_ADAPTER_PATH),
+            adapter_path,
         )
 
         if tokenizer.pad_token is None:

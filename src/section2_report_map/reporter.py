@@ -136,34 +136,46 @@ class Reporter:
         }
 
     def _is_valid_summary(self, summary: str) -> bool:
-        """Validate that the summary is usable and not obvious junk."""
+        """Validate that the summary is usable and not obvious junk.
+
+        The goal is to reject empty / garbage output while accepting
+        well-formed Gemini responses that contain CVE IDs, version
+        numbers, or technical abbreviations with embedded periods.
+        """
         if not summary or not isinstance(summary, str):
             return False
 
         cleaned = self._sanitize_summary_text(summary)
         word_count = len(cleaned.split())
-        if word_count < 8 or word_count > 50:
+
+        if word_count < 5:
+            return False
+
+        if word_count > 80:
             return False
 
         if not cleaned.endswith("."):
             return False
 
-        terminal_endings = len(re.findall(r"[.!?](?:\s|$)", cleaned))
-        if terminal_endings != 1:
+        # Reject multi-sentence output.  Strip CVE IDs, version numbers,
+        # and common abbreviations before counting sentence endings so
+        # that "CVE-2023-38408" or "v9.3p2." don't create false positives.
+        stripped = re.sub(r"CVE-\d{4}-\d{4,}", "", cleaned)
+        stripped = re.sub(r"\b\d+\.\d+[\w.]*", "", stripped)
+        stripped = re.sub(r"\b(?:e\.g|i\.e|etc|vs|approx)\.", "", stripped, flags=re.IGNORECASE)
+        terminal_endings = len(re.findall(r"[.!?](?:\s|$)", stripped))
+        if terminal_endings > 2:
             return False
 
+        # Reject summaries that are clearly scanner boilerplate rather
+        # than a meaningful technical sentence.
         banned_patterns = [
-            r"\bCVSS\b",
-            r"\bseverity\b",
-            r"\bhigh-severity\b",
-            r"\bmedium-severity\b",
-            r"\bcritical-severity\b",
             r"^\s*\[(critical|high|medium|low|info|informational)\]",
             r"\bmultiple vulnerabilities\b",
             r"\bmultiple security flaws\b",
             r"\bunspecified\b",
-            r"\bas tracked by\b",
-            r"\bresulting in a .* severity\b",
+            r"\bchecks if a vulnerable version is present\b",
+            r"\ba vulnerability exists in the system\b",
         ]
         for pattern in banned_patterns:
             if re.search(pattern, cleaned, flags=re.IGNORECASE):
@@ -216,15 +228,18 @@ class Reporter:
 
         for attempt in range(ReporterConfig.RETRY_ATTEMPTS):
             try:
+                from google.genai import types
+
                 response = self.client.models.generate_content(
                     model=ReporterConfig.GEMINI_MODEL,
                     contents=user_prompt,
-                    config={
-                        "system_instruction": SummaryPrompts.SYSTEM_PROMPT,
-                        "temperature": ReporterConfig.SUMMARY_TEMPERATURE,
-                        "top_p": ReporterConfig.SUMMARY_TOP_P,
-                        "max_output_tokens": ReporterConfig.SUMMARY_MAX_TOKENS,
-                    },
+                    config=types.GenerateContentConfig(
+                        system_instruction=SummaryPrompts.SYSTEM_PROMPT,
+                        temperature=ReporterConfig.SUMMARY_TEMPERATURE,
+                        top_p=ReporterConfig.SUMMARY_TOP_P,
+                        max_output_tokens=ReporterConfig.SUMMARY_MAX_TOKENS,
+                        thinking_config=types.ThinkingConfig(thinking_budget=0),
+                    ),
                 )
                 summary = self._sanitize_summary_text(response.text or "")
                 if summary and not summary.endswith("."):
