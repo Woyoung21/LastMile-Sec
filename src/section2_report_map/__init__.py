@@ -15,6 +15,8 @@ from .mapper import (
     Mapper,
     MitreMappingResult,
     MitreValidator,
+    VectorDBNotReadyError,
+    VectorDBReadiness,
 )
 from .reporter import Reporter
 
@@ -24,5 +26,7 @@ __all__ = [
     "Mapper",
     "MitreMappingResult",
     "MitreValidator",
+    "VectorDBNotReadyError",
+    "VectorDBReadiness",
     "Reporter",
 ]

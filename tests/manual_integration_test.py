@@ -16,6 +16,7 @@ from src.section2_report_map.mapper import (
     Mapper,
     MitreValidator,
     ReferenceExample,
+    VectorDBReadiness,
 )
 from src.section2_report_map.reporter import Reporter
 
@@ -53,6 +54,19 @@ class FakeEmbedder:
 
 class FakeVectorDB:
     """Returns a canned historical example mimicking Actian VectorAI output."""
+
+    def check_collection_ready(self, collection_name, expected_dim, min_vectors):
+        return VectorDBReadiness(
+            connected=True,
+            collection_exists=True,
+            opened=True,
+            vector_count=max(min_vectors, 1),
+            probe_ok=True,
+            ready=True,
+            reason="OK",
+            address="mock_addr",
+            collection=collection_name,
+        )
 
     def query_similar(self, embedding, top_k=2):
         return [

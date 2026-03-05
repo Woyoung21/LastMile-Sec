@@ -1,0 +1,13 @@
+{
+  "dimension": 384,
+  "distance": 0,
+  "hnsw_config": {
+    "ef_construct": 200,
+    "ef_search": 50,
+    "m": 16
+  },
+  "index_driver_type": 0,
+  "name": "mitre_v18_1",
+  "normalize_method": "L2",
+  "storage_type": 2
+}

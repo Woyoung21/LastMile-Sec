@@ -21,6 +21,24 @@ from .config import ATTACKMapperConfig, ReporterConfig
 from .prompts import AttackMapperPrompts
 
 
+class VectorDBNotReadyError(RuntimeError):
+    """Raised when strict RAG mode is enabled and VectorDB is not usable."""
+
+
+class VectorDBReadiness(BaseModel):
+    """Structured readiness status for VectorDB collection checks."""
+
+    connected: bool = False
+    collection_exists: bool = False
+    opened: bool = False
+    vector_count: int = 0
+    probe_ok: bool = False
+    ready: bool = False
+    reason: str = "UNKNOWN"
+    address: str = ""
+    collection: str = ""
+
+
 class FindingReport(BaseModel):
     """Normalized input expected from the upstream Reporter Agent.
 
@@ -103,9 +121,10 @@ class MitreValidator:
 class ActianVectorAIDBClient:
     """Actian VectorAI client wrapper backed by the cortex library."""
 
-    def __init__(self, client=None, cortex_error_cls=None):
+    def __init__(self, client=None, cortex_error_cls=None, address: str | None = None):
         self._distance_metric = None
         self._cortex_error_cls = cortex_error_cls
+        self.address = address or ATTACKMapperConfig.VECTOR_DB_ADDRESS
 
         if client is not None:
             self.client = client
@@ -116,12 +135,12 @@ class ActianVectorAIDBClient:
         from cortex import CortexClient, CortexError, DistanceMetric
 
         # Initialize the client
-        self.client = CortexClient(address=ATTACKMapperConfig.VECTOR_DB_ADDRESS)
+        self.client = CortexClient(address=self.address)
         
         try:
             self.client.connect()
         except Exception as e:
-            print(f"Warning: Could not connect to Actian VectorAI: {e}")
+            print(f"Warning: Could not connect to Actian VectorAI at {self.address}: {e}")
             # Non-fatal — Mapper can still run in zero-shot mode without RAG
 
         self._distance_metric = getattr(DistanceMetric, "COSINE", None)
@@ -141,8 +160,104 @@ class ActianVectorAIDBClient:
             )
         except self._cortex_error_cls:
             return []
+        except Exception:
+            return []
 
         return [self._normalize_row(row) for row in rows[:top_k]]
+
+    def _safe_get_vector_count(self, collection_name: str) -> int:
+        """Best-effort vector count lookup."""
+        if self.client is None:
+            return 0
+        try:
+            count = self.client.get_vector_count(collection_name)
+            return int(count or 0)
+        except self._cortex_error_cls:
+            return 0
+        except Exception:
+            return 0
+
+    def _probe_search(self, collection_name: str, expected_dim: int) -> bool:
+        """Execute a minimal probe query against the collection."""
+        if self.client is None:
+            return False
+        try:
+            self.client.search(
+                collection_name=collection_name,
+                query=[0.0] * expected_dim,
+                top_k=1,
+                with_payload=False,
+            )
+            return True
+        except self._cortex_error_cls:
+            return False
+        except Exception:
+            return False
+
+    def check_collection_ready(
+        self,
+        collection_name: str,
+        expected_dim: int,
+        min_vectors: int,
+    ) -> VectorDBReadiness:
+        """Check if a collection can be used reliably for retrieval."""
+        status = VectorDBReadiness(
+            connected=False,
+            collection_exists=False,
+            opened=False,
+            vector_count=0,
+            probe_ok=False,
+            ready=False,
+            reason="CONNECT_FAILED",
+            address=self.address,
+            collection=collection_name,
+        )
+
+        if self.client is None:
+            return status
+
+        try:
+            self.client.connect()
+            status.connected = True
+        except Exception:
+            return status
+
+        try:
+            status.collection_exists = bool(self.client.has_collection(collection_name))
+        except self._cortex_error_cls:
+            status.reason = "COLLECTION_MISSING"
+            return status
+        except Exception:
+            status.reason = "COLLECTION_MISSING"
+            return status
+
+        if not status.collection_exists:
+            status.reason = "COLLECTION_MISSING"
+            return status
+
+        try:
+            self.client.open_collection(collection_name)
+            status.opened = True
+        except self._cortex_error_cls:
+            status.reason = "OPEN_FAILED"
+            return status
+        except Exception:
+            status.reason = "OPEN_FAILED"
+            return status
+
+        status.vector_count = self._safe_get_vector_count(collection_name)
+        if status.vector_count < min_vectors:
+            status.reason = "COLLECTION_EMPTY"
+            return status
+
+        status.probe_ok = self._probe_search(collection_name, expected_dim)
+        if not status.probe_ok:
+            status.reason = "PROBE_FAILED"
+            return status
+
+        status.reason = "OK"
+        status.ready = True
+        return status
 
     def _normalize_row(self, row: Any) -> ReferenceExample:
         """Normalize a DB row into a ReferenceExample model."""
@@ -197,6 +312,29 @@ class Mapper:
         self.embedder = embedder
         self.validator = validator or MitreValidator()
         self.local_generator = local_generator
+        raw_status = self.vector_db_client.check_collection_ready(
+            collection_name=ATTACKMapperConfig.VECTOR_DB_COLLECTION,
+            expected_dim=ATTACKMapperConfig.EXPECTED_EMBEDDING_DIM,
+            min_vectors=ATTACKMapperConfig.MIN_COLLECTION_VECTORS,
+        )
+        if isinstance(raw_status, VectorDBReadiness):
+            self.vector_db_status = raw_status
+        elif isinstance(raw_status, dict):
+            self.vector_db_status = VectorDBReadiness.model_validate(raw_status)
+        else:
+            raise TypeError("check_collection_ready() must return VectorDBReadiness or dict")
+
+        if ATTACKMapperConfig.REQUIRE_RAG and not self.vector_db_status.ready:
+            raise VectorDBNotReadyError(
+                "Actian VectorAI collection is not ready for RAG "
+                f"(reason={self.vector_db_status.reason}, "
+                f"address={self.vector_db_status.address}, "
+                f"collection={self.vector_db_status.collection}). "
+                "Run `python scripts/seed_vector_db.py --attack-corpus "
+                "data/corpus/enterprise-attack-18.1.json --mapped-dir data/mapped`, "
+                "then verify ATTACK_MAPPER_VECTOR_DB_ADDRESS and "
+                "ATTACK_MAPPER_VECTOR_DB_COLLECTION."
+            )
 
         if self.routing_mode == "cloud" and self.cloud_client is None:
             if not ReporterConfig.validate():
@@ -314,6 +452,7 @@ class Mapper:
             "routing_mode": self.routing_mode,
             "processing_timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "framework": f"{ATTACKMapperConfig.ATTACK_FRAMEWORK} {ATTACKMapperConfig.ATTACK_VERSION}",
+            "vector_db_status": self.vector_db_status.model_dump(),
         }
 
         return packet_data

@@ -91,7 +91,21 @@ def _print_sample_results(packet_data: dict, n: int = 3):
     """Print a quick preview of mapped findings."""
     findings = packet_data.get("findings", [])
     mapped = [f for f in findings if f.get("metadata", {}).get("mitre_mapping", {}).get("mitre_ids")]
+    mapper_stats = packet_data.get("metadata", {}).get("mapper_stats", {})
+    processed_findings = mapper_stats.get("total_findings_mapped", 0)
+    findings_with_valid_ids = len(mapped)
+    db_status = mapper_stats.get("vector_db_status") or {}
 
+    print(f"\nProcessed findings: {processed_findings}")
+    print(f"Findings with valid MITRE IDs: {findings_with_valid_ids}")
+    if db_status:
+        print(
+            "Vector DB readiness: "
+            f"{db_status.get('reason', 'UNKNOWN')} "
+            f"(ready={db_status.get('ready', False)}, "
+            f"collection={db_status.get('collection', 'unknown')}, "
+            f"vectors={db_status.get('vector_count', 0)})"
+        )
     print(f"\n--- Sample results ({min(n, len(mapped))} of {len(mapped)} mapped findings) ---")
     for finding in mapped[:n]:
         meta = finding["metadata"]

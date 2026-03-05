@@ -4,7 +4,10 @@ from src.section2_report_map.mapper import (
     Mapper,
     MitreValidator,
     ReferenceExample,
+    VectorDBNotReadyError,
+    VectorDBReadiness,
 )
+from src.section2_report_map.config import ATTACKMapperConfig
 
 
 class FakeEmbedder:
@@ -17,13 +20,29 @@ class FakeEmbedder:
 
 
 class FakeVectorDB:
-    def __init__(self, results):
+    def __init__(self, results, ready: bool = True, reason: str = "OK"):
         self.results = results
         self.calls = []
+        self.ready = ready
+        self.reason = reason
 
     def query_similar(self, embedding, top_k):
         self.calls.append((embedding, top_k))
         return self.results[:top_k]
+
+    def check_collection_ready(self, collection_name, expected_dim, min_vectors):
+        vector_count = max(min_vectors, 1) if self.ready else 0
+        return VectorDBReadiness(
+            connected=True,
+            collection_exists=self.ready,
+            opened=self.ready,
+            vector_count=vector_count,
+            probe_ok=self.ready,
+            ready=self.ready,
+            reason=self.reason,
+            address="mock_addr",
+            collection=collection_name,
+        )
 
 
 class FakeSearchResult:
@@ -184,3 +203,57 @@ def test_mapper_accepts_reporter_style_json_and_cloud_json_output():
     assert result.source_metadata == {"hostname": "switch-02", "log_source": "scanner"}
     assert result.severity_score == 7.5
     assert result.metadata["mapping_agent"] == "Gemini-2.5-Flash"
+
+
+def test_vector_db_readiness_missing_collection_fails_strict(monkeypatch):
+    monkeypatch.setattr(ATTACKMapperConfig, "REQUIRE_RAG", True)
+    vector_db = FakeVectorDB([], ready=False, reason="COLLECTION_MISSING")
+
+    try:
+        Mapper(
+            routing_mode="local",
+            embedder=FakeEmbedder(),
+            vector_db_client=vector_db,
+            validator=MitreValidator(known_ids={"T1190"}),
+            local_generator=lambda _: "T1190",
+        )
+        assert False, "Expected strict mode to fail on unready VectorDB"
+    except VectorDBNotReadyError:
+        pass
+
+
+def test_vector_db_readiness_ok_passes_strict(monkeypatch):
+    monkeypatch.setattr(ATTACKMapperConfig, "REQUIRE_RAG", True)
+    mapper = Mapper(
+        routing_mode="local",
+        embedder=FakeEmbedder(),
+        vector_db_client=FakeVectorDB([], ready=True),
+        validator=MitreValidator(known_ids={"T1190"}),
+        local_generator=lambda _: "T1190",
+    )
+    assert mapper.vector_db_status.ready is True
+    assert mapper.vector_db_status.reason == "OK"
+
+
+def test_mapper_stats_include_vector_db_status(monkeypatch):
+    monkeypatch.setattr(ATTACKMapperConfig, "REQUIRE_RAG", True)
+    mapper = Mapper(
+        routing_mode="local",
+        embedder=FakeEmbedder(),
+        vector_db_client=FakeVectorDB([], ready=True),
+        validator=MitreValidator(known_ids={"T1190"}),
+        local_generator=lambda _: "T1190",
+    )
+    packet = {
+        "findings": [
+            {
+                "title": "Test Finding",
+                "metadata": {
+                    "technical_summary": "A suspicious port scan was observed.",
+                },
+            }
+        ]
+    }
+    mapped_packet = mapper.process_packet(packet)
+    status = mapped_packet["metadata"]["mapper_stats"]["vector_db_status"]
+    assert status["ready"] is True

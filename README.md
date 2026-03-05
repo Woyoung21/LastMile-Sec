@@ -100,6 +100,16 @@ python run_section2.py "data/processed/report.json" --max-findings 5
 # Output saved to data/mapped/ with MITRE ATT&CK IDs per finding
 ```
 
+### Section 2 Vector DB Seeding + Health Check
+
+```powershell
+# Seed VectorAI collection from ATT&CK corpus + local mapped findings
+python scripts/seed_vector_db.py --attack-corpus data/corpus/enterprise-attack-18.1.json --mapped-dir data/mapped
+
+# Validate collection readiness for strict RAG mode
+python scripts/check_vector_db.py --json
+```
+
 ### Run Tests
 
 ```powershell

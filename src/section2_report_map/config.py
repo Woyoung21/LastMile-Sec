@@ -1,3 +1,5 @@
+
+
 """
 Configuration for Section 2: Report & Mapper
 
@@ -67,6 +69,10 @@ class ATTACKMapperConfig:
     """Configuration for the MITRE ATT&CK Mapper."""
 
     ROUTING_MODE: str = os.getenv("ATTACK_MAPPER_ROUTING_MODE", "local")
+    REQUIRE_RAG: bool = os.getenv("ATTACK_MAPPER_REQUIRE_RAG", "true").lower() == "true"
+    MIN_COLLECTION_VECTORS: int = int(os.getenv("ATTACK_MAPPER_MIN_COLLECTION_VECTORS", "1"))
+    EXPECTED_EMBEDDING_DIM: int = int(os.getenv("ATTACK_MAPPER_EXPECTED_EMBEDDING_DIM", "384"))
+    DEFAULT_ATTACK_CORPUS_PATH: Path = Path("data/corpus/enterprise-attack-18.1.json")
 
     # Cloud routing
     CLOUD_MODEL: str = "gemini-2.5-flash"

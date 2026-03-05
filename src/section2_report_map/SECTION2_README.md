@@ -42,22 +42,26 @@ Section 1 JSON (data/processed/*.json)
 |          Mapper Agent (Local LoRA)           |
 |                                              |
 |  For each summarized finding:                |
-|    1. Embed summary (all-MiniLM-L6-v2)      |
+|    1. Embed summary (all-MiniLM-L6-v2)       |
 |    2. Query Actian VectorAI for top-k        |
 |       similar historical examples            |
-|    3. Build prompt with RAG context           |
+|    3. Build prompt with RAG context          |
 |    4. Run local Mistral-7B LoRA adapter      |
-|       (4-bit quantized, PEFT)               |
-|    5. Extract technique IDs from output       |
+|       (4-bit quantized, PEFT)                |
+|    5. Extract technique IDs from output      |
 |    6. Validate against Enterprise ATT&CK     |
-|       v18.1 registry (200+ root IDs)        |
+|       v18.1 registry (200+ root IDs)         |
 |                                              |
 |  Output: mitre_mapping in metadata           |
-|    - mitre_ids: ["T1190", "T1059.004"]      |
+|    - mitre_ids: ["T1190", "T1059.004"]       |
 |    - validation_passed: true/false           |
 |    - routing_mode: "local"                   |
 |    - mapping_agent: "Mistral-7B-LoRA"        |
 |    - db_context: "Actian-VectorAI"           |
+|    - framework: "enterprise 18.1"            |
+|    - retrieved_examples: 2                   |
+|    - raw_model_output: "..."                 |
+|    - mapped_at: "2026-03-04 16:52:59"        |
 +----------------------------------------------+
     |
     v
@@ -96,6 +100,9 @@ The Mapper supports two routing modes:
 | **local** (default) | Mistral-7B-Instruct-v0.2 + LoRA adapter | Production -- runs on GPU, no API cost |
 | **cloud** | Gemini 2.5 Flash | Fallback when GPU is unavailable |
 
+> **Note on Model Verbosity:** The local Mistral-7B model often generates "Chain-of-Thought" reasoning (e.g., *"Based on the RDP port, I've identified..."*). The Mapper includes a post-processing extraction layer that filters this conversational "chatter" to ensure only valid `Txxxx` and `Txxxx.xxx` IDs populate the final `mitre_ids` list. This
+COT is recorded in the `raw_model_output` metadata category for auditability.
+
 ### `config.py` -- Configuration
 
 | Setting | Value | Notes |
@@ -106,6 +113,9 @@ The Mapper supports two routing modes:
 | `EMBEDDING_MODEL` | sentence-transformers/all-MiniLM-L6-v2 | For VectorAI queries |
 | `VECTOR_DB_ADDRESS` | localhost:50051 | Actian VectorAI gRPC |
 | `VECTOR_DB_COLLECTION` | mitre_v18_1 | Historical examples |
+| `ATTACK_MAPPER_REQUIRE_RAG` | true | Fail fast if VectorAI collection is not ready |
+| `ATTACK_MAPPER_MIN_COLLECTION_VECTORS` | 1 | Minimum vectors required before mapping |
+| `ATTACK_MAPPER_EXPECTED_EMBEDDING_DIM` | 384 | Probe vector dimensionality for readiness |
 | `ATTACK_VERSION` | 18.1 | Enterprise framework version |
 | `ROUTING_MODE` | local | Default routing for Mapper |
 
@@ -139,6 +149,42 @@ python run_section2.py "data/processed/report.json" --routing-mode cloud
 # Batch process a directory
 python run_section2.py --batch data/processed --output-dir data/mapped
 ```
+
+### Vector DB Readiness + Seeding
+
+```powershell
+# Optional strictness overrides (strict by default)
+$env:ATTACK_MAPPER_REQUIRE_RAG = "true"
+$env:ATTACK_MAPPER_VECTOR_DB_ADDRESS = "localhost:50051"
+$env:ATTACK_MAPPER_VECTOR_DB_COLLECTION = "mitre_v18_1"
+
+# Seed corpus + local mapped findings into VectorAI
+python scripts/seed_vector_db.py --attack-corpus data/corpus/enterprise-attack-18.1.json --mapped-dir data/mapped
+
+# Check readiness (exit code 0 = ready, 2 = not ready)
+python scripts/check_vector_db.py --json
+```
+
+### Seed Data Source (MITRE ATT&CK v18.1)
+
+The Vector DB is seeded from the MITRE ATT&CK Enterprise STIX bundle (v18.1):
+
+- Local canonical file: `data/corpus/enterprise-attack-18.1.json`
+- Upstream source: https://github.com/mitre-attack/attack-stix-data/blob/master/enterprise-attack/enterprise-attack-18.1.json
+
+`seed_vector_db.py` uses this dataset by:
+
+1. Reading STIX `objects` and keeping only `attack-pattern` entries.
+2. Skipping revoked/deprecated techniques (`revoked=true` or `x_mitre_deprecated=true`).
+3. Extracting ATT&CK IDs from `external_references` where `source_name="mitre-attack"` (e.g., `T1190`, `T1003.001`).
+4. Building `technical_summary` from `description` (fallback: `name`) and carrying useful metadata (for example, `x_mitre_platforms`).
+5. Merging these corpus rows with validated local rows from `data/mapped/*.json`, then deduplicating.
+
+How this is used at runtime:
+
+- Seed-time: each summary is embedded (`sentence-transformers/all-MiniLM-L6-v2`, 384-dim) and written to collection `mitre_v18_1`.
+- Map-time: each finding summary is embedded and searched against `mitre_v18_1` for top-k similar examples.
+- Those retrieved examples are injected into the mapper prompt to improve ATT&CK ID selection (`retrieved_examples` in output metadata).
 
 ### Reporter Only
 
@@ -182,6 +228,9 @@ Each finding in the output JSON contains enriched metadata:
   }
 }
 ```
+
+Run-level metadata now includes mapper Vector DB readiness details under:
+`metadata.mapper_stats.vector_db_status`.
 
 ## Caching
 
