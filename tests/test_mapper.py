@@ -1,3 +1,6 @@
+import torch
+
+import src.section2_report_map.mapper as mapper_module
 from src.section2_report_map.mapper import (
     ActianVectorAIDBClient,
     FindingReport,
@@ -120,6 +123,9 @@ def test_mapper_local_mode_uses_reporter_input_and_rag_context():
     assert vector_db.calls[0][1] == 2
     assert "Reference Examples from Database" in captured_prompts[0]
     assert "A vulnerable public-facing web service can allow remote code execution." in captured_prompts[0]
+    timing = result.metadata.get("timing_ms")
+    assert isinstance(timing, dict)
+    assert timing["total_ms"] >= 0.0
 
 
 def test_actian_vector_ai_client_search_normalizes_cortex_results():
@@ -157,6 +163,34 @@ def test_actian_vector_ai_client_returns_empty_on_cortex_error():
     results = client.query_similar([0.25, 0.5, 0.75], top_k=2)
 
     assert results == []
+
+
+def test_actian_vector_ai_client_retries_once_on_goaway(monkeypatch):
+    class RetryOnceCortexClient:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, **kwargs):
+            self.calls += 1
+            if self.calls == 1:
+                raise FakeCortexError("GOAWAY received: too_many_pings")
+            return [
+                FakeSearchResult(
+                    technical_summary="Recovered after transient GOAWAY",
+                    mitre_ids=["T1190"],
+                    score=0.99,
+                )
+            ]
+
+    monkeypatch.setattr(mapper_module.time, "sleep", lambda _: None)
+    cortex_client = RetryOnceCortexClient()
+    client = ActianVectorAIDBClient(client=cortex_client, cortex_error_cls=FakeCortexError)
+
+    results = client.query_similar([0.1, 0.2, 0.3], top_k=1)
+
+    assert cortex_client.calls == 2
+    assert len(results) == 1
+    assert results[0].mitre_ids == ["T1190"]
 
 
 def test_mapper_accepts_reporter_style_json_and_cloud_json_output():
@@ -237,6 +271,7 @@ def test_vector_db_readiness_ok_passes_strict(monkeypatch):
 
 def test_mapper_stats_include_vector_db_status(monkeypatch):
     monkeypatch.setattr(ATTACKMapperConfig, "REQUIRE_RAG", True)
+    monkeypatch.setattr(ATTACKMapperConfig, "ENABLE_TIMING", True)
     mapper = Mapper(
         routing_mode="local",
         embedder=FakeEmbedder(),
@@ -257,3 +292,83 @@ def test_mapper_stats_include_vector_db_status(monkeypatch):
     mapped_packet = mapper.process_packet(packet)
     status = mapped_packet["metadata"]["mapper_stats"]["vector_db_status"]
     assert status["ready"] is True
+    timing = mapped_packet["metadata"]["mapper_stats"]["timing"]
+    assert timing["count"] == 1.0
+    assert timing["avg_total_ms"] >= 0.0
+    local_runtime = mapped_packet["metadata"]["mapper_stats"]["local_runtime"]
+    assert "require_cuda" in local_runtime
+
+
+def test_local_generator_requires_cuda_when_enabled(monkeypatch):
+    monkeypatch.setattr(ATTACKMapperConfig, "REQUIRE_RAG", False)
+    monkeypatch.setattr(ATTACKMapperConfig, "REQUIRE_CUDA", True)
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+
+    mapper = Mapper(
+        routing_mode="local",
+        embedder=FakeEmbedder(),
+        vector_db_client=FakeVectorDB([], ready=True),
+        validator=MitreValidator(known_ids={"T1190"}),
+    )
+
+    try:
+        mapper._get_local_generator()
+        assert False, "Expected strict CUDA mode to fail without CUDA"
+    except RuntimeError as exc:
+        assert "CUDA is required for local mapper mode" in str(exc)
+
+
+def test_run_local_mapping_direct_generate_slices_prompt_and_passes_generation_args(monkeypatch):
+    class FakeTokenizer:
+        def __init__(self):
+            self.pad_token_id = 0
+            self.eos_token_id = 2
+            self.last_decoded = None
+
+        def __call__(self, prompt: str, return_tensors: str = "pt"):
+            assert return_tensors == "pt"
+            return {
+                "input_ids": torch.tensor([[10, 11, 12]], dtype=torch.long),
+                "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
+            }
+
+        def decode(self, token_ids, skip_special_tokens: bool = True):
+            self.last_decoded = token_ids.tolist()
+            assert skip_special_tokens is True
+            return "T1110"
+
+    class FakeModel:
+        def __init__(self):
+            self.last_generate_kwargs = None
+
+        def generate(self, **kwargs):
+            self.last_generate_kwargs = kwargs
+            tail = torch.tensor([[77, 88]], dtype=torch.long, device=kwargs["input_ids"].device)
+            return torch.cat([kwargs["input_ids"], tail], dim=1)
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+
+    mapper = Mapper(
+        routing_mode="local",
+        embedder=FakeEmbedder(),
+        vector_db_client=FakeVectorDB([], ready=True),
+        validator=MitreValidator(known_ids={"T1110"}),
+    )
+    mapper.local_model = FakeModel()
+    mapper.local_tokenizer = FakeTokenizer()
+    mapper.local_generator = "direct_generate"
+
+    report = FindingReport(
+        technical_summary="Test summary",
+        source_metadata={},
+        severity_score=5.0,
+    )
+    output = mapper._run_local_mapping(report, [])
+
+    assert output == "T1110"
+    gen_kwargs = mapper.local_model.last_generate_kwargs
+    assert gen_kwargs["max_new_tokens"] == ATTACKMapperConfig.LOCAL_MAX_NEW_TOKENS
+    assert gen_kwargs["do_sample"] is False
+    assert gen_kwargs["pad_token_id"] == mapper.local_tokenizer.pad_token_id
+    assert gen_kwargs["eos_token_id"] == mapper.local_tokenizer.eos_token_id
+    assert mapper.local_tokenizer.last_decoded == [77, 88]

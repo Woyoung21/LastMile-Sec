@@ -70,6 +70,8 @@ def run_pipeline(
     print(f"\n--- Step 2: Mapper Agent (Actian VectorAI RAG + {routing_mode}) ---")
     try:
         mapper = Mapper(routing_mode=routing_mode)
+        if routing_mode == "local":
+            _print_local_runtime_info(mapper.get_local_runtime_info())
         packet_data = mapper.process_packet(packet_data, max_findings=max_findings)
     except Exception as exc:
         print(f"Mapper failed: {exc}")
@@ -95,6 +97,7 @@ def _print_sample_results(packet_data: dict, n: int = 3):
     processed_findings = mapper_stats.get("total_findings_mapped", 0)
     findings_with_valid_ids = len(mapped)
     db_status = mapper_stats.get("vector_db_status") or {}
+    timing = mapper_stats.get("timing") or {}
 
     print(f"\nProcessed findings: {processed_findings}")
     print(f"Findings with valid MITRE IDs: {findings_with_valid_ids}")
@@ -106,6 +109,13 @@ def _print_sample_results(packet_data: dict, n: int = 3):
             f"collection={db_status.get('collection', 'unknown')}, "
             f"vectors={db_status.get('vector_count', 0)})"
         )
+    if timing:
+        print(
+            "Mapper timing: "
+            f"avg_total={timing.get('avg_total_ms', 0.0)} ms, "
+            f"p95_total={timing.get('p95_total_ms', 0.0)} ms, "
+            f"max_total={timing.get('max_total_ms', 0.0)} ms"
+        )
     print(f"\n--- Sample results ({min(n, len(mapped))} of {len(mapped)} mapped findings) ---")
     for finding in mapped[:n]:
         meta = finding["metadata"]
@@ -114,6 +124,20 @@ def _print_sample_results(packet_data: dict, n: int = 3):
         print(f"  Summary: {meta.get('technical_summary', 'N/A')[:100]}")
         print(f"  MITRE:   {', '.join(mapping['mitre_ids']) or 'none'}")
         print(f"  Valid:   {mapping.get('validation_passed', 'N/A')}")
+
+
+def _print_local_runtime_info(runtime_info: dict):
+    """Print local mapper runtime/device details once per run."""
+    require_cuda = runtime_info.get("require_cuda", False)
+    mode = "strict GPU" if require_cuda else "optional GPU"
+    print(f"  Local runtime mode: {mode}")
+    print(
+        "  CUDA availability: "
+        f"{runtime_info.get('cuda_available', False)} "
+        f"(configured_device={runtime_info.get('configured_cuda_device', 'N/A')})"
+    )
+    if runtime_info.get("cuda_device_name"):
+        print(f"  CUDA device: {runtime_info.get('cuda_device_name')}")
 
 
 def main():

@@ -70,6 +70,10 @@ class ATTACKMapperConfig:
 
     ROUTING_MODE: str = os.getenv("ATTACK_MAPPER_ROUTING_MODE", "local")
     REQUIRE_RAG: bool = os.getenv("ATTACK_MAPPER_REQUIRE_RAG", "true").lower() == "true"
+    REQUIRE_CUDA: bool = os.getenv("ATTACK_MAPPER_REQUIRE_CUDA", "true").lower() == "true"
+    LOCAL_CUDA_DEVICE: int = int(os.getenv("ATTACK_MAPPER_LOCAL_CUDA_DEVICE", "0"))
+    ENABLE_TIMING: bool = os.getenv("ATTACK_MAPPER_ENABLE_TIMING", "true").lower() == "true"
+    LOCAL_MAX_NEW_TOKENS: int = int(os.getenv("ATTACK_MAPPER_LOCAL_MAX_NEW_TOKENS", "128"))
     MIN_COLLECTION_VECTORS: int = int(os.getenv("ATTACK_MAPPER_MIN_COLLECTION_VECTORS", "1"))
     EXPECTED_EMBEDDING_DIM: int = int(os.getenv("ATTACK_MAPPER_EXPECTED_EMBEDDING_DIM", "384"))
     DEFAULT_ATTACK_CORPUS_PATH: Path = Path("data/corpus/enterprise-attack-18.1.json")

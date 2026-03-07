@@ -151,19 +151,39 @@ class ActianVectorAIDBClient:
         if self.client is None:
             return []
 
-        try:
-            rows = self.client.search(
-                collection_name=ATTACKMapperConfig.VECTOR_DB_COLLECTION,
-                query=embedding,
-                top_k=top_k,
-                with_payload=True,
-            )
-        except self._cortex_error_cls:
-            return []
-        except Exception:
+        search_kwargs = {
+            "collection_name": ATTACKMapperConfig.VECTOR_DB_COLLECTION,
+            "query": embedding,
+            "top_k": top_k,
+            "with_payload": True,
+        }
+
+        rows = None
+        for attempt in range(2):
+            try:
+                rows = self.client.search(**search_kwargs)
+                break
+            except self._cortex_error_cls as exc:
+                if attempt == 0 and self._is_goaway_or_ping_error(exc):
+                    time.sleep(1)
+                    continue
+                return []
+            except Exception as exc:
+                if attempt == 0 and self._is_goaway_or_ping_error(exc):
+                    time.sleep(1)
+                    continue
+                return []
+
+        if rows is None:
             return []
 
         return [self._normalize_row(row) for row in rows[:top_k]]
+
+    @staticmethod
+    def _is_goaway_or_ping_error(exc: Exception) -> bool:
+        """Return True for transient gRPC GOAWAY/keepalive throttling errors."""
+        message = str(exc).upper()
+        return "GOAWAY" in message or "TOO_MANY_PINGS" in message
 
     def _safe_get_vector_count(self, collection_name: str) -> int:
         """Best-effort vector count lookup."""
@@ -312,6 +332,12 @@ class Mapper:
         self.embedder = embedder
         self.validator = validator or MitreValidator()
         self.local_generator = local_generator
+        self.local_model = None
+        self.local_tokenizer = None
+        self.local_runtime_info: dict[str, Any] = {
+            "require_cuda": ATTACKMapperConfig.REQUIRE_CUDA,
+            "configured_cuda_device": ATTACKMapperConfig.LOCAL_CUDA_DEVICE,
+        }
         raw_status = self.vector_db_client.check_collection_ready(
             collection_name=ATTACKMapperConfig.VECTOR_DB_COLLECTION,
             expected_dim=ATTACKMapperConfig.EXPECTED_EMBEDDING_DIM,
@@ -343,25 +369,53 @@ class Mapper:
 
     def map_finding(self, finding_report: FindingReport | dict[str, Any]) -> MitreMappingResult:
         """Map a Reporter finding to MITRE ATT&CK techniques."""
+        total_start = time.perf_counter()
         report = self._coerce_finding_report(finding_report)
+
+        embed_start = time.perf_counter()
         embedding = self._embed_summary(report.technical_summary)
+        embed_ms = (time.perf_counter() - embed_start) * 1000.0
+
+        vector_start = time.perf_counter()
         reference_examples = self.vector_db_client.query_similar(
             embedding=embedding,
             top_k=ATTACKMapperConfig.VECTOR_DB_TOP_K,
         )
+        vector_query_ms = (time.perf_counter() - vector_start) * 1000.0
 
+        generate_start = time.perf_counter()
         if self.routing_mode == "local":
             raw_output = self._run_local_mapping(report, reference_examples)
         else:
             raw_output = self._run_cloud_mapping(report, reference_examples)
+        generate_ms = (time.perf_counter() - generate_start) * 1000.0
 
+        postprocess_start = time.perf_counter()
         candidate_ids = self._extract_technique_ids(raw_output)
         valid_ids = self.validator.validate_many(candidate_ids)
+        postprocess_ms = (time.perf_counter() - postprocess_start) * 1000.0
+        total_ms = (time.perf_counter() - total_start) * 1000.0
 
         mapping_agent = "Mistral-7B-LoRA" if self.routing_mode == "local" else "Gemini-2.5-Flash"
         validation_passed = bool(candidate_ids) and len(candidate_ids) == len(valid_ids)
         if not candidate_ids:
             validation_passed = True
+
+        metadata = {
+            "source_agent": "Reporter",
+            "mapping_agent": mapping_agent,
+            "db_context": "Actian-VectorAI",
+            "framework": f"{ATTACKMapperConfig.ATTACK_FRAMEWORK} {ATTACKMapperConfig.ATTACK_VERSION}",
+            "retrieved_examples": len(reference_examples),
+        }
+        if ATTACKMapperConfig.ENABLE_TIMING:
+            metadata["timing_ms"] = {
+                "embed_ms": round(embed_ms, 2),
+                "vector_query_ms": round(vector_query_ms, 2),
+                "generate_ms": round(generate_ms, 2),
+                "postprocess_ms": round(postprocess_ms, 2),
+                "total_ms": round(total_ms, 2),
+            }
 
         return MitreMappingResult(
             finding_summary=report.technical_summary,
@@ -372,13 +426,7 @@ class Mapper:
             reference_examples=reference_examples,
             raw_model_output=raw_output,
             routing_mode=self.routing_mode,
-            metadata={
-                "source_agent": "Reporter",
-                "mapping_agent": mapping_agent,
-                "db_context": "Actian-VectorAI",
-                "framework": f"{ATTACKMapperConfig.ATTACK_FRAMEWORK} {ATTACKMapperConfig.ATTACK_VERSION}",
-                "retrieved_examples": len(reference_examples),
-            },
+            metadata=metadata,
         )
 
     def process_packet(
@@ -405,6 +453,7 @@ class Mapper:
 
         mapped_count = 0
         skipped_count = 0
+        timing_records: list[dict[str, float]] = []
 
         for index, finding in enumerate(findings, 1):
             metadata = finding.get("metadata") or {}
@@ -429,6 +478,18 @@ class Mapper:
                     "raw_model_output": result.raw_model_output,
                     "mapped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 }
+                if ATTACKMapperConfig.ENABLE_TIMING and isinstance(result.metadata.get("timing_ms"), dict):
+                    timing_ms = result.metadata["timing_ms"]
+                    finding["metadata"]["mitre_mapping"]["timing_ms"] = timing_ms
+                    timing_records.append(
+                        {
+                            "embed_ms": float(timing_ms.get("embed_ms", 0.0)),
+                            "vector_query_ms": float(timing_ms.get("vector_query_ms", 0.0)),
+                            "generate_ms": float(timing_ms.get("generate_ms", 0.0)),
+                            "postprocess_ms": float(timing_ms.get("postprocess_ms", 0.0)),
+                            "total_ms": float(timing_ms.get("total_ms", 0.0)),
+                        }
+                    )
                 mapped_count += 1
             except Exception as exc:
                 if "metadata" not in finding:
@@ -454,8 +515,55 @@ class Mapper:
             "framework": f"{ATTACKMapperConfig.ATTACK_FRAMEWORK} {ATTACKMapperConfig.ATTACK_VERSION}",
             "vector_db_status": self.vector_db_status.model_dump(),
         }
+        if ATTACKMapperConfig.ENABLE_TIMING:
+            packet_data["metadata"]["mapper_stats"]["timing"] = self._summarize_timing_records(timing_records)
+        if self.routing_mode == "local":
+            packet_data["metadata"]["mapper_stats"]["local_runtime"] = self.get_local_runtime_info()
 
         return packet_data
+
+    def _summarize_timing_records(self, timing_records: list[dict[str, float]]) -> dict[str, float]:
+        """Summarize per-finding timings into run-level metrics."""
+        if not timing_records:
+            return {
+                "count": 0.0,
+                "avg_total_ms": 0.0,
+                "p95_total_ms": 0.0,
+                "max_total_ms": 0.0,
+                "avg_embed_ms": 0.0,
+                "avg_vector_query_ms": 0.0,
+                "avg_generate_ms": 0.0,
+                "avg_postprocess_ms": 0.0,
+            }
+
+        total_values = sorted(record.get("total_ms", 0.0) for record in timing_records)
+        summary: dict[str, float] = {
+            "count": float(len(timing_records)),
+            "avg_total_ms": round(sum(total_values) / len(total_values), 2),
+            "p95_total_ms": round(self._interpolate_percentile(total_values, 95.0), 2),
+            "max_total_ms": round(total_values[-1], 2),
+        }
+        for stage_name in ("embed_ms", "vector_query_ms", "generate_ms", "postprocess_ms"):
+            stage_values = [record.get(stage_name, 0.0) for record in timing_records]
+            summary[f"avg_{stage_name}"] = round(sum(stage_values) / len(stage_values), 2)
+
+        return summary
+
+    @staticmethod
+    def _interpolate_percentile(sorted_values: list[float], percentile: float) -> float:
+        """Compute a percentile on an already sorted list."""
+        if not sorted_values:
+            return 0.0
+        if len(sorted_values) == 1:
+            return sorted_values[0]
+
+        position = (percentile / 100.0) * (len(sorted_values) - 1)
+        lower_index = int(position)
+        upper_index = min(lower_index + 1, len(sorted_values) - 1)
+        weight = position - lower_index
+        lower_value = sorted_values[lower_index]
+        upper_value = sorted_values[upper_index]
+        return lower_value + (upper_value - lower_value) * weight
 
     def save_mapped_packet(self, packet_data: dict, output_dir: str | Path) -> Optional[Path]:
         """Save the fully mapped packet to disk."""
@@ -526,6 +634,7 @@ class Mapper:
             return self.embedder
 
         try:
+            import torch
             from sentence_transformers import SentenceTransformer
         except ImportError as exc:
             raise ImportError(
@@ -533,7 +642,26 @@ class Mapper:
                 "Install the mapper dependencies before using Mapper."
             ) from exc
 
-        self.embedder = SentenceTransformer(ATTACKMapperConfig.EMBEDDING_MODEL)
+        cuda_available = torch.cuda.is_available()
+        configured_device = ATTACKMapperConfig.LOCAL_CUDA_DEVICE
+        embedder_device = "cpu"
+
+        if cuda_available:
+            device_count = torch.cuda.device_count()
+            if configured_device >= device_count:
+                raise RuntimeError(
+                    "Configured ATTACK_MAPPER_LOCAL_CUDA_DEVICE is out of range for available GPUs "
+                    f"(configured={configured_device}, available={device_count})."
+                )
+            embedder_device = f"cuda:{configured_device}"
+        elif self.routing_mode == "local" and ATTACKMapperConfig.REQUIRE_CUDA:
+            raise RuntimeError(
+                "CUDA is required for local mapper mode but is not available. "
+                "Install a CUDA-enabled PyTorch build or set ATTACK_MAPPER_REQUIRE_CUDA=false."
+            )
+
+        self.embedder = SentenceTransformer(ATTACKMapperConfig.EMBEDDING_MODEL, device=embedder_device)
+        self.local_runtime_info["embedder_device"] = embedder_device
         return self.embedder
 
     def _embed_summary(self, technical_summary: str) -> list[float]:
@@ -605,67 +733,171 @@ class Mapper:
             ports=", ".join(report.ports) if report.ports else "N/A",
         )
 
-        generator = self._get_local_generator()
-        generated = generator(prompt)
+        self._get_local_generator()
 
-        if isinstance(generated, str):
-            return generated.strip()
-        if isinstance(generated, list) and generated:
-            first = generated[0]
-            if isinstance(first, dict):
-                text = first.get("generated_text", "")
-                return text.replace(prompt, "", 1).strip() if text.startswith(prompt) else text.strip()
-        raise TypeError("Local generator returned an unsupported response type")
+        # Backward compatibility for injected fake generators used in tests.
+        if self.local_model is None or self.local_tokenizer is None:
+            generator = self.local_generator
+            if callable(generator):
+                generated = generator(prompt)
+                if isinstance(generated, str):
+                    return generated.strip()
+                if isinstance(generated, list) and generated:
+                    first = generated[0]
+                    if isinstance(first, dict):
+                        text = first.get("generated_text", "")
+                        return text.replace(prompt, "", 1).strip() if text.startswith(prompt) else text.strip()
+            raise TypeError("Local generator returned an unsupported response type")
+
+        import torch
+
+        tokenizer = self.local_tokenizer
+        model = self.local_model
+        tokenized_inputs = tokenizer(prompt, return_tensors="pt")
+
+        if torch.cuda.is_available():
+            target_device = torch.device(f"cuda:{ATTACKMapperConfig.LOCAL_CUDA_DEVICE}")
+        else:
+            target_device = torch.device("cpu")
+        tokenized_inputs = {key: value.to(target_device) for key, value in tokenized_inputs.items()}
+
+        with torch.inference_mode():
+            output_tokens = model.generate(
+                **tokenized_inputs,
+                max_new_tokens=ATTACKMapperConfig.LOCAL_MAX_NEW_TOKENS,
+                do_sample=False,
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+            )
+
+        prompt_token_count = len(tokenized_inputs["input_ids"][0])
+        new_tokens = output_tokens[0][prompt_token_count:]
+        return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
     def _get_local_generator(self):
         """Lazily load the local Mistral-7B LoRA generator."""
-        if self.local_generator is not None:
+        if self.local_model is not None and self.local_tokenizer is not None:
+            return self.local_model
+
+        # If a custom local generator was injected, keep existing behavior.
+        if self.local_generator is not None and self.local_model is None and self.local_tokenizer is None:
             return self.local_generator
 
         try:
             import torch
+        except ImportError as exc:
+            raise ImportError("torch is required for local mapper mode.") from exc
+
+        cuda_available = torch.cuda.is_available()
+        configured_device = ATTACKMapperConfig.LOCAL_CUDA_DEVICE
+        self.local_runtime_info["cuda_available"] = cuda_available
+
+        if ATTACKMapperConfig.REQUIRE_CUDA and not cuda_available:
+            raise RuntimeError(
+                "CUDA is required for local mapper mode but no CUDA device is available. "
+                "Set ATTACK_MAPPER_REQUIRE_CUDA=false to allow fallback behavior."
+            )
+
+        if cuda_available:
+            device_count = torch.cuda.device_count()
+            if configured_device >= device_count:
+                raise RuntimeError(
+                    "Configured ATTACK_MAPPER_LOCAL_CUDA_DEVICE is out of range for available GPUs "
+                    f"(configured={configured_device}, available={device_count})."
+                )
+
+        try:
             from peft import PeftModel
-            from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
+            from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         except ImportError as exc:
             raise ImportError(
                 "transformers, peft, and torch are required for local mapper mode."
             ) from exc
 
-        quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.float16,
-        )
+        if cuda_available:
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_compute_dtype=torch.float16,
+            )
+            device_map: dict[str, int] | str = {"": configured_device}
+        else:
+            quantization_config = None
+            device_map = "cpu"
+            print("Warning: CUDA unavailable. Loading local mapper model on CPU.")
 
-        print(f"🧠 Loading Base Model: {ATTACKMapperConfig.LOCAL_BASE_MODEL}")
+        print(f"Loading base model: {ATTACKMapperConfig.LOCAL_BASE_MODEL}")
         tokenizer = AutoTokenizer.from_pretrained(ATTACKMapperConfig.LOCAL_BASE_MODEL)
-        base_model = AutoModelForCausalLM.from_pretrained(
-            ATTACKMapperConfig.LOCAL_BASE_MODEL,
-            quantization_config=quantization_config,
-            device_map="auto",
-        )
+        model_kwargs: dict[str, Any] = {"device_map": device_map}
+        if quantization_config is not None:
+            model_kwargs["quantization_config"] = quantization_config
+        base_model = AutoModelForCausalLM.from_pretrained(ATTACKMapperConfig.LOCAL_BASE_MODEL, **model_kwargs)
 
         # FIX: Resolve Windows path to POSIX-style (forward slashes) for PEFT
         adapter_path = ATTACKMapperConfig.LOCAL_ADAPTER_PATH.resolve().as_posix()
-        print(f"🔗 Attaching LoRA Adapter from: {adapter_path}")
+        print(f"Attaching LoRA adapter from: {adapter_path}")
         
         adapter_model = PeftModel.from_pretrained(
             base_model,
             adapter_path,
         )
 
+        parameter_device = str(next(adapter_model.parameters()).device)
+        self.local_runtime_info["model_parameter_device"] = parameter_device
+        self.local_runtime_info["generator_device_map"] = str(device_map)
+        if cuda_available:
+            self.local_runtime_info["cuda_device_name"] = torch.cuda.get_device_name(configured_device)
+
+        if ATTACKMapperConfig.REQUIRE_CUDA:
+            expected_device = f"cuda:{configured_device}"
+            if parameter_device != expected_device:
+                raise RuntimeError(
+                    "Local mapper model did not load on the configured CUDA device "
+                    f"(expected={expected_device}, got={parameter_device})."
+                )
+
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token_id = tokenizer.eos_token_id
 
-        self.local_generator = pipeline(
-            "text-generation",
-            model=adapter_model,
-            tokenizer=tokenizer,
-            max_new_tokens=128,
-            do_sample=False,
-        )
-        return self.local_generator
+        # Avoid generation-config warning churn when max_new_tokens is supplied at call-time.
+        generation_config = getattr(adapter_model, "generation_config", None)
+        if generation_config is not None:
+            generation_config.max_length = None
+            generation_config.temperature = None
+
+        self.local_model = adapter_model
+        self.local_tokenizer = tokenizer
+        # Keep this marker for compatibility checks and runtime introspection.
+        self.local_generator = "direct_generate"
+        self.local_runtime_info["generation_backend"] = "direct_generate"
+        self.local_runtime_info["max_new_tokens"] = ATTACKMapperConfig.LOCAL_MAX_NEW_TOKENS
+        return self.local_model
+
+    def get_local_runtime_info(self) -> dict[str, Any]:
+        """Return local runtime/device information for diagnostics."""
+        info = dict(self.local_runtime_info)
+        info.setdefault("require_cuda", ATTACKMapperConfig.REQUIRE_CUDA)
+        info.setdefault("configured_cuda_device", ATTACKMapperConfig.LOCAL_CUDA_DEVICE)
+
+        try:
+            import torch
+        except ImportError:
+            info.setdefault("cuda_available", False)
+            return info
+
+        cuda_available = torch.cuda.is_available()
+        info.setdefault("cuda_available", cuda_available)
+        if cuda_available:
+            device_count = torch.cuda.device_count()
+            info.setdefault("cuda_device_count", device_count)
+            configured_device = ATTACKMapperConfig.LOCAL_CUDA_DEVICE
+            if configured_device < device_count:
+                info.setdefault("cuda_device_name", torch.cuda.get_device_name(configured_device))
+
+        return info
 
     def _extract_technique_ids(self, raw_output: str) -> list[str]:
         """Extract candidate technique IDs from model output."""
