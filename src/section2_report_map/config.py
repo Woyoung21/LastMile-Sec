@@ -73,7 +73,7 @@ class ATTACKMapperConfig:
     REQUIRE_CUDA: bool = os.getenv("ATTACK_MAPPER_REQUIRE_CUDA", "true").lower() == "true"
     LOCAL_CUDA_DEVICE: int = int(os.getenv("ATTACK_MAPPER_LOCAL_CUDA_DEVICE", "0"))
     ENABLE_TIMING: bool = os.getenv("ATTACK_MAPPER_ENABLE_TIMING", "true").lower() == "true"
-    LOCAL_MAX_NEW_TOKENS: int = int(os.getenv("ATTACK_MAPPER_LOCAL_MAX_NEW_TOKENS", "128"))
+    LOCAL_MAX_NEW_TOKENS: int = int(os.getenv("ATTACK_MAPPER_LOCAL_MAX_NEW_TOKENS", "512"))
     MIN_COLLECTION_VECTORS: int = int(os.getenv("ATTACK_MAPPER_MIN_COLLECTION_VECTORS", "1"))
     EXPECTED_EMBEDDING_DIM: int = int(os.getenv("ATTACK_MAPPER_EXPECTED_EMBEDDING_DIM", "384"))
     DEFAULT_ATTACK_CORPUS_PATH: Path = Path("data/corpus/enterprise-attack-18.1.json")
@@ -87,7 +87,7 @@ class ATTACKMapperConfig:
 
     # Retrieval / embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
-    VECTOR_DB_TOP_K: int = 2
+    VECTOR_DB_TOP_K: int = 1
     VECTOR_DB_ADDRESS: str = os.getenv("ATTACK_MAPPER_VECTOR_DB_ADDRESS", "localhost:50051")
     VECTOR_DB_COLLECTION: str = os.getenv("ATTACK_MAPPER_VECTOR_DB_COLLECTION", "mitre_v18_1")
 
