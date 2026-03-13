@@ -4,10 +4,11 @@ LastMile-Sec - Simple CLI Runner
 
 Usage:
     python run.py <file_path>
-    python run.py data/raw/report.csv
-    python run.py data/raw/capture.pcap
+    python run.py <file_path> --pdf-parser langextract
+    python run.py <file_path> --pdf-parser auto
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -15,31 +16,42 @@ from src.section1_ingestion import Normalizer
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python run.py <file_path>")
-        print("")
-        print("Examples:")
-        print("  python run.py data/raw/report.csv")
-        print("  python run.py data/raw/capture.pcap")
-        print("  python run.py data/raw/report.pdf")
+    parser = argparse.ArgumentParser(
+        description="LastMile-Sec ingestion CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python run.py data/raw/report.csv\n"
+            "  python run.py data/raw/report.pdf --pdf-parser langextract\n"
+            "  python run.py data/raw/capture.pcap\n"
+        ),
+    )
+    parser.add_argument("file_path", help="Path to the file to ingest")
+    parser.add_argument(
+        "--pdf-parser",
+        choices=["regex", "langextract", "auto"],
+        default="regex",
+        dest="pdf_parser",
+        help="PDF parser backend: regex (default), langextract (Gemini), or auto",
+    )
+
+    args = parser.parse_args()
+
+    if not Path(args.file_path).exists():
+        print(f"Error: File not found: {args.file_path}")
         sys.exit(1)
-    
-    file_path = sys.argv[1]
-    
-    if not Path(file_path).exists():
-        print(f"Error: File not found: {file_path}")
-        sys.exit(1)
-    
-    print(f"Parsing: {file_path}")
+
+    print(f"Parsing: {args.file_path}")
+    print(f"PDF parser: {args.pdf_parser}")
     print("-" * 50)
-    
-    # Create normalizer with output directory
-    normalizer = Normalizer(output_dir="data/processed")
-    
-    # Parse and save
-    packet, output_path = normalizer.ingest_and_save(file_path)
-    
-    # Show results
+
+    normalizer = Normalizer(
+        output_dir="data/processed",
+        pdf_parser=args.pdf_parser,
+    )
+
+    packet, output_path = normalizer.ingest_and_save(args.file_path)
+
     print(f"Source: {packet.source_file}")
     print(f"Type: {packet.source_type.value}")
     print(f"Findings: {packet.finding_count}")

@@ -42,7 +42,7 @@ class Normalizer:
             - "regex": Fast, offline, pattern-based (default)
             - "langextract": LLM-powered, more accurate, requires GOOGLE_API_KEY
             - "auto": Use LangExtract if API key is set, else regex
-        gemini_model: Model ID for LangExtract (default: gemini-2.0-flash)
+        gemini_model: Model ID for LangExtract (default: gemini-2.5-flash)
     """
     
     # Map file extensions to parser classes (default: regex-based)
@@ -57,7 +57,7 @@ class Normalizer:
         self, 
         output_dir: Optional[str | Path] = None,
         pdf_parser: PDFParserType = "regex",
-        gemini_model: str = "gemini-2.0-flash",
+        gemini_model: str = "gemini-2.5-flash",
     ):
         """
         Initialize the normalizer.

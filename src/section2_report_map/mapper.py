@@ -19,6 +19,106 @@ from pydantic import BaseModel, Field
 
 from .config import ATTACKMapperConfig, ReporterConfig
 from .prompts import AttackMapperPrompts
+from .validation import MappingValidator, ValidationResult
+
+
+class _LocalDecodingGuards:
+    """Stopping criteria and logits processor for local LoRA inference.
+
+    Provides two complementary mechanisms:
+    - **StoppingCriteria**: halts generation as soon as a ``]`` token is emitted.
+    - **LogitsProcessor**: after the opening ``[`` is seen, suppresses tokens
+      that cannot appear in a valid Python list of ATT&CK IDs (e.g.
+      ``['T1059', 'T1110']``).  This prevents mid-list hallucination while
+      still allowing the model full freedom before the list begins.
+
+    Both are built lazily so ``transformers`` is only imported when local
+    inference is actually used.
+    """
+
+    _classes = None
+
+    @classmethod
+    def _ensure_imports(cls):
+        if cls._classes is None:
+            from transformers import (
+                LogitsProcessor,
+                LogitsProcessorList,
+                StoppingCriteria,
+                StoppingCriteriaList,
+            )
+            cls._classes = {
+                "LogitsProcessor": LogitsProcessor,
+                "LogitsProcessorList": LogitsProcessorList,
+                "StoppingCriteria": StoppingCriteria,
+                "StoppingCriteriaList": StoppingCriteriaList,
+            }
+
+    @classmethod
+    def create_stopping_criteria(cls, tokenizer):
+        """Return a ``StoppingCriteriaList`` that stops on ``]``."""
+        cls._ensure_imports()
+        SC = cls._classes["StoppingCriteria"]
+        SCL = cls._classes["StoppingCriteriaList"]
+
+        class _BracketStop(SC):
+            def __init__(self, tok):
+                super().__init__()
+                self._tokenizer = tok
+
+            def __call__(self, input_ids, scores, **kwargs):
+                decoded = self._tokenizer.decode(
+                    input_ids[0, -1], skip_special_tokens=True
+                )
+                return "]" in decoded
+
+        return SCL([_BracketStop(tokenizer)])
+
+    @classmethod
+    def create_logits_processor(cls, tokenizer):
+        """Return a ``LogitsProcessorList`` constraining output to valid ID lists.
+
+        Allowed token vocabulary after ``[`` is detected:
+        ``'``, ``T``, digits 0-9, ``.``, ``,``, `` `` (space), ``]``, ``\\n``.
+        """
+        cls._ensure_imports()
+        import torch as _torch
+        LP = cls._classes["LogitsProcessor"]
+        LPL = cls._classes["LogitsProcessorList"]
+
+        allowed_chars = set("'T0123456789., ]\n")
+        allowed_token_ids: set[int] = set()
+        for token_id in range(tokenizer.vocab_size):
+            token_str = tokenizer.decode([token_id], skip_special_tokens=True)
+            if token_str and all(ch in allowed_chars for ch in token_str):
+                allowed_token_ids.add(token_id)
+        if tokenizer.eos_token_id is not None:
+            allowed_token_ids.add(tokenizer.eos_token_id)
+
+        class _IDListConstraint(LP):
+            def __init__(self, tok, allowed_ids: set[int]):
+                super().__init__()
+                self._tokenizer = tok
+                self._allowed = allowed_ids
+                self._active = False
+
+            def __call__(self, input_ids, scores):
+                if not self._active:
+                    decoded_tail = self._tokenizer.decode(
+                        input_ids[0, -3:], skip_special_tokens=True
+                    )
+                    if "[" in decoded_tail:
+                        self._active = True
+
+                if self._active:
+                    mask = _torch.full_like(scores, float("-inf"))
+                    for tid in self._allowed:
+                        if tid < scores.shape[-1]:
+                            mask[:, tid] = scores[:, tid]
+                    return mask
+                return scores
+
+        return LPL([_IDListConstraint(tokenizer, allowed_token_ids)])
 
 
 class VectorDBNotReadyError(RuntimeError):
@@ -320,6 +420,7 @@ class Mapper:
         vector_db_client: ActianVectorAIDBClient | None = None,
         embedder=None,
         validator: MitreValidator | None = None,
+        mapping_validator: MappingValidator | None = None,
         local_generator=None,
     ):
         normalized_mode = (routing_mode or "").strip().lower()
@@ -331,6 +432,7 @@ class Mapper:
         self.vector_db_client = vector_db_client or ActianVectorAIDBClient()
         self.embedder = embedder
         self.validator = validator or MitreValidator()
+        self.mapping_validator = mapping_validator or MappingValidator()
         self.local_generator = local_generator
         self.local_model = None
         self.local_tokenizer = None
@@ -392,22 +494,35 @@ class Mapper:
 
         postprocess_start = time.perf_counter()
         candidate_ids = self._extract_technique_ids(raw_output)
-        valid_ids = self.validator.validate_many(candidate_ids)
+
+        validation_result = self.mapping_validator.validate(
+            candidate_ids=candidate_ids,
+            raw_model_output=raw_output,
+            technical_summary=report.technical_summary,
+        )
+        valid_ids = validation_result.accepted_ids
+        validation_passed = validation_result.passed
+
         postprocess_ms = (time.perf_counter() - postprocess_start) * 1000.0
         total_ms = (time.perf_counter() - total_start) * 1000.0
 
         mapping_agent = "Mistral-7B-LoRA" if self.routing_mode == "local" else "Gemini-2.5-Flash"
-        validation_passed = bool(candidate_ids) and len(candidate_ids) == len(valid_ids)
-        if not candidate_ids:
-            validation_passed = True
 
-        metadata = {
+        metadata: dict[str, Any] = {
             "source_agent": "Reporter",
             "mapping_agent": mapping_agent,
             "db_context": "Actian-VectorAI",
             "framework": f"{ATTACKMapperConfig.ATTACK_FRAMEWORK} {ATTACKMapperConfig.ATTACK_VERSION}",
             "retrieved_examples": len(reference_examples),
+            "validation_gates": validation_result.gate_results,
         }
+        if validation_result.issues:
+            metadata["validation_issues"] = [
+                {"gate": i.gate, "severity": i.severity, "message": i.message, "technique_id": i.technique_id}
+                for i in validation_result.issues
+            ]
+        if validation_result.rejected_ids:
+            metadata["rejected_ids"] = validation_result.rejected_ids
         if ATTACKMapperConfig.ENABLE_TIMING:
             metadata["timing_ms"] = {
                 "embed_ms": round(embed_ms, 2),
@@ -723,14 +838,15 @@ class Mapper:
         return (response.text or "").strip()
 
     def _run_local_mapping(self, report: FindingReport, reference_examples: list[ReferenceExample]) -> str:
-        """Map using the local fine-tuned Mistral-7B LoRA adapter."""
+        """Map using the local fine-tuned Mistral-7B LoRA adapter.
+
+        The prompt matches the RAG-aware template used during v2 LoRA
+        fine-tuning (### Instruction / ### Reference Examples from Database /
+        ### Log / ### Response).
+        """
         prompt = AttackMapperPrompts.LOCAL_USER_PROMPT_TEMPLATE.format(
             db_results=self._format_db_results(reference_examples),
             technical_summary=report.technical_summary,
-            title=report.title or "N/A",
-            cves=", ".join(report.cve_ids) if report.cve_ids else "N/A",
-            services=", ".join(report.services) if report.services else "N/A",
-            ports=", ".join(report.ports) if report.ports else "N/A",
         )
 
         self._get_local_generator()
@@ -761,6 +877,9 @@ class Mapper:
             target_device = torch.device("cpu")
         tokenized_inputs = {key: value.to(target_device) for key, value in tokenized_inputs.items()}
 
+        stopping_criteria = _LocalDecodingGuards.create_stopping_criteria(tokenizer)
+        logits_processor = _LocalDecodingGuards.create_logits_processor(tokenizer)
+
         with torch.inference_mode():
             output_tokens = model.generate(
                 **tokenized_inputs,
@@ -768,6 +887,8 @@ class Mapper:
                 do_sample=False,
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
+                stopping_criteria=stopping_criteria,
+                logits_processor=logits_processor,
             )
 
         prompt_token_count = len(tokenized_inputs["input_ids"][0])
@@ -900,28 +1021,59 @@ class Mapper:
         return info
 
     def _extract_technique_ids(self, raw_output: str) -> list[str]:
-        """Extract candidate technique IDs from model output."""
+        """Extract candidate technique IDs from model output.
+
+        Handles three output formats in priority order:
+        1. Python list literal from local LoRA: ``['T1059', 'T1110']``
+        2. JSON object from cloud model: ``{"techniques": [{"id": "T1059"}]}``
+        3. Regex fallback: any ``T\\d{4}`` pattern found in free text
+        """
         if not raw_output:
             return []
 
         candidates: list[str] = []
-
         stripped = raw_output.strip()
+
+        # Truncate at first ']' to discard any rambling after the list.
+        bracket_pos = stripped.find("]")
+        if bracket_pos != -1:
+            stripped = stripped[: bracket_pos + 1]
+
+        # 1. Try Python list literal (ast.literal_eval handles single-quoted strings).
+        import ast
         try:
-            parsed = json.loads(stripped)
-        except json.JSONDecodeError:
-            parsed = None
+            parsed_list = ast.literal_eval(stripped)
+            if isinstance(parsed_list, list):
+                for item in parsed_list:
+                    candidates.append(str(item).strip())
+        except (ValueError, SyntaxError):
+            pass
 
-        if isinstance(parsed, dict):
-            techniques = parsed.get("techniques") or []
-            for item in techniques:
-                if isinstance(item, dict) and item.get("id"):
-                    candidates.append(str(item["id"]))
-            direct_ids = parsed.get("mitre_ids") or []
-            if isinstance(direct_ids, list):
-                candidates.extend(str(item) for item in direct_ids)
+        # 2. Try JSON object (cloud model schema).
+        if not candidates:
+            try:
+                parsed = json.loads(stripped)
+            except json.JSONDecodeError:
+                parsed = None
 
-        candidates.extend(re.findall(r"\bT\d{4}(?:\.\d{3})?\b", stripped, flags=re.IGNORECASE))
+            if isinstance(parsed, dict):
+                techniques = parsed.get("techniques") or []
+                for item in techniques:
+                    if isinstance(item, dict) and item.get("id"):
+                        candidates.append(str(item["id"]))
+                direct_ids = parsed.get("mitre_ids") or []
+                if isinstance(direct_ids, list):
+                    candidates.extend(str(item) for item in direct_ids)
+
+            if isinstance(parsed, list):
+                for item in parsed:
+                    candidates.append(str(item).strip())
+
+        # 3. Regex fallback for any T-IDs in free text.
+        if not candidates:
+            candidates.extend(
+                re.findall(r"\bT\d{4}(?:\.\d{3})?\b", stripped, flags=re.IGNORECASE)
+            )
 
         unique_candidates: list[str] = []
         seen: set[str] = set()

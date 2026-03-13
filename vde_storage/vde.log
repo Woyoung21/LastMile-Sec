@@ -1,80 +1,122 @@
-[2026-03-06 18:23:29.850] [vde] [info] Data store configure CACHE_SIZE_MB succeeded
-[2026-03-06 18:23:29.852] [vde] [info] Data store configure INI succeeded (/data/datastore.ini)
-[2026-03-06 18:23:30.467] [vde] [info] Data store initialization succeeded
-[2026-03-06 18:23:30.467] [vde] [info] VDE Engine initializing with work_dir: /data
-[2026-03-06 18:23:30.469] [vde] [info] IndexManager and StorageManager created
-[2026-03-06 19:15:01.967] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
-[2026-03-06 19:15:01.967] [vde] [info] [VDEEngine::OpenCollection] Looking for collection directory: /data/mitre_v18_1
-[2026-03-06 19:15:01.981] [vde] [info] [VDEEngine::OpenCollection] Collection directory found: /data/mitre_v18_1
-[2026-03-06 19:15:01.981] [vde] [info] [VDEEngine::OpenCollection] Loading collection data from: /data/mitre_v18_1
-[2026-03-06 19:15:01.981] [vde] [info] [VDECollection::Load] Loading collection 'mitre_v18_1' from /data/mitre_v18_1
-[2026-03-06 19:15:01.982] [vde] [info] [VDECollection::Load] Expected files:
-[2026-03-06 19:15:01.982] [vde] [info] [VDECollection::Load]   - metadata: /data/mitre_v18_1/metadata.json
-[2026-03-06 19:15:01.982] [vde] [info] [VDECollection::Load]   - id_mappings: /data/mitre_v18_1/id_mappings.zst
-[2026-03-06 19:15:01.982] [vde] [info] [VDECollection::Load]   - index_snapshot: /data/mitre_v18_1/index.snapshot
-[2026-03-06 19:15:01.993] [vde] [info] [VDECollection::Load] Loaded metadata: dimension=384, distance=0
-[2026-03-06 19:15:01.993] [vde] [info] [VDECollection::Load] Loaded storage_type from metadata: StorageType::BTRIEVE_SPACE
-[2026-03-06 19:15:01.993] [vde] [info] [VDECollection::Load] Loaded index_driver_type from metadata: IndexDriverType::FAISS
-[2026-03-06 19:15:01.993] [vde] [info] [VDECollection::Load] Loaded normalize_method from metadata: L2
-[2026-03-06 19:15:01.994] [vde] [info] [VDECollection::Load] Created normalize_driver: L2-MKL-Advanced
-[2026-03-06 19:15:01.994] [vde] [info] [VDECollection::Load] Loaded hnsw_config: m=16, ef_construct=200, ef_search=50
-[2026-03-06 19:15:01.994] [vde] [info] [VDECollection::Load] Creating storage driver (StorageType::BTRIEVE_SPACE)...
-[2026-03-06 19:15:01.995] [vde] [info] [VDECollection::Load] Opening storage driver...
-[2026-03-06 19:15:01.995] [vde] [info] [BtrieveSpaceDriver::Open] Opening Btrieve Space in: /data/mitre_v18_1
-[2026-03-06 19:15:01.995] [vde] [info] [BtrieveSpaceDriver::Open] Vector file: /data/mitre_v18_1/vectors.space
-[2026-03-06 19:15:02.033] [vde] [info] [BtrieveSpaceDriver::Open] Existing Btrieve Space opened successfully
-[2026-03-06 19:15:02.033] [vde] [info] [BtrieveSpaceDriver::LoadIdMappings] Loading ID mappings from /data/mitre_v18_1/storage_id_mappings.zst
-[2026-03-06 19:15:02.048] [vde] [info] [BtrieveSpaceDriver::LoadIdMappings] Restored 694 mappings, next_id=695
-[2026-03-06 19:15:02.048] [vde] [info] [BtrieveSpaceDriver::Open] Storage driver opened successfully
-[2026-03-06 19:15:02.048] [vde] [info] [VDECollection::Load] Storage driver opened successfully
-[2026-03-06 19:15:02.048] [vde] [info] [VDECollection::Load] Creating index driver (IndexDriverType::FAISS)...
-[2026-03-06 19:15:02.051] [vde] [info] [FaissDriver] Created HNSW index: dim=384, M=16, ef_construct=200, ef_search=50, own_fields=true
-[2026-03-06 19:15:02.051] [vde] [info] [VDECollection::Load] Index driver created successfully
-[2026-03-06 19:15:02.051] [vde] [info] [VDECollection::LoadSnapshot] Loading index snapshot for collection 'mitre_v18_1'
-[2026-03-06 19:15:02.051] [vde] [info] [VDECollection::LoadSnapshot] Loading from directory: /data/mitre_v18_1
-[2026-03-06 19:15:02.065] [vde] [info] [VDECollection::LoadSnapshot] ID mappings restored from /data/mitre_v18_1/id_mappings.zst (694 mappings)
-[2026-03-06 19:15:02.065] [vde] [info] [FaissDriver::Deserialize] index_ address: 123966446701184
-[2026-03-06 19:15:02.065] [vde] [info] [FaissDriver::Deserialize] Deserializing FAISS index from: /data/mitre_v18_1/index.snapshot
-[2026-03-06 19:15:02.065] [vde] [info] [FaissDriver::Deserialize] Index stats: ntotal=0, id_map_size=0, deleted_ids=0
-[2026-03-06 19:15:02.066] [vde] [info] [FaissDriver::Deserialize] Index info: is_trained=true, own_fields=true, metric_type=0
-[2026-03-06 19:15:02.066] [vde] [info] [FaissDriver::Deserialize] HNSW params: efConstruction=200, efSearch=50, max_level=-1
-[2026-03-06 19:15:02.066] [vde] [info] [FaissDriver::Deserialize] HNSW stats: levels.size()=0, cum_nneighbor_per_level.size()=9
-[2026-03-06 19:15:02.090] [vde] [info] [FaissDriver::Deserialize] Successfully loaded FAISS index
-[2026-03-06 19:15:02.090] [vde] [info] [FaissDriver::Deserialize] Loaded index stats: ntotal=694, is_trained=true, metric_type=0
-[2026-03-06 19:15:02.090] [vde] [info] [FaissDriver::Deserialize] Loaded HNSW params: efConstruction=200, efSearch=50, max_level=2
-[2026-03-06 19:15:02.090] [vde] [info] [FaissDriver::Deserialize] Loaded HNSW stats: levels.size()=694, entry_point=511
-[2026-03-06 19:15:02.090] [vde] [info] [FaissDriver::Deserialize] Loaded storage: ntotal=694, d=384
-[2026-03-06 19:15:02.097] [vde] [info] [VDECollection::LoadSnapshot] Index snapshot loaded successfully from /data/mitre_v18_1/index.snapshot
-[2026-03-06 19:15:02.097] [vde] [info] [VDECollection::Load] Collection 'mitre_v18_1' loaded successfully
-[2026-03-06 19:15:02.097] [vde] [info] [VDEEngine::OpenCollection] Collection 'mitre_v18_1' opened successfully from: /data/mitre_v18_1
-[2026-03-06 19:15:02.100] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
-[2026-03-06 19:15:02.100] [vde] [info] [VDEEngine::OpenCollection] Collection 'mitre_v18_1' found in cache
-[2026-03-06 19:15:02.146] [vde] [info] [gRPC Search] === FIRST SEARCH REQUEST ===
-[2026-03-06 19:15:02.146] [vde] [info] [gRPC Search] Collection: mitre_v18_1
-[2026-03-06 19:15:02.146] [vde] [info] [gRPC Search] Query dim: 384
-[2026-03-06 19:15:02.146] [vde] [info] [gRPC Search] top_k: 1
-[2026-03-06 19:15:02.146] [vde] [info] [gRPC Search] =====================================
-[2026-03-06 19:15:02.146] [vde] [info] [VDE C++ API] === FIRST SEARCH CALL ===
-[2026-03-06 19:15:02.146] [vde] [info] [VDE C++ API] Query dim: 384
-[2026-03-06 19:15:02.146] [vde] [info] [VDE C++ API] top_k: 1
-[2026-03-06 19:15:02.146] [vde] [info] [VDE C++ API] ================================
-[2026-03-06 19:15:02.146] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] === FIRST SEARCH ===
-[2026-03-06 19:15:02.146] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] Collection: mitre_v18_1
-[2026-03-06 19:15:02.146] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] Query dim: 384, expected: 384
-[2026-03-06 19:15:02.146] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] top_k: 1
-[2026-03-06 19:15:02.146] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] Normalize: L2-MKL-Advanced
-[2026-03-06 19:15:02.146] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] ========================================
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] === FIRST SEARCH - HNSW Parameters ===
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] Index ntotal: 694
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] Storage ntotal: 694
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] Query top_k: 1
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] efSearch: 50 (configured: 50)
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] efConstruction: 200
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] max_level: 2
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] levels.size(): 694
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] entry_point: 511
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] M (neighbors at level 1): 32
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] Storage exists: true, own_fields: true
-[2026-03-06 19:15:02.170] [vde] [info] [FaissDriver::Search] ============================================
-[2026-03-06 20:23:48.459] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
-[2026-03-06 20:23:48.459] [vde] [info] [VDEEngine::Ope
+[2026-03-13 20:15:22.515] [vde] [info] Data store configure CACHE_SIZE_MB succeeded
+[2026-03-13 20:15:22.517] [vde] [info] Data store configure INI succeeded (/data/datastore.ini)
+[2026-03-13 20:15:23.182] [vde] [info] Data store initialization succeeded
+[2026-03-13 20:15:23.182] [vde] [info] VDE Engine initializing with work_dir: /data
+[2026-03-13 20:15:23.185] [vde] [info] IndexManager and StorageManager created
+[2026-03-13 20:18:06.414] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
+[2026-03-13 20:18:06.414] [vde] [info] [VDEEngine::OpenCollection] Looking for collection directory: /data/mitre_v18_1
+[2026-03-13 20:18:06.424] [vde] [info] [VDEEngine::OpenCollection] Collection directory found: /data/mitre_v18_1
+[2026-03-13 20:18:06.424] [vde] [info] [VDEEngine::OpenCollection] Loading collection data from: /data/mitre_v18_1
+[2026-03-13 20:18:06.424] [vde] [info] [VDECollection::Load] Loading collection 'mitre_v18_1' from /data/mitre_v18_1
+[2026-03-13 20:18:06.424] [vde] [info] [VDECollection::Load] Expected files:
+[2026-03-13 20:18:06.424] [vde] [info] [VDECollection::Load]   - metadata: /data/mitre_v18_1/metadata.json
+[2026-03-13 20:18:06.424] [vde] [info] [VDECollection::Load]   - id_mappings: /data/mitre_v18_1/id_mappings.zst
+[2026-03-13 20:18:06.424] [vde] [info] [VDECollection::Load]   - index_snapshot: /data/mitre_v18_1/index.snapshot
+[2026-03-13 20:18:06.450] [vde] [info] [VDECollection::Load] Loaded metadata: dimension=384, distance=0
+[2026-03-13 20:18:06.451] [vde] [info] [VDECollection::Load] Loaded storage_type from metadata: StorageType::BTRIEVE_SPACE
+[2026-03-13 20:18:06.451] [vde] [info] [VDECollection::Load] Loaded index_driver_type from metadata: IndexDriverType::FAISS
+[2026-03-13 20:18:06.451] [vde] [info] [VDECollection::Load] Loaded normalize_method from metadata: L2
+[2026-03-13 20:18:06.451] [vde] [info] [VDECollection::Load] Created normalize_driver: L2-MKL-Advanced
+[2026-03-13 20:18:06.451] [vde] [info] [VDECollection::Load] Loaded hnsw_config: m=16, ef_construct=200, ef_search=50
+[2026-03-13 20:18:06.451] [vde] [info] [VDECollection::Load] Creating storage driver (StorageType::BTRIEVE_SPACE)...
+[2026-03-13 20:18:06.452] [vde] [info] [VDECollection::Load] Opening storage driver...
+[2026-03-13 20:18:06.452] [vde] [info] [BtrieveSpaceDriver::Open] Opening Btrieve Space in: /data/mitre_v18_1
+[2026-03-13 20:18:06.452] [vde] [info] [BtrieveSpaceDriver::Open] Vector file: /data/mitre_v18_1/vectors.space
+[2026-03-13 20:18:06.515] [vde] [info] [BtrieveSpaceDriver::Open] Existing Btrieve Space opened successfully
+[2026-03-13 20:18:06.515] [vde] [info] [BtrieveSpaceDriver::LoadIdMappings] Loading ID mappings from /data/mitre_v18_1/storage_id_mappings.zst
+[2026-03-13 20:18:06.533] [vde] [info] [BtrieveSpaceDriver::LoadIdMappings] Restored 694 mappings, next_id=695
+[2026-03-13 20:18:06.533] [vde] [info] [BtrieveSpaceDriver::Open] Storage driver opened successfully
+[2026-03-13 20:18:06.533] [vde] [info] [VDECollection::Load] Storage driver opened successfully
+[2026-03-13 20:18:06.533] [vde] [info] [VDECollection::Load] Creating index driver (IndexDriverType::FAISS)...
+[2026-03-13 20:18:06.536] [vde] [info] [FaissDriver] Created HNSW index: dim=384, M=16, ef_construct=200, ef_search=50, own_fields=true
+[2026-03-13 20:18:06.536] [vde] [info] [VDECollection::Load] Index driver created successfully
+[2026-03-13 20:18:06.536] [vde] [info] [VDECollection::LoadSnapshot] Loading index snapshot for collection 'mitre_v18_1'
+[2026-03-13 20:18:06.536] [vde] [info] [VDECollection::LoadSnapshot] Loading from directory: /data/mitre_v18_1
+[2026-03-13 20:18:06.558] [vde] [info] [VDECollection::LoadSnapshot] ID mappings restored from /data/mitre_v18_1/id_mappings.zst (694 mappings)
+[2026-03-13 20:18:06.558] [vde] [info] [FaissDriver::Deserialize] index_ address: 126576176204416
+[2026-03-13 20:18:06.558] [vde] [info] [FaissDriver::Deserialize] Deserializing FAISS index from: /data/mitre_v18_1/index.snapshot
+[2026-03-13 20:18:06.558] [vde] [info] [FaissDriver::Deserialize] Index stats: ntotal=0, id_map_size=0, deleted_ids=0
+[2026-03-13 20:18:06.559] [vde] [info] [FaissDriver::Deserialize] Index info: is_trained=true, own_fields=true, metric_type=0
+[2026-03-13 20:18:06.559] [vde] [info] [FaissDriver::Deserialize] HNSW params: efConstruction=200, efSearch=50, max_level=-1
+[2026-03-13 20:18:06.559] [vde] [info] [FaissDriver::Deserialize] HNSW stats: levels.size()=0, cum_nneighbor_per_level.size()=9
+[2026-03-13 20:18:06.583] [vde] [info] [FaissDriver::Deserialize] Successfully loaded FAISS index
+[2026-03-13 20:18:06.583] [vde] [info] [FaissDriver::Deserialize] Loaded index stats: ntotal=694, is_trained=true, metric_type=0
+[2026-03-13 20:18:06.583] [vde] [info] [FaissDriver::Deserialize] Loaded HNSW params: efConstruction=200, efSearch=50, max_level=2
+[2026-03-13 20:18:06.583] [vde] [info] [FaissDriver::Deserialize] Loaded HNSW stats: levels.size()=694, entry_point=511
+[2026-03-13 20:18:06.583] [vde] [info] [FaissDriver::Deserialize] Loaded storage: ntotal=694, d=384
+[2026-03-13 20:18:06.590] [vde] [info] [VDECollection::LoadSnapshot] Index snapshot loaded successfully from /data/mitre_v18_1/index.snapshot
+[2026-03-13 20:18:06.590] [vde] [info] [VDECollection::Load] Collection 'mitre_v18_1' loaded successfully
+[2026-03-13 20:18:06.590] [vde] [info] [VDEEngine::OpenCollection] Collection 'mitre_v18_1' opened successfully from: /data/mitre_v18_1
+[2026-03-13 20:18:06.592] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
+[2026-03-13 20:18:06.592] [vde] [info] [VDEEngine::OpenCollection] Collection 'mitre_v18_1' found in cache
+[2026-03-13 20:18:06.638] [vde] [info] [gRPC Search] === FIRST SEARCH REQUEST ===
+[2026-03-13 20:18:06.638] [vde] [info] [gRPC Search] Collection: mitre_v18_1
+[2026-03-13 20:18:06.638] [vde] [info] [gRPC Search] Query dim: 384
+[2026-03-13 20:18:06.638] [vde] [info] [gRPC Search] top_k: 1
+[2026-03-13 20:18:06.638] [vde] [info] [gRPC Search] =====================================
+[2026-03-13 20:18:06.638] [vde] [info] [VDE C++ API] === FIRST SEARCH CALL ===
+[2026-03-13 20:18:06.638] [vde] [info] [VDE C++ API] Query dim: 384
+[2026-03-13 20:18:06.638] [vde] [info] [VDE C++ API] top_k: 1
+[2026-03-13 20:18:06.638] [vde] [info] [VDE C++ API] ================================
+[2026-03-13 20:18:06.638] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] === FIRST SEARCH ===
+[2026-03-13 20:18:06.638] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] Collection: mitre_v18_1
+[2026-03-13 20:18:06.638] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] Query dim: 384, expected: 384
+[2026-03-13 20:18:06.638] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] top_k: 1
+[2026-03-13 20:18:06.638] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] Normalize: L2-MKL-Advanced
+[2026-03-13 20:18:06.638] [vde] [info] [VDECollection::SearchWithoutPredicateFilter] ========================================
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] === FIRST SEARCH - HNSW Parameters ===
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] Index ntotal: 694
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] Storage ntotal: 694
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] Query top_k: 1
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] efSearch: 50 (configured: 50)
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] efConstruction: 200
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] max_level: 2
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] levels.size(): 694
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] entry_point: 511
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] M (neighbors at level 1): 32
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] Storage exists: true, own_fields: true
+[2026-03-13 20:18:06.646] [vde] [info] [FaissDriver::Search] ============================================
+[2026-03-13 21:34:47.733] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
+[2026-03-13 21:34:47.734] [vde] [info] [VDEEngine::OpenCollection] Collection 'mitre_v18_1' found in cache
+[2026-03-13 21:34:47.739] [vde] [info] [VDEEngine::OpenCollection] Opening collection 'mitre_v18_1'
+[2026-03-13 21:34:47.739] [vde] [info] [VDEEngine::OpenCollection] Collection 'mitre_v18_1' found in cache
+[2026-03-13 22:23:29.469] [vde] [info] VDE Engine shutting down...
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::~VDECollection] Destroying collection 'mitre_v18_1'
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::~VDECollection] Save Snapshot before we destroy the collection
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::SaveSnapshot] Saving snapshot for collection 'mitre_v18_1'
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::SaveSnapshot] Snapshot files will be saved to:
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::SaveSnapshot]   - metadata: /data/mitre_v18_1/metadata.json
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::SaveSnapshot]   - id_mappings: /data/mitre_v18_1/id_mappings.zst
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::SaveSnapshot]   - index_snapshot: /data/mitre_v18_1/index.snapshot
+[2026-03-13 22:23:29.470] [vde] [info] [VDECollection::SaveMetadata] Saving metadata for collection 'mitre_v18_1' to: /data/mitre_v18_1/metadata.json
+[2026-03-13 22:23:29.507] [vde] [info] [VDECollection::SaveMetadata] Metadata saved to /data/mitre_v18_1/metadata.json (storage_type=StorageType::BTRIEVE_SPACE, index_driver_type=IndexDriverType::FAISS)
+[2026-03-13 22:23:29.509] [vde] [info] [CompressString] String size: 27570 bytes
+[2026-03-13 22:23:29.514] [vde] [info] [CompressString] Compression Level: 3, Compressed Size: 2252 bytes
+[2026-03-13 22:23:29.529] [vde] [info] [VDECollection::SaveSnapshot] ID mappings saved to /data/mitre_v18_1/id_mappings.zst (694 mappings)
+[2026-03-13 22:23:29.529] [vde] [info] [FaissDriver::Serialize] index_ address: 126576176216736
+[2026-03-13 22:23:29.529] [vde] [info] [FaissDriver::Serialize] Serializing FAISS index to: /data/mitre_v18_1/index.snapshot
+[2026-03-13 22:23:29.530] [vde] [info] [FaissDriver::Serialize] Index stats: ntotal=694, id_map_size=694, deleted_ids=0
+[2026-03-13 22:23:29.530] [vde] [info] [FaissDriver::Serialize] Index info: is_trained=true, own_fields=true, metric_type=0
+[2026-03-13 22:23:29.530] [vde] [info] [FaissDriver::Serialize] HNSW params: efConstruction=200, efSearch=50, max_level=2
+[2026-03-13 22:23:29.530] [vde] [info] [FaissDriver::Serialize] HNSW stats: levels.size()=694, cum_nneighbor_per_level.size()=9
+[2026-03-13 22:23:29.530] [vde] [info] [FaissDriver::Serialize] Storage index: ntotal=694, is_trained=true, d=384
+[2026-03-13 22:23:29.532] [vde] [info] [FaissDriver::Serialize] Directory already exists: /data/mitre_v18_1
+[2026-03-13 22:23:29.532] [vde] [info] [FaissDriver::Serialize] Calling faiss::write_index...
+[2026-03-13 22:23:29.580] [vde] [info] [FaissDriver::Serialize] FAISS index written successfully (full index with storage)
+[2026-03-13 22:23:29.586] [vde] [info] [FaissDriver::Serialize] Index file size: 1.11 MB (skip_storage=false)
+[2026-03-13 22:23:29.602] [vde] [info] [FaissDriver::Serialize] Metadata written successfully to /data/mitre_v18_1/index.snapshot.meta
+[2026-03-13 22:23:29.602] [vde] [info] [FaissDriver::Serialize] Serialization completed successfully
+[2026-03-13 22:23:29.602] [vde] [info] [VDECollection::SaveSnapshot] Index snapshot saved to /data/mitre_v18_1/index.snapshot
+[2026-03-13 22:23:29.602] [vde] [info] [VDECollection::SaveSnapshot] Snapshot saved successfully for collection 'mitre_v18_1'
+[2026-03-13 22:23:29.602] [vde] [info] [VDECollection::~VDECollection] Save Snapshot completed.
+[2026-03-13 22:23:29.602] [vde] [info] [VDECollection::~VDECollection] Releasing storage driver
+[2026-03-13 22:23:29.602] [vde] [info] [BtrieveSpaceDriver::SaveIdMappings] Saving ID mappings to /data/mitre_v18_1/storage_id_mappings.zst
+[2026-03-13 22:23:29.615] [vde] [info] [CompressString] String size: 15078 bytes
+[2026-03-13 22:23:29.615] [vde] [info] [CompressString] Compression Level: 3, Compressed Size: 2152 bytes
+[2026-03-13 22:23:29.618] [vde] [info] [BtrieveSpaceDriver::SaveIdMappings] Saved 694 mappings, next_id=695
+[2026-03-13 22:23:29.624] [vde] [info] [VDECollection::~VDECollection] Releasing index driver (FAISS index will be freed)
+[2026-03-13 22:23:29.624] [vde] [info] [FaissDriver::~FaissDriver] Releasing FAISS index with 694 vectors
+[2026-03-13 22:23:29.624] [vde] [info] [FaissDriver::~FaissDriver] FAISS index memory released
+[2026-03-13 22:23:29.624] [vde] [info] [VDECollection::~VDECollection] Collection 'mitre_v18_1' destroyed successfully
+[2026-03-13 22:23:29.625] [vde] [info] VDE Engine destroyed
+[2026-03-13 22:23:29.691] [vde] [info] Data store deinitialization succeeded

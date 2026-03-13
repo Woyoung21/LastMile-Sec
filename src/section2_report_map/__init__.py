@@ -19,13 +19,17 @@ from .mapper import (
     VectorDBReadiness,
 )
 from .reporter import Reporter
+from .validation import MappingValidator, ValidationIssue, ValidationResult
 
 __all__ = [
     "ActianVectorAIDBClient",
     "FindingReport",
     "Mapper",
+    "MappingValidator",
     "MitreMappingResult",
     "MitreValidator",
+    "ValidationIssue",
+    "ValidationResult",
     "VectorDBNotReadyError",
     "VectorDBReadiness",
     "Reporter",

@@ -130,17 +130,13 @@ Return ONLY the JSON object using the required schema."""
 
     LOCAL_USER_PROMPT_TEMPLATE = """<s>
 ### Instruction:
-You are a cybersecurity mapping expert. You have received the following security finding from the Reporter Agent. Use the provided historical examples from the Actian VectorAI database to assign the most appropriate MITRE ATT&CK technique ID(s).
+You are a cybersecurity assistant. Your task is to analyze a system log and assign the most appropriate MITRE ATT&CK technique(s).
 
 ### Reference Examples from Database:
 {db_results}
 
-### Finding from Reporter Agent:
-Technical Summary: {technical_summary}
-Title: {title}
-CVEs: {cves}
-Services: {services}
-Ports: {ports}
+### Log:
+{technical_summary}
 
 ### Response:
 """

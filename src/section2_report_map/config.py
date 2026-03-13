@@ -73,7 +73,7 @@ class ATTACKMapperConfig:
     REQUIRE_CUDA: bool = os.getenv("ATTACK_MAPPER_REQUIRE_CUDA", "true").lower() == "true"
     LOCAL_CUDA_DEVICE: int = int(os.getenv("ATTACK_MAPPER_LOCAL_CUDA_DEVICE", "0"))
     ENABLE_TIMING: bool = os.getenv("ATTACK_MAPPER_ENABLE_TIMING", "true").lower() == "true"
-    LOCAL_MAX_NEW_TOKENS: int = int(os.getenv("ATTACK_MAPPER_LOCAL_MAX_NEW_TOKENS", "512"))
+    LOCAL_MAX_NEW_TOKENS: int = int(os.getenv("ATTACK_MAPPER_LOCAL_MAX_NEW_TOKENS", "50"))
     MIN_COLLECTION_VECTORS: int = int(os.getenv("ATTACK_MAPPER_MIN_COLLECTION_VECTORS", "1"))
     EXPECTED_EMBEDDING_DIM: int = int(os.getenv("ATTACK_MAPPER_EXPECTED_EMBEDDING_DIM", "384"))
     DEFAULT_ATTACK_CORPUS_PATH: Path = Path("data/corpus/enterprise-attack-18.1.json")
@@ -82,8 +82,8 @@ class ATTACKMapperConfig:
     CLOUD_MODEL: str = "gemini-2.5-flash"
 
     # Local routing
-    LOCAL_BASE_MODEL: str = "mistralai/Mistral-7B-Instruct-v0.2"
-    LOCAL_ADAPTER_PATH: Path = Path(r"C:\Users\WillYoung\Downloads\CSC699\final_adapter")
+    LOCAL_BASE_MODEL: str = "mistralai/Mistral-7B-Instruct-v0.1"
+    LOCAL_ADAPTER_PATH: Path = Path(r"C:\Users\WillYoung\Downloads\CSC699\final_adapter_v2")
 
     # Retrieval / embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
