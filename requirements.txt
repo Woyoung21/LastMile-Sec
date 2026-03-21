@@ -34,6 +34,15 @@ python-dotenv>=1.0.0     # Load .env environment variables
 python-dateutil>=2.8.0   # Date parsing utilities
 uuid7>=0.1.0             # UUIDv7 for time-sortable IDs
 
+# Section 3: Hybrid GraphRAG (Neo4j + LangChain Gemini)
+# Unpinned: add missing packages without forcing upgrades to existing Section 1 & 2 pins.
+langchain-core
+langchain-google-genai
+langchain-community
+neo4j
+langchain-neo4j
+unstructured[pdf]
+
 # Development
 pytest>=7.4.0            # Testing framework
 black>=23.0.0            # Code formatting

@@ -45,6 +45,7 @@ Thumbs.db
 # Environment variables (API keys)
 .env
 .env.local
+.env.example
 
 # Pytest cache
 .pytest_cache/
@@ -58,3 +59,12 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+
+#docker image
+docker-compose.yml
+
+# Neo4j data and logs
+neo4j/data/
+neo4j/logs/
+neo4j/import/
+neo4j/plugins/

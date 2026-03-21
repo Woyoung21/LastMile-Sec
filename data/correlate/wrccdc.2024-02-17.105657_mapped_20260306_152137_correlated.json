@@ -1,0 +1,4173 @@
+{
+  "id": "b70d1268-930b-4f17-a08f-cdad509aa700",
+  "source_type": "pcap",
+  "source_file": "wrccdc.2024-02-17.105657.pcap",
+  "source_hash": "5a1fbc89b415e833bb5a4989b1de0b94bab954141d5a9210f9c76b96816a5287",
+  "timestamp": "2026-02-12T19:40:41.263869",
+  "report_date": null,
+  "findings": [
+    {
+      "id": "e1dc1510-6944-4619-8d76-ffa42cca3fee",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.13 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.13",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.13', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.146471}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.13",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.13 to 192.168.220.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks or unauthorized access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110', 'T1563.002']",
+          "mapped_at": "2026-03-06 12:41:04",
+          "timing_ms": {
+            "embed_ms": 25449.73,
+            "vector_query_ms": 7.95,
+            "generate_ms": 76071.36,
+            "postprocess_ms": 0.13,
+            "total_ms": 101529.21
+          }
+        },
+        "rag_correlation": {
+          "similarity_score": 0.8308486938476562,
+          "vendor_name": "Windows Server",
+          "best_control": {
+            "control_id": "2.3.10.4 (L1) Ensure 'Network access: Let Everyone permissions apply to anonymous users' is set to 'Disabled' (Automated)",
+            "updated_at": "2026-03-20T14:57:06.542000000+00:00",
+            "audit_procedure": "Navigate to the UI Path articulated in the Remediation section and confirm it is set as prescribed. This group policy setting is backed by the following registry location: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa:EveryoneIncludesAnonymous",
+            "created_at": "2026-03-20T14:57:06.542000000+00:00",
+            "remediation_steps": "To establish the recommended configuration via GP, set the following UI path to Disabled: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
+            "vendor_product": "Windows"
+          }
+        }
+      }
+    },
+    {
+      "id": "e01dccbd-f9bf-405d-acd3-f1964ceed79c",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.16695}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote desktop access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002",
+            "T1021.001",
+            "T1563"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These rules are effective for identifying the use of RDP in the environment and potential lateral movement.\n\n### Coded Finding:\n['T1110', 'T1563.002']\n\n### COT Container:\n['T1110', 'T1563.002']\n\n### TTPs:\n['T1021.001']\n\n### Algobila Configuration:\nnull\n\n### Algobila Finding:\n['T1110', 'T1563.",
+          "mapped_at": "2026-03-06 12:43:36",
+          "timing_ms": {
+            "embed_ms": 11.36,
+            "vector_query_ms": 9.07,
+            "generate_ms": 152483.51,
+            "postprocess_ms": 0.05,
+            "total_ms": 152504.06
+          }
+        },
+        "rag_correlation": {
+          "similarity_score": 0.8231754302978516,
+          "vendor_name": "Windows Server",
+          "best_control": {
+            "control_id": "2.2.24 (L1)",
+            "updated_at": "2026-03-20T14:53:46.140000000+00:00",
+            "audit_procedure": "Navigate to the UI Path articulated in the Remediation section and confirm it is set as prescribed.",
+            "created_at": "2026-03-20T14:53:46.140000000+00:00",
+            "remediation_steps": "To establish the recommended configuration via GP, set the following UI path to include Guests: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\User Rights Assignment\\Deny log on through Remote Desktop Services",
+            "vendor_product": "Windows Server"
+          }
+        }
+      }
+    },
+    {
+      "id": "5e75c9b8-f416-4d72-9ebb-6ba7d8279e52",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.167022}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) is observed, indicating potential suspicious activity or unauthorized remote desktop access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": false,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 0,
+          "raw_model_output": "['T1023.001']",
+          "mapped_at": "2026-03-06 12:43:59",
+          "timing_ms": {
+            "embed_ms": 8.95,
+            "vector_query_ms": 20.32,
+            "generate_ms": 22709.18,
+            "postprocess_ms": 0.03,
+            "total_ms": 22738.5
+          }
+        }
+      }
+    },
+    {
+      "id": "37b0cee7-cb26-4d25-8259-2a085b8dbd0c",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.198059}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 12:46:31",
+          "timing_ms": {
+            "embed_ms": 8.11,
+            "vector_query_ms": 56.49,
+            "generate_ms": 152108.82,
+            "postprocess_ms": 0.06,
+            "total_ms": 152173.5
+          }
+        },
+        "rag_correlation": {
+          "similarity_score": 0.8238239288330078,
+          "vendor_name": "Windows Server",
+          "best_control": {
+            "control_id": "2.3.10.4 (L1) Ensure 'Network access: Let Everyone permissions apply to anonymous users' is set to 'Disabled' (Automated)",
+            "updated_at": "2026-03-20T14:57:06.542000000+00:00",
+            "audit_procedure": "Navigate to the UI Path articulated in the Remediation section and confirm it is set as prescribed. This group policy setting is backed by the following registry location: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa:EveryoneIncludesAnonymous",
+            "created_at": "2026-03-20T14:57:06.542000000+00:00",
+            "remediation_steps": "To establish the recommended configuration via GP, set the following UI path to Disabled: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
+            "vendor_product": "Windows"
+          }
+        }
+      }
+    },
+    {
+      "id": "90b1326a-2210-412a-9a56-58c47bfcb8b8",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.200476}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a very high degree of similarity and the second has a moderate degree of similarity.\n\n### Categories:\n- IT Security\n- NetworkSecurity\n- SystemCredentialsOperating\n- SystemProcessSystem\n- SystemRemoteServices\n\n### Mitre-Org:\nTA500\n\n### Details:\nThe first MITRE ATT&amp;CK technique, T1110, is a command and control (C2) node, while the second, T1563.002, is a service or tool. TA",
+          "mapped_at": "2026-03-06 12:49:04",
+          "timing_ms": {
+            "embed_ms": 8.12,
+            "vector_query_ms": 2.61,
+            "generate_ms": 152471.39,
+            "postprocess_ms": 0.04,
+            "total_ms": 152482.19
+          }
+        },
+        "rag_correlation": {
+          "similarity_score": 0.8255615234375,
+          "vendor_name": "Windows Server",
+          "best_control": {
+            "control_id": "2.3.10.4 (L1) Ensure 'Network access: Let Everyone permissions apply to anonymous users' is set to 'Disabled' (Automated)",
+            "updated_at": "2026-03-20T14:57:06.542000000+00:00",
+            "audit_procedure": "Navigate to the UI Path articulated in the Remediation section and confirm it is set as prescribed. This group policy setting is backed by the following registry location: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa:EveryoneIncludesAnonymous",
+            "created_at": "2026-03-20T14:57:06.542000000+00:00",
+            "remediation_steps": "To establish the recommended configuration via GP, set the following UI path to Disabled: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
+            "vendor_product": "Windows"
+          }
+        }
+      }
+    },
+    {
+      "id": "acddc212-4cd3-459b-bc3e-b37f29e9c255",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.200493}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 12:51:36",
+          "timing_ms": {
+            "embed_ms": 8.78,
+            "vector_query_ms": 2.9,
+            "generate_ms": 152212.89,
+            "postprocess_ms": 0.04,
+            "total_ms": 152224.65
+          }
+        },
+        "rag_correlation": {
+          "similarity_score": null,
+          "vendor_name": null,
+          "best_control": null
+        }
+      }
+    },
+    {
+      "id": "7e8d2b39-d4b5-44e7-a5f1-85c0b1106d3e",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.208065}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 12:54:08",
+          "timing_ms": {
+            "embed_ms": 8.39,
+            "vector_query_ms": 3.5,
+            "generate_ms": 152397.15,
+            "postprocess_ms": 0.07,
+            "total_ms": 152409.13
+          }
+        }
+      }
+    },
+    {
+      "id": "3e20bdcb-4c90-4a81-91c0-e0af4a5181f0",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.208065}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 12:56:41",
+          "timing_ms": {
+            "embed_ms": 8.99,
+            "vector_query_ms": 3.04,
+            "generate_ms": 152834.0,
+            "postprocess_ms": 0.05,
+            "total_ms": 152846.11
+          }
+        }
+      }
+    },
+    {
+      "id": "eea6a172-3085-4dae-b15e-d81fe6fd300c",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '10.100.105.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.209364}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "10.100.105.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP) indicates suspicious network activity that may warrant further investigation.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 12:57:26",
+          "timing_ms": {
+            "embed_ms": 8.28,
+            "vector_query_ms": 2.91,
+            "generate_ms": 45305.09,
+            "postprocess_ms": 0.03,
+            "total_ms": 45316.34
+          }
+        }
+      }
+    },
+    {
+      "id": "da0898ed-3486-4c59-9e2d-e416ed6a5aa3",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.20951}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 12:59:59",
+          "timing_ms": {
+            "embed_ms": 8.47,
+            "vector_query_ms": 13.0,
+            "generate_ms": 152057.94,
+            "postprocess_ms": 0.04,
+            "total_ms": 152079.46
+          }
+        }
+      }
+    },
+    {
+      "id": "62e15043-a659-4801-b59f-2c6599239ce4",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.215224}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service activity.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 13:00:44",
+          "timing_ms": {
+            "embed_ms": 7.97,
+            "vector_query_ms": 2.81,
+            "generate_ms": 45266.29,
+            "postprocess_ms": 0.03,
+            "total_ms": 45277.13
+          }
+        }
+      }
+    },
+    {
+      "id": "3c2192c3-9d4b-4f24-8d22-25edc6a6af60",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.215252}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks or unauthorized access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001",
+            "T1021"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1021.0",
+          "mapped_at": "2026-03-06 13:03:17",
+          "timing_ms": {
+            "embed_ms": 8.71,
+            "vector_query_ms": 2.08,
+            "generate_ms": 152889.87,
+            "postprocess_ms": 0.06,
+            "total_ms": 152900.74
+          }
+        }
+      }
+    },
+    {
+      "id": "4fb9ae26-18da-43d4-b71b-a9b6ec8153e9",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.222295}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service activity that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n['T1110', 'T1563.002']",
+          "mapped_at": "2026-03-06 13:04:30",
+          "timing_ms": {
+            "embed_ms": 8.62,
+            "vector_query_ms": 12.73,
+            "generate_ms": 73021.62,
+            "postprocess_ms": 0.04,
+            "total_ms": 73043.06
+          }
+        }
+      }
+    },
+    {
+      "id": "3d1c8819-b82c-4c13-9284-9155d8d448b5",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.222462}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks or unauthorized access.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001",
+            "T1021"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1021.0",
+          "mapped_at": "2026-03-06 13:07:03",
+          "timing_ms": {
+            "embed_ms": 8.3,
+            "vector_query_ms": 2.38,
+            "generate_ms": 153113.27,
+            "postprocess_ms": 0.06,
+            "total_ms": 153124.03
+          }
+        }
+      }
+    },
+    {
+      "id": "7c5dadfa-c7f6-40aa-a0ca-26d110d2f1f3",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.231605}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:09:35",
+          "timing_ms": {
+            "embed_ms": 8.53,
+            "vector_query_ms": 2.41,
+            "generate_ms": 152001.56,
+            "postprocess_ms": 0.05,
+            "total_ms": 152012.56
+          }
+        }
+      }
+    },
+    {
+      "id": "fd74f228-8a2e-46d4-b5d5-238cbee6ca3f",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.231733}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service access or attack activity.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These rules are effective for identifying the use of RDP in the environment and can be added to your IDS/IPS or log files. The first rule is for a connection to the RDP port (3389) and the second rule is for a connection to a legitimate RDP session.\n\n### Rules:\nRule 1: 101281.001 – RDP on non-standard port 10128.1.0: The threat actor is attempting to connect to a non-standard port. This rule will alert on any connection to 1012",
+          "mapped_at": "2026-03-06 13:12:08",
+          "timing_ms": {
+            "embed_ms": 8.46,
+            "vector_query_ms": 13.36,
+            "generate_ms": 152780.1,
+            "postprocess_ms": 0.04,
+            "total_ms": 152801.98
+          }
+        }
+      }
+    },
+    {
+      "id": "082bd94d-bf6d-4f19-b273-ecd0c79b41e8",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.1.178 to 10.100.105.73 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.178",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.73",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.178', 'dst_ip': '10.100.105.73', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.239455}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.178",
+      "destination_ip": "10.100.105.73",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.178 to 10.100.105.73 on port 22 (SSH) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1041",
+            "T1046"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1041']\n['T1046']",
+          "mapped_at": "2026-03-06 13:13:06",
+          "timing_ms": {
+            "embed_ms": 8.23,
+            "vector_query_ms": 3.21,
+            "generate_ms": 58485.69,
+            "postprocess_ms": 0.06,
+            "total_ms": 58497.22
+          }
+        }
+      }
+    },
+    {
+      "id": "f6b9f537-023c-402d-a2cf-3a810a35ffca",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.1.178 to 10.100.105.73 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.178",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.73",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.178', 'dst_ip': '10.100.105.73', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.239457}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.178",
+      "destination_ip": "10.100.105.73",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.178 to 10.100.105.73 on port 22 (SSH) is observed, indicating potential suspicious activity or unauthorized access attempts.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.001"
+          ],
+          "validation_passed": false,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These entries are valid. The first entry is a match to T1110 and the second entry is a match to T1563.001.\n[{'id': '1', 'name': 'T1110', 'link': 'https://attack.mitre.org/techniques/T1110/'}, {'id': '2', 'name': 'T1563.001', 'link': 'https://attack.mitre.org/techniques/T1533'}]",
+          "mapped_at": "2026-03-06 13:15:33",
+          "timing_ms": {
+            "embed_ms": 8.25,
+            "vector_query_ms": 4.53,
+            "generate_ms": 146302.47,
+            "postprocess_ms": 0.04,
+            "total_ms": 146315.33
+          }
+        }
+      }
+    },
+    {
+      "id": "326415b9-9c7f-4650-bc11-3c7275a9fc07",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.1.178 to 192.168.220.73 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.178",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.73",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.178', 'dst_ip': '192.168.220.73', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.239457}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.178",
+      "destination_ip": "192.168.220.73",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.178 to 192.168.220.73 on port 22 (SSH) indicates suspicious network activity that should be monitored.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.001"
+          ],
+          "validation_passed": false,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These entries are valid. The first entry is a match for T1110 and the second entry is a match for T1563.001.\n[{'id': '1', 'name': 'T1110', 'link': 'https://attack.mitre.org/techniques/T1110'}, {'id': '2', 'name': 'T1563.001', 'link': 'https://attack.mitre.org/techniques/T1533.001'}]\nAdditionally,",
+          "mapped_at": "2026-03-06 13:18:04",
+          "timing_ms": {
+            "embed_ms": 7.48,
+            "vector_query_ms": 2.87,
+            "generate_ms": 151706.13,
+            "postprocess_ms": 0.06,
+            "total_ms": 151716.57
+          }
+        }
+      }
+    },
+    {
+      "id": "9ee03fef-de9b-4ecd-8bab-c172369e63a0",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.1.178 to 192.168.220.73 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.178",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.73",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.178', 'dst_ip': '192.168.220.73', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.239458}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.178",
+      "destination_ip": "192.168.220.73",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.178 to 192.168.220.73 on port 22 (SSH) is observed, indicating potential suspicious activity or a service requiring monitoring.",
+        "summary_source": "cache",
+        "summary_generated_at": "2026-03-06 12:37:46",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These entries are valid, but the confidence level is low. The first entry is a match, but the second is not. The first entry is a match to T1110, but the second is not a match. The second entry is a false positive.\n\n### Total Hits:\n1\n\n### Longest Matching Headline:\nA connection from 10.128.1.178 to 192.168.220.73 on port 22 (SSH) is observed, indicating potential suspicious activity or a service requiring monitoring.",
+          "mapped_at": "2026-03-06 13:20:36",
+          "timing_ms": {
+            "embed_ms": 8.75,
+            "vector_query_ms": 2.83,
+            "generate_ms": 151833.7,
+            "postprocess_ms": 0.06,
+            "total_ms": 151845.37
+          }
+        }
+      }
+    },
+    {
+      "id": "a2aa1871-6f35-4773-aa98-a6ec3e9046e7",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.243545}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:47",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:23:09",
+          "timing_ms": {
+            "embed_ms": 8.2,
+            "vector_query_ms": 2.36,
+            "generate_ms": 152446.26,
+            "postprocess_ms": 0.04,
+            "total_ms": 152456.89
+          }
+        }
+      }
+    },
+    {
+      "id": "417e462f-b3e7-4170-83a1-f156ebe5c9a0",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.24357}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:48",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002",
+            "T1021.001",
+            "T1021.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a high confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\n['T1110', 'T1563.002']\n### Fim Pace:\n'T1110': 1, 'T1563.002': 1, 'T1021.001': 0, 'T1021.002': 0",
+          "mapped_at": "2026-03-06 13:25:41",
+          "timing_ms": {
+            "embed_ms": 7.66,
+            "vector_query_ms": 2.51,
+            "generate_ms": 152258.46,
+            "postprocess_ms": 0.07,
+            "total_ms": 152268.75
+          }
+        }
+      }
+    },
+    {
+      "id": "542911c7-3f55-4c53-b0af-7fddc8fe9872",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.248063}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) indicates suspicious network activity that may warrant further investigation.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:50",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 13:26:26",
+          "timing_ms": {
+            "embed_ms": 7.96,
+            "vector_query_ms": 3.68,
+            "generate_ms": 45243.76,
+            "postprocess_ms": 0.04,
+            "total_ms": 45255.46
+          }
+        }
+      }
+    },
+    {
+      "id": "53943099-eff1-41c5-b191-be6c8bdecb65",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.248129}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:52",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 13:28:58",
+          "timing_ms": {
+            "embed_ms": 8.19,
+            "vector_query_ms": 2.06,
+            "generate_ms": 152180.99,
+            "postprocess_ms": 0.04,
+            "total_ms": 152191.33
+          }
+        }
+      }
+    },
+    {
+      "id": "f882f9ed-7c3c-4e72-9718-c6abc83b34aa",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.2581}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service access or attack activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:53",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These rules are effective for identifying the use of RDP in the environment and can be added to your IDS/IPS or log files. The first rule is for a connection to the RDP port (3389) and the second rule is for a connection to a legitimate RDP session.\n\n### Rules:\nRule 1: 101281.001 – RDP on non-standard port 10128.1.0: The threat actor is attempting to connect to a non-standard port. This rule will alert on any connection to 1012",
+          "mapped_at": "2026-03-06 13:31:30",
+          "timing_ms": {
+            "embed_ms": 8.27,
+            "vector_query_ms": 2.37,
+            "generate_ms": 152182.42,
+            "postprocess_ms": 0.05,
+            "total_ms": 152193.13
+          }
+        }
+      }
+    },
+    {
+      "id": "c58ea8f5-c405-4872-b791-a7256699ff9e",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.2581}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) indicates suspicious network activity that may warrant further investigation.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:55",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 13:32:16",
+          "timing_ms": {
+            "embed_ms": 8.11,
+            "vector_query_ms": 3.07,
+            "generate_ms": 45281.12,
+            "postprocess_ms": 0.04,
+            "total_ms": 45292.38
+          }
+        }
+      }
+    },
+    {
+      "id": "d942e808-1722-49b5-9a3f-030f343e58fa",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.260862}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) is observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:57",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001",
+            "T1021"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1021.0",
+          "mapped_at": "2026-03-06 13:34:48",
+          "timing_ms": {
+            "embed_ms": 8.36,
+            "vector_query_ms": 2.86,
+            "generate_ms": 152067.65,
+            "postprocess_ms": 0.04,
+            "total_ms": 152078.93
+          }
+        }
+      }
+    },
+    {
+      "id": "9afa1a64-2a89-4f4b-9e06-51380f79f284",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.262562}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:37:58",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:37:20",
+          "timing_ms": {
+            "embed_ms": 7.84,
+            "vector_query_ms": 2.19,
+            "generate_ms": 152042.06,
+            "postprocess_ms": 0.08,
+            "total_ms": 152052.19
+          }
+        }
+      }
+    },
+    {
+      "id": "b587bcda-a703-40df-90ac-670e9e163905",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.262661}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:00",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 13:39:53",
+          "timing_ms": {
+            "embed_ms": 10.11,
+            "vector_query_ms": 3.23,
+            "generate_ms": 152733.83,
+            "postprocess_ms": 0.05,
+            "total_ms": 152747.25
+          }
+        }
+      }
+    },
+    {
+      "id": "333e6e15-1bbb-40be-b056-fc3ac115d567",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.272135}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks or unauthorized access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:02",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:42:25",
+          "timing_ms": {
+            "embed_ms": 8.92,
+            "vector_query_ms": 3.49,
+            "generate_ms": 152424.21,
+            "postprocess_ms": 0.07,
+            "total_ms": 152436.71
+          }
+        }
+      }
+    },
+    {
+      "id": "f955a410-cef2-4c73-b2ea-32bfdf51bdba",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.272255}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:03",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 13:44:57",
+          "timing_ms": {
+            "embed_ms": 8.73,
+            "vector_query_ms": 3.02,
+            "generate_ms": 152171.46,
+            "postprocess_ms": 0.04,
+            "total_ms": 152183.29
+          }
+        }
+      }
+    },
+    {
+      "id": "62668d77-75bf-4007-b12f-0e31339f7805",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.278997}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks or unauthorized access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:05",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001",
+            "T1021"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1021.0",
+          "mapped_at": "2026-03-06 13:47:30",
+          "timing_ms": {
+            "embed_ms": 8.33,
+            "vector_query_ms": 2.32,
+            "generate_ms": 153039.18,
+            "postprocess_ms": 0.07,
+            "total_ms": 153049.92
+          }
+        }
+      }
+    },
+    {
+      "id": "76890742-521c-420f-b33e-072d2ccbe38a",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.279018}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:07",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:50:02",
+          "timing_ms": {
+            "embed_ms": 8.67,
+            "vector_query_ms": 3.25,
+            "generate_ms": 151996.68,
+            "postprocess_ms": 0.05,
+            "total_ms": 152008.7
+          }
+        }
+      }
+    },
+    {
+      "id": "4bc0b9bf-5c6c-4fcd-81f9-025c8faf253f",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '10.100.105.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.279361}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "10.100.105.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP) indicates suspicious network activity that should be monitored.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:08",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:52:50",
+          "timing_ms": {
+            "embed_ms": 9.83,
+            "vector_query_ms": 25.77,
+            "generate_ms": 168122.9,
+            "postprocess_ms": 0.06,
+            "total_ms": 168158.61
+          }
+        }
+      }
+    },
+    {
+      "id": "c7fef456-a6e8-4120-b84a-c34b76d7b153",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.279638}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP) is observed, indicating potential suspicious activity or monitoring requirements for the RDP service.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:10",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 13:53:36",
+          "timing_ms": {
+            "embed_ms": 9.82,
+            "vector_query_ms": 4.42,
+            "generate_ms": 45948.89,
+            "postprocess_ms": 0.03,
+            "total_ms": 45963.19
+          }
+        }
+      }
+    },
+    {
+      "id": "9866991d-edd6-46fb-8e3d-35a1967e28f5",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.287302}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:12",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 13:56:09",
+          "timing_ms": {
+            "embed_ms": 8.96,
+            "vector_query_ms": 2.6,
+            "generate_ms": 152874.51,
+            "postprocess_ms": 0.05,
+            "total_ms": 152886.17
+          }
+        }
+      }
+    },
+    {
+      "id": "88a7bc0a-137f-4388-bae1-ab6802103fd1",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.287311}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:14",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 13:58:41",
+          "timing_ms": {
+            "embed_ms": 8.1,
+            "vector_query_ms": 9.7,
+            "generate_ms": 151912.9,
+            "postprocess_ms": 0.05,
+            "total_ms": 151930.77
+          }
+        }
+      }
+    },
+    {
+      "id": "a1679988-2258-4912-8622-292c9d00105b",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.2.109 to 10.100.104.66 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.2.109",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.66",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.2.109', 'dst_ip': '10.100.104.66', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.294032}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.2.109",
+      "destination_ip": "10.100.104.66",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.2.109 to 10.100.104.66 on port 22 (SSH) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:15",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1041",
+            "T1046"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1041']\n['T1046']",
+          "mapped_at": "2026-03-06 13:59:40",
+          "timing_ms": {
+            "embed_ms": 8.78,
+            "vector_query_ms": 2.54,
+            "generate_ms": 58490.69,
+            "postprocess_ms": 0.04,
+            "total_ms": 58502.12
+          }
+        }
+      }
+    },
+    {
+      "id": "9601c72f-ab9e-4135-a0ae-c1a03a9cd182",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.2.109 to 192.168.220.66 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.2.109",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.66",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.2.109', 'dst_ip': '192.168.220.66', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.295355}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.2.109",
+      "destination_ip": "192.168.220.66",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.2.109 to 192.168.220.66 on port 22 (SSH) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:17",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1041",
+            "T1046"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1041']\n['T1046']",
+          "mapped_at": "2026-03-06 14:00:39",
+          "timing_ms": {
+            "embed_ms": 8.85,
+            "vector_query_ms": 3.35,
+            "generate_ms": 59218.04,
+            "postprocess_ms": 0.06,
+            "total_ms": 59230.33
+          }
+        }
+      }
+    },
+    {
+      "id": "e16feef5-f70f-4d5c-8ca9-0abd7541dfaa",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.295678}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:19",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:03:11",
+          "timing_ms": {
+            "embed_ms": 8.58,
+            "vector_query_ms": 2.78,
+            "generate_ms": 152363.84,
+            "postprocess_ms": 0.06,
+            "total_ms": 152375.28
+          }
+        }
+      }
+    },
+    {
+      "id": "0ac05209-89cf-476a-ada3-e6517e2b214a",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.295705}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:20",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 14:05:44",
+          "timing_ms": {
+            "embed_ms": 9.0,
+            "vector_query_ms": 2.81,
+            "generate_ms": 152550.45,
+            "postprocess_ms": 0.04,
+            "total_ms": 152562.35
+          }
+        }
+      }
+    },
+    {
+      "id": "2e4aa6ea-f11a-4312-8359-039bb8c0cf39",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.307141}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:22",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 14:06:29",
+          "timing_ms": {
+            "embed_ms": 8.03,
+            "vector_query_ms": 2.14,
+            "generate_ms": 45323.28,
+            "postprocess_ms": 0.03,
+            "total_ms": 45333.51
+          }
+        }
+      }
+    },
+    {
+      "id": "da15256d-744e-4d00-aaf4-cf21ea67ec8a",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.30723}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:24",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 14:09:02",
+          "timing_ms": {
+            "embed_ms": 8.13,
+            "vector_query_ms": 2.82,
+            "generate_ms": 152403.24,
+            "postprocess_ms": 0.06,
+            "total_ms": 152414.28
+          }
+        }
+      }
+    },
+    {
+      "id": "95179323-78e9-4b35-b3cc-ba8c348726fc",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.310915}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:25",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:11:34",
+          "timing_ms": {
+            "embed_ms": 8.48,
+            "vector_query_ms": 3.03,
+            "generate_ms": 152472.77,
+            "postprocess_ms": 0.04,
+            "total_ms": 152484.35
+          }
+        }
+      }
+    },
+    {
+      "id": "c5c7cb8c-2bb9-420f-9d64-5f300faa7713",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.310987}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:27",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 14:12:19",
+          "timing_ms": {
+            "embed_ms": 8.21,
+            "vector_query_ms": 2.73,
+            "generate_ms": 45300.84,
+            "postprocess_ms": 0.03,
+            "total_ms": 45311.83
+          }
+        }
+      }
+    },
+    {
+      "id": "ae1c4d86-f7fe-44b2-854d-ce95789bdf10",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.319855}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) indicates suspicious network activity that should be monitored.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:29",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:15:08",
+          "timing_ms": {
+            "embed_ms": 7.71,
+            "vector_query_ms": 2.47,
+            "generate_ms": 169001.98,
+            "postprocess_ms": 0.07,
+            "total_ms": 169012.27
+          }
+        }
+      }
+    },
+    {
+      "id": "cb7f0e2a-d3da-4f04-8033-8316c65561ca",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.320017}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:30",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a very high degree of similarity and the second has a moderate degree of similarity.\n\n### Categories:\n- IT Security\n- NetworkSecurity\n- SystemCredentialsOperating\n- SystemProcessSystem\n- SystemRemoteServices\n\n### Mitre-Org:\nTA500\n\n### Details:\nThe first MITRE ATT&amp;CK technique, T1110, is a command and control (C2) node, while the second, T1563.002, is a service or tool. TA",
+          "mapped_at": "2026-03-06 14:17:42",
+          "timing_ms": {
+            "embed_ms": 8.8,
+            "vector_query_ms": 3.35,
+            "generate_ms": 153067.5,
+            "postprocess_ms": 0.05,
+            "total_ms": 153079.73
+          }
+        }
+      }
+    },
+    {
+      "id": "13fde628-2791-46b7-9094-42c2dd326d83",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.326601}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:32",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:20:14",
+          "timing_ms": {
+            "embed_ms": 8.9,
+            "vector_query_ms": 2.52,
+            "generate_ms": 152775.03,
+            "postprocess_ms": 0.07,
+            "total_ms": 152786.55
+          }
+        }
+      }
+    },
+    {
+      "id": "24a5cfa6-9a5b-4366-bd08-5d488430784c",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.326698}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) indicates suspicious network activity that may be associated with attacks or unauthorized access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:34",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001",
+            "T1021"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1021.0",
+          "mapped_at": "2026-03-06 14:22:48",
+          "timing_ms": {
+            "embed_ms": 8.62,
+            "vector_query_ms": 3.07,
+            "generate_ms": 153601.55,
+            "postprocess_ms": 0.05,
+            "total_ms": 153613.3
+          }
+        }
+      }
+    },
+    {
+      "id": "3a8453d5-6a1e-4611-8c6b-9bd9e179327d",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '10.100.105.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.330213}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "10.100.105.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 10.100.105.132 on port 3389 indicates suspicious RDP traffic that may be associated with malicious activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:35",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 14:23:34",
+          "timing_ms": {
+            "embed_ms": 7.52,
+            "vector_query_ms": 2.49,
+            "generate_ms": 45897.22,
+            "postprocess_ms": 0.03,
+            "total_ms": 45907.28
+          }
+        }
+      }
+    },
+    {
+      "id": "e073b138-8cbc-4842-999b-961b0a7fb7aa",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.330305}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:37",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 14:26:07",
+          "timing_ms": {
+            "embed_ms": 8.31,
+            "vector_query_ms": 3.01,
+            "generate_ms": 153081.64,
+            "postprocess_ms": 0.06,
+            "total_ms": 153093.05
+          }
+        }
+      }
+    },
+    {
+      "id": "6e1341d7-01dd-49ed-904c-9b685d13adb1",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.335687}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:39",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 14:26:53",
+          "timing_ms": {
+            "embed_ms": 8.18,
+            "vector_query_ms": 2.87,
+            "generate_ms": 45562.11,
+            "postprocess_ms": 0.05,
+            "total_ms": 45573.24
+          }
+        }
+      }
+    },
+    {
+      "id": "f8dff17d-6fc2-49d1-a345-57f1e2219aae",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.335788}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service access or an attack.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:40",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1021.001",
+            "T1021"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a high confidence level.\n\n### Categorization:\n- Technique\n- T1110\n\n### Response:\n['T1110']\n\n### Categorization:\n- Technique\n\n### TTPs:\n['T1021.001']\n\n### T1110:\nThe following are associated with T1110:\n- 'T1021.001'\n\n### T1021:\nThe following are",
+          "mapped_at": "2026-03-06 14:29:26",
+          "timing_ms": {
+            "embed_ms": 8.68,
+            "vector_query_ms": 2.82,
+            "generate_ms": 153118.02,
+            "postprocess_ms": 0.04,
+            "total_ms": 153129.62
+          }
+        }
+      }
+    },
+    {
+      "id": "a7e056df-d10e-4353-958e-58fc97a37f07",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.338263}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote desktop access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:42",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002",
+            "T1021.001",
+            "T1563"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These rules are effective for identifying the use of RDP in the environment and potential lateral movement.\n\n### Coded Finding:\n['T1110', 'T1563.002']\n\n### COT Container:\n['T1110', 'T1563.002']\n\n### TTPs:\n['T1021.001']\n\n### Algobila Configuration:\nnull\n\n### Algobila Finding:\n['T1110', 'T1563.",
+          "mapped_at": "2026-03-06 14:31:58",
+          "timing_ms": {
+            "embed_ms": 8.59,
+            "vector_query_ms": 2.31,
+            "generate_ms": 152685.09,
+            "postprocess_ms": 0.06,
+            "total_ms": 152696.07
+          }
+        }
+      }
+    },
+    {
+      "id": "d093af6b-adc6-4ff4-9146-3fa6c61a0e2c",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.343178}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) indicates suspicious network activity that should be monitored.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:44",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:34:47",
+          "timing_ms": {
+            "embed_ms": 7.61,
+            "vector_query_ms": 3.09,
+            "generate_ms": 168777.13,
+            "postprocess_ms": 0.04,
+            "total_ms": 168787.9
+          }
+        }
+      }
+    },
+    {
+      "id": "e4e9966b-d6cf-4d14-881c-a32f6af38143",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '10.100.105.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.343222}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "10.100.105.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 10.100.105.132 on port 3389 (RDP) indicates suspicious network activity that should be monitored.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:45",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:37:36",
+          "timing_ms": {
+            "embed_ms": 7.58,
+            "vector_query_ms": 2.24,
+            "generate_ms": 168981.37,
+            "postprocess_ms": 0.06,
+            "total_ms": 168991.28
+          }
+        }
+      }
+    },
+    {
+      "id": "ac497ab0-eec5-429d-bbd2-9275bdb095de",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.343329}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service access or monitoring activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:47",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1021",
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a high confidence level.\n\n### Categorization:\n- T1021: A  remote system (Command Shell [tscon.exe]) was used to hijack a RDP session.\n- T1110: Remote services (RDP) were used for.\n\n### Details:\nThe first identification has a medium confidence level since the description in the database is about stealing a session using the `tscon.exe` command, but the identification is about a connection to a port. However, the",
+          "mapped_at": "2026-03-06 14:40:09",
+          "timing_ms": {
+            "embed_ms": 8.52,
+            "vector_query_ms": 3.01,
+            "generate_ms": 152384.16,
+            "postprocess_ms": 0.04,
+            "total_ms": 152395.75
+          }
+        }
+      }
+    },
+    {
+      "id": "0cad106e-9f0f-40ba-82d4-f8a7f7352303",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.164",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.164', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.343345}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.164",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.164 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:49",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1563.002"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These are valid. The first has a medium confidence level and the second has a low confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Response:\nThese are valid. The first has a high confidence level and the second has a medium confidence level.\n\n### Categorization:\n- T1110\n- T1563.002\n\n### Reference:\nhttps://github.com/Microsoft/thmeng/blob/main/Threat-Hunting-for-Actian",
+          "mapped_at": "2026-03-06 14:42:41",
+          "timing_ms": {
+            "embed_ms": 8.3,
+            "vector_query_ms": 2.39,
+            "generate_ms": 152322.68,
+            "postprocess_ms": 0.06,
+            "total_ms": 152333.45
+          }
+        }
+      }
+    },
+    {
+      "id": "c517a99e-892f-4f11-881b-2bba892ba7e7",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '192.168.220.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.352149}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "192.168.220.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 192.168.220.132 on port 3389 (RDP) was observed, indicating potential suspicious RDP service access or attack activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:50",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These rules are effective for identifying the use of RDP in the environment and can be added to your IDS/IPS or log files. The first rule is for a connection to the RDP port (3389) and the second rule is for a connection to a legitimate RDP session.\n\n### Rules:\nRule 1: 101281.001 – RDP on non-standard port 10128.1.0: The threat actor is attempting to connect to a non-standard port. This rule will alert on any connection to 1012",
+          "mapped_at": "2026-03-06 14:45:14",
+          "timing_ms": {
+            "embed_ms": 8.37,
+            "vector_query_ms": 2.65,
+            "generate_ms": 153040.06,
+            "postprocess_ms": 0.04,
+            "total_ms": 153051.14
+          }
+        }
+      }
+    },
+    {
+      "id": "59f00653-7bd0-4f4e-95d5-8fa0f3a2eee2",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.176",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.132",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.176', 'dst_ip': '10.100.104.132', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.352171}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.176",
+      "destination_ip": "10.100.104.132",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.176 to 10.100.104.132 on port 3389 (RDP) indicates suspicious network activity that may warrant further investigation.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:52",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']",
+          "mapped_at": "2026-03-06 14:46:00",
+          "timing_ms": {
+            "embed_ms": 7.79,
+            "vector_query_ms": 2.83,
+            "generate_ms": 45670.05,
+            "postprocess_ms": 0.03,
+            "total_ms": 45680.72
+          }
+        }
+      }
+    },
+    {
+      "id": "c013e672-74a7-488a-9474-6679ecd5f92f",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.169 to 10.100.104.111 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.169",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.111",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.169', 'dst_ip': '10.100.104.111', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.369085}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.169",
+      "destination_ip": "10.100.104.111",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.169 to 10.100.104.111 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:54",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:48:32",
+          "timing_ms": {
+            "embed_ms": 8.17,
+            "vector_query_ms": 2.51,
+            "generate_ms": 152628.23,
+            "postprocess_ms": 0.06,
+            "total_ms": 152639.02
+          }
+        }
+      }
+    },
+    {
+      "id": "ac9fd596-25dc-4896-8b66-3c1a11f96eba",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.169 to 192.168.220.111 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.169",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.111",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.169', 'dst_ip': '192.168.220.111', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.369199}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.169",
+      "destination_ip": "192.168.220.111",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.169 to 192.168.220.111 on port 3389 (RDP) indicates suspicious network activity that should be monitored for potential abuse.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:56",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 14:51:06",
+          "timing_ms": {
+            "embed_ms": 9.36,
+            "vector_query_ms": 3.24,
+            "generate_ms": 153255.75,
+            "postprocess_ms": 0.04,
+            "total_ms": 153268.41
+          }
+        }
+      }
+    },
+    {
+      "id": "63413f20-3f98-4020-97e7-f6769093f77c",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.2.109 to 10.100.104.66 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.2.109",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.66",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.2.109', 'dst_ip': '10.100.104.66', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.369362}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.2.109",
+      "destination_ip": "10.100.104.66",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.2.109 to 10.100.104.66 on port 22 (SSH) was observed, indicating potential suspicious activity or a service requiring monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:57",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These entries are valid, but the confidence level is low. The first entry is a match, but the second is not. The second entry is a false positive.\n\n### Total Found: 1\n### Total Specified: 2\n### Confidence: 0.5\n### Provisional Finding: The following entries are valid, but the confidence level is low.\n### Action: Review these entries for potential impact to your organization.\n\n### Specific MITRE ATT&amp;CK techniques:\n['T1110']\n\n### Type: Signs/Indicators\n###",
+          "mapped_at": "2026-03-06 14:53:39",
+          "timing_ms": {
+            "embed_ms": 8.72,
+            "vector_query_ms": 3.64,
+            "generate_ms": 153339.7,
+            "postprocess_ms": 0.06,
+            "total_ms": 153352.39
+          }
+        }
+      }
+    },
+    {
+      "id": "270d4430-b735-43ea-a0d3-f73c05354dd0",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.2.109 to 192.168.220.66 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.2.109",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.66",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.2.109', 'dst_ip': '192.168.220.66', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.369477}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.2.109",
+      "destination_ip": "192.168.220.66",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.2.109 to 192.168.220.66 on port 22 (SSH) was observed, indicating potential suspicious activity or a service requiring monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:38:59",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These entries are valid, but the confidence level is low. The first entry is a match, but the second is not. The second entry is a false positive.\n\n### Total Found: 1\n### Total Specified: 2\n### Confidence: 0\n### Details:\nThe first entry is a match. The second entry is not a match.\n\n### Time:\n2021-11-11T13:28:11.000-05:00\n### System:\nThis is a RDP connection.\n### Response:",
+          "mapped_at": "2026-03-06 14:56:12",
+          "timing_ms": {
+            "embed_ms": 11.05,
+            "vector_query_ms": 2.96,
+            "generate_ms": 153140.14,
+            "postprocess_ms": 0.04,
+            "total_ms": 153154.21
+          }
+        }
+      }
+    },
+    {
+      "id": "71e6e7d2-a07e-462a-9184-02cc3b561709",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.2.109 to 192.168.220.66 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.2.109",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.66",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.2.109', 'dst_ip': '192.168.220.66', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.390471}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.2.109",
+      "destination_ip": "192.168.220.66",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.2.109 to 192.168.220.66 on port 22 (SSH) was observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:01",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1041",
+            "T1046"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1041']\n['T1046']",
+          "mapped_at": "2026-03-06 14:57:11",
+          "timing_ms": {
+            "embed_ms": 8.18,
+            "vector_query_ms": 2.44,
+            "generate_ms": 59208.07,
+            "postprocess_ms": 0.05,
+            "total_ms": 59218.76
+          }
+        }
+      }
+    },
+    {
+      "id": "8d23f1b5-0351-4617-b81b-5e556c42b0ca",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: SSH (22)",
+      "description": "Connection from 10.128.2.109 to 10.100.104.66 on port 22 (SSH). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.2.109",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.104.66",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.2.109', 'dst_ip': '10.100.104.66', 'port': 22, 'service': 'SSH', 'timestamp': 1708195881.390496}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.2.109",
+      "destination_ip": "10.100.104.66",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.2.109 to 10.100.104.66 on port 22 (SSH) is flagged as suspicious, indicating potential monitoring for attack association.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:03",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These rules are effective for identifying lateral movement attempts using SSH.\n\n### Categories:\n- IT Security\n- NetworkDetection:Low\n- SSH\n- Threat Hunting:Intermediate\n- Threat Hunting:Advanced\n- Threat Hunting:Beginner\n- Malware:None\n- Platform:Linux\n- Platform:Windows\n- Platform:MacOS\n- Platform:Unix\n- Platform:Docker\n- Platform:Container\n- Platform:Windows:Windows Defender\n- Platform:Windows:Proton\n- Platform:Windows:Windows Defender",
+          "mapped_at": "2026-03-06 14:59:44",
+          "timing_ms": {
+            "embed_ms": 10.39,
+            "vector_query_ms": 2.65,
+            "generate_ms": 152863.37,
+            "postprocess_ms": 0.06,
+            "total_ms": 152876.52
+          }
+        }
+      }
+    },
+    {
+      "id": "950afeeb-5cd2-4018-8d10-25674cc8f0f4",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.391866}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) is observed, indicating potential suspicious activity or a service that requires monitoring.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:04",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 15:02:17",
+          "timing_ms": {
+            "embed_ms": 8.68,
+            "vector_query_ms": 3.1,
+            "generate_ms": 152993.76,
+            "postprocess_ms": 0.06,
+            "total_ms": 153005.62
+          }
+        }
+      }
+    },
+    {
+      "id": "e16051b7-d407-4f6d-9d12-d9fe4d969278",
+      "severity": "medium",
+      "title": "Connection to Suspicious Port: RDP (3389)",
+      "description": "Connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP). This port is commonly associated with attacks or services that should be monitored.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.113",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.241",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'suspicious_port', 'src_ip': '10.128.1.113', 'dst_ip': '192.168.220.241', 'port': 3389, 'service': 'RDP', 'timestamp': 1708195881.391917}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.113",
+      "destination_ip": "192.168.220.241",
+      "protocol": "TCP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A connection from 10.128.1.113 to 192.168.220.241 on port 3389 (RDP) was observed, indicating potential suspicious activity or unauthorized remote access.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:06",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1110",
+            "T1110.001"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1110']\n['T1110.001']\n['T1110.001']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']\n['T1110']",
+          "mapped_at": "2026-03-06 15:04:51",
+          "timing_ms": {
+            "embed_ms": 8.6,
+            "vector_query_ms": 2.57,
+            "generate_ms": 153702.71,
+            "postprocess_ms": 0.06,
+            "total_ms": 153713.99
+          }
+        }
+      }
+    },
+    {
+      "id": "9c8774a9-ca02-453a-9c96-39ada8993395",
+      "severity": "high",
+      "title": "Potential Port Scan from 10.128.1.117",
+      "description": "Host 10.128.1.117 connected to 65 unique ports, which may indicate port scanning activity. Sample ports: [10242, 20995, 37763, 47623, 12807, 41480, 53258, 12556, 16525, 14604]",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.117",
+          "asset_type": "source_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'port_scan', 'src_ip': '10.128.1.117', 'unique_ports': 65, 'sample_ports': [10242, 20995, 37763, 47623, 12807, 41480, 53258, 12556, 16525, 14604]}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.117",
+      "destination_ip": null,
+      "protocol": "TCP/UDP",
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "Host 10.128.1.117 connected to 65 unique ports, indicating potential port scanning activity for service discovery.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:07",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1041"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "This sample has a moderate confidence level for T1041: 'Leveraging a known user credential to access a host or service'.\n\n### Response:\nThis sample has a moderate confidence level for T1041: 'Leveraging a known user credential to access a host or service'.\n\n### Response:\nThis sample has a moderate confidence level for T1041: 'Leveraging a known user credential to access a host or service'.\n\n### Response:\nThis sample has a moderate confidence level for T1041: 'Leveraging a known",
+          "mapped_at": "2026-03-06 15:08:30",
+          "timing_ms": {
+            "embed_ms": 7.78,
+            "vector_query_ms": 17.97,
+            "generate_ms": 218750.9,
+            "postprocess_ms": 0.04,
+            "total_ms": 218776.72
+          }
+        }
+      }
+    },
+    {
+      "id": "d4c64024-add3-4ebd-82ee-274d581c5ae0",
+      "severity": "medium",
+      "title": "High Connection Volume: 91.189.91.39 → 10.100.105.2",
+      "description": "Detected 6332 connections from 91.189.91.39 to 10.100.105.2. This could indicate a DoS attempt, data exfiltration, or legitimate high-traffic application.",
+      "affected_assets": [
+        {
+          "identifier": "91.189.91.39",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "10.100.105.2",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'connection_flood', 'src_ip': '91.189.91.39', 'dst_ip': '10.100.105.2', 'connection_count': 6332}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "91.189.91.39",
+      "destination_ip": "10.100.105.2",
+      "protocol": null,
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A high volume of 6332 connections from 91.189.91.39 to 10.100.105.2 indicates a potential denial-of-service attempt or data exfiltration activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:09",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These techniques can be used as part of a network or endpoint denial of service.\n\n### Suggested mitigation:\nMonitor for high volumes of connections from a single source IP address to a single internal system.\n\n### Confidence:\nMedium\n\n### Provisional Finding:\nThe threat actor used a script named 0x1010a10e1e1010.ps1 to delete temporary files in the %TEMP%\\<unique identifier> path.\n\n### Response:\nThis script is a destruction action to reduce the visibility of their presence on a",
+          "mapped_at": "2026-03-06 15:12:42",
+          "timing_ms": {
+            "embed_ms": 8.14,
+            "vector_query_ms": 30.69,
+            "generate_ms": 252387.11,
+            "postprocess_ms": 0.05,
+            "total_ms": 252426.01
+          }
+        }
+      }
+    },
+    {
+      "id": "7f28a3d2-5825-4cd2-975a-ae808dc7d30e",
+      "severity": "medium",
+      "title": "High Connection Volume: 91.189.91.39 → 192.168.220.73",
+      "description": "Detected 1862 connections from 91.189.91.39 to 192.168.220.73. This could indicate a DoS attempt, data exfiltration, or legitimate high-traffic application.",
+      "affected_assets": [
+        {
+          "identifier": "91.189.91.39",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.73",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'connection_flood', 'src_ip': '91.189.91.39', 'dst_ip': '192.168.220.73', 'connection_count': 1862}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "91.189.91.39",
+      "destination_ip": "192.168.220.73",
+      "protocol": null,
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A high volume of 1862 connections from 91.189.91.39 to 192.168.220.73 was detected, which could indicate a denial-of-service attempt or data exfiltration.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:11",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1518.001",
+            "T1041",
+            "T1010.003",
+            "T1106",
+            "T1110",
+            "T1127",
+            "T1573.002",
+            "T1106.001",
+            "T1129",
+            "T1129.001"
+          ],
+          "validation_passed": false,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "['T1518.001']\n['T1041']\n['T1010.003']\n['T1106']\n['T1110']\n['T1127']\n['T1573.002']\n['T1106.001']\n['T1107']\n['T1122']\n['T1129']\n['T1107.001']\n['T1129.001']",
+          "mapped_at": "2026-03-06 15:14:45",
+          "timing_ms": {
+            "embed_ms": 8.75,
+            "vector_query_ms": 16.68,
+            "generate_ms": 122796.96,
+            "postprocess_ms": 0.06,
+            "total_ms": 122822.51
+          }
+        }
+      }
+    },
+    {
+      "id": "8c3dfaa3-81c8-4ba7-8d57-c151ac0291a6",
+      "severity": "medium",
+      "title": "High Connection Volume: 192.168.220.73 → 91.189.91.39",
+      "description": "Detected 642 connections from 192.168.220.73 to 91.189.91.39. This could indicate a DoS attempt, data exfiltration, or legitimate high-traffic application.",
+      "affected_assets": [
+        {
+          "identifier": "192.168.220.73",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "91.189.91.39",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'connection_flood', 'src_ip': '192.168.220.73', 'dst_ip': '91.189.91.39', 'connection_count': 642}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "192.168.220.73",
+      "destination_ip": "91.189.91.39",
+      "protocol": null,
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A high volume of 642 connections from 192.168.220.73 to 91.189.91.39 indicates a potential denial-of-service attempt or data exfiltration activity.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:13",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1499",
+            "T1498"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These techniques are not directly mapped to the given log, but the log may be related to T1499 (Endpoint Denial of Service) and T1498 (Network Denial of Service) as the log describes a high volume of connections to a single IP address.\n\n### Response for older versions:\nThese techniques are not directly mapped to the given log.\n\n### Synenga Malware Family:\nThe Synenga malware family is a C2-driven malware that is capable of downloading and uploading files, and taking screenshots.\n\n### Synenga Mal",
+          "mapped_at": "2026-03-06 15:17:30",
+          "timing_ms": {
+            "embed_ms": 7.95,
+            "vector_query_ms": 2.79,
+            "generate_ms": 164667.18,
+            "postprocess_ms": 0.06,
+            "total_ms": 164678.02
+          }
+        }
+      }
+    },
+    {
+      "id": "ef9b6417-d5e7-4977-b7ab-80838e6fa341",
+      "severity": "medium",
+      "title": "High Connection Volume: 10.100.105.2 → 91.189.91.39",
+      "description": "Detected 642 connections from 10.100.105.2 to 91.189.91.39. This could indicate a DoS attempt, data exfiltration, or legitimate high-traffic application.",
+      "affected_assets": [
+        {
+          "identifier": "10.100.105.2",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "91.189.91.39",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'connection_flood', 'src_ip': '10.100.105.2', 'dst_ip': '91.189.91.39', 'connection_count': 642}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.100.105.2",
+      "destination_ip": "91.189.91.39",
+      "protocol": null,
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A high volume of 642 connections from 10.100.105.2 to 91.189.91.39 was detected, which could indicate a denial-of-service attempt or data exfiltration.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:14",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [
+            "T1016.001",
+            "T1498"
+          ],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These techniques are not directly attributable to any one group\n['T1016.001', 'T1498']",
+          "mapped_at": "2026-03-06 15:18:53",
+          "timing_ms": {
+            "embed_ms": 8.96,
+            "vector_query_ms": 2.67,
+            "generate_ms": 83399.6,
+            "postprocess_ms": 0.04,
+            "total_ms": 83411.3
+          }
+        }
+      }
+    },
+    {
+      "id": "050ec9b2-12fb-4531-82ea-cc6242409940",
+      "severity": "medium",
+      "title": "High Connection Volume: 10.128.1.179 → 192.168.220.30",
+      "description": "Detected 111 connections from 10.128.1.179 to 192.168.220.30. This could indicate a DoS attempt, data exfiltration, or legitimate high-traffic application.",
+      "affected_assets": [
+        {
+          "identifier": "10.128.1.179",
+          "asset_type": "source_host",
+          "details": null
+        },
+        {
+          "identifier": "192.168.220.30",
+          "asset_type": "destination_host",
+          "details": null
+        }
+      ],
+      "raw_excerpt": "{'type': 'connection_flood', 'src_ip': '10.128.1.179', 'dst_ip': '192.168.220.30', 'connection_count': 111}",
+      "cve_ids": [],
+      "cvss_score": null,
+      "recommendations": [],
+      "references": [],
+      "source_ip": "10.128.1.179",
+      "destination_ip": "192.168.220.30",
+      "protocol": null,
+      "timestamp_observed": null,
+      "metadata": {
+        "technical_summary": "A high volume of 111 connections from 10.128.1.179 to 192.168.220.30 could indicate a denial-of-service attempt or data exfiltration.",
+        "summary_source": "llm",
+        "summary_generated_at": "2026-03-06 12:39:16",
+        "summary_prompt_version": "summary_v3",
+        "summary_model": "gemini-2.5-flash",
+        "mitre_mapping": {
+          "mitre_ids": [],
+          "validation_passed": true,
+          "routing_mode": "local",
+          "mapping_agent": "Mistral-7B-LoRA",
+          "db_context": "Actian-VectorAI",
+          "framework": "enterprise 18.1",
+          "retrieved_examples": 2,
+          "raw_model_output": "These two rules have a low similarity to each other, and the second rule's primary technique is Network Denial of Service (DoS) and the first rule is likely related to 10.128.1.179 making many connections to 192.168.220.30.\n\n### Synenga Malware Family:\nThe Synenga malware family is a C2 malware that is capable of downloading and uploading files, and taking screenshots. It also has the ability to delete files and execute shell commands.\n\n###",
+          "mapped_at": "2026-03-06 15:21:37",
+          "timing_ms": {
+            "embed_ms": 7.72,
+            "vector_query_ms": 2.01,
+            "generate_ms": 163719.75,
+            "postprocess_ms": 0.06,
+            "total_ms": 163729.56
+          }
+        }
+      }
+    }
+  ],
+  "finding_count": 74,
+  "critical_count": 0,
+  "high_count": 1,
+  "metadata": {
+    "parser_name": "pcap_parser",
+    "parser_version": "1.0.0",
+    "processed_at": "2026-02-12T19:40:40.870666",
+    "processing_time_ms": 2998,
+    "warnings": [
+      "Stopped at 10000 packets (limit reached)"
+    ],
+    "errors": [],
+    "reporter_stats": {
+      "total_findings_summarized": 74,
+      "cache_hits": 20,
+      "cache_misses": 54,
+      "processing_timestamp": "2026-03-06 12:39:16",
+      "summary_prompt_version": "summary_v3",
+      "summary_model": "gemini-2.5-flash"
+    },
+    "mapper_stats": {
+      "total_findings_mapped": 74,
+      "skipped_no_summary": 0,
+      "routing_mode": "local",
+      "processing_timestamp": "2026-03-06 15:21:37",
+      "framework": "enterprise 18.1",
+      "vector_db_status": {
+        "connected": true,
+        "collection_exists": true,
+        "opened": true,
+        "vector_count": 694,
+        "probe_ok": true,
+        "ready": true,
+        "reason": "OK",
+        "address": "localhost:50051",
+        "collection": "mitre_v18_1"
+      },
+      "timing": {
+        "count": 74.0,
+        "avg_total_ms": 131546.07,
+        "p95_total_ms": 168859.08,
+        "max_total_ms": 252426.01,
+        "avg_embed_ms": 352.33,
+        "avg_vector_query_ms": 5.53,
+        "avg_generate_ms": 131188.13,
+        "avg_postprocess_ms": 0.05
+      },
+      "local_runtime": {
+        "require_cuda": true,
+        "configured_cuda_device": 0,
+        "embedder_device": "cuda:0",
+        "cuda_available": true,
+        "model_parameter_device": "cuda:0",
+        "generator_device_map": "{'': 0}",
+        "cuda_device_name": "NVIDIA RTX 2000 Ada Generation Laptop GPU",
+        "generation_backend": "direct_generate",
+        "max_new_tokens": 128,
+        "cuda_device_count": 1
+      }
+    }
+  },
+  "document_summary": "PCAP with 10000 packets. Protocols: TCP: 9987, UDP: 5, ICMP: 2. Unique sources: 33, Unique destinations: 33. Suspicious events detected: 74."
+}
