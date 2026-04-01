@@ -1,10 +1,10 @@
 # Section 3 — Hybrid GraphRAG (Gemini + Neo4j)
 
-Ingest hardening guidance from PDFs into a Neo4j graph, then correlate Section 2 **mapped** findings (`data/mapped`) using a **single native Cypher** three-way filter (MITRE + tech stack + vector similarity).
+Ingest hardening guidance from PDFs and NIST OSCAL JSON into a Neo4j graph, then correlate Section 2 **mapped** findings (`data/mapped`) using a **composite-scored Cypher** query that combines vector similarity, MITRE ATT&CK matching, and vendor/tech-stack filtering — returning ranked top-N candidates per finding.
 
 ## Prerequisites
 
-1. **Environment** — use the repo-root `.env` you already have; ensure `GOOGLE_API_KEY` is set for Gemini. For Neo4j and paths, merge any missing keys from `.env.example` (Section 3 block). **Embeddings** use the Gemini API model **`gemini-embedding-001`** at **768** dimensions via [`embeddings_gemini.py`](embeddings_gemini.py) (`google.genai.Client.embed_content`). This avoids 404s from `langchain_google_genai.GoogleGenerativeAIEmbeddings` with legacy model ids on the v1beta `embedContent` route. **Chat** extraction still uses [`ChatGoogleGenerativeAI`](llm.py) from `langchain-google-genai`.
+1. **Environment** — use the repo-root `.env` you already have; ensure `GOOGLE_API_KEY` is set for Gemini. For Neo4j and paths, merge any missing keys from `.env.example` (Section 3 block). **Embeddings** use the Gemini API model **`gemini-embedding-001`** at **768** dimensions via [`embeddings_gemini.py`](embeddings_gemini.py) (`google.genai.Client.embed_content`). **Chat** extraction uses [`ChatGoogleGenerativeAI`](llm.py) from `langchain-google-genai`.
 2. **Neo4j 5.13+** — vector indexes required. From repo root:
 
    ```bash
@@ -13,7 +13,7 @@ Ingest hardening guidance from PDFs into a Neo4j graph, then correlate Section 2
 
    Default Bolt: `bolt://localhost:7687`, user `neo4j`, password `changeme` (match `NEO4J_PASSWORD` in `.env`).
 
-3. **Dependencies** — single install from the project [`requirements.txt`](../../requirements.txt) (Section 3 packages are listed there **without** version pins so pip can add them without clobbering your existing Section 1 & 2 versions when possible):
+3. **Dependencies** — single install from the project [`requirements.txt`](../../requirements.txt):
 
    ```bash
    pip install -r requirements.txt
@@ -21,9 +21,11 @@ Ingest hardening guidance from PDFs into a Neo4j graph, then correlate Section 2
 
 ## Commands
 
-Run from the **repository root** (`LastMile-Sec`), with `PYTHONPATH` including the project (running `python -m` below adds the cwd automatically on Windows if you `cd` to the repo).
+Run from the **repository root** (`LastMile-Sec`).
 
-**Apply schema + ingest PDFs** (first run applies constraints and the 768-d vector index from `graph/schema.cypher`):
+### Ingest PDFs
+
+First run applies constraints and the 768-d vector index from `graph/schema.cypher`:
 
 ```bash
 python -m src.section3_rag_correlation.cli.ingest
@@ -37,10 +39,14 @@ Options:
 
 Progress / resume: `data/logs/processed_pages.log` (JSON lines per batch).
 
-**Ingest NIST OSCAL JSON** (deterministic parse; no LLM extraction). Uses padded join keys + MITRE mapping file, stores `control_id` as `NIST-AC-01` style and `vendor_product` as `NIST SP 800-53`. Progress / resume: `data/logs/processed_oscal_controls.log`.
+### Ingest NIST OSCAL JSON
+
+Deterministic parse — no LLM extraction. Uses padded join keys + MITRE mapping file, stores `control_id` as `NIST-AC-01` style and `vendor_product` as `NIST SP 800-53`. Progress / resume: `data/logs/processed_oscal_controls.log`.
 
 ```bash
-python -m src.section3_rag_correlation.cli.ingest_oscal --oscal-catalog "data/raw/RAG_Corpus/NIST_SP-800-53_rev5_catalog.json" --attack-mapping "data/raw/RAG_Corpus/nist_800_53-rev5_attack-16.1-enterprise_json.json"
+python -m src.section3_rag_correlation.cli.ingest_oscal \
+  --oscal-catalog "data/raw/RAG_Corpus/NIST_SP-800-53_rev5_catalog.json" \
+  --attack-mapping "data/raw/RAG_Corpus/nist_800_53-rev5_attack-16.1-enterprise_json.json"
 ```
 
 Options:
@@ -48,9 +54,18 @@ Options:
 - `--attack-mapping PATH` — optional; omit to load controls without MITRE edges from this file.
 - `--no-schema` — skip applying `schema.cypher`.
 - `--limit-controls N` — merge at most N controls (smoke test).
-- `--log PATH` — override progress log (default `data/logs/processed_oscal_controls.log`).
+- `--log PATH` — override progress log.
 
-**Correlate** enriched JSON (default directory `data/mapped`). Injects `metadata.rag_correlation` (similarity, vendor name, best control without `remediation_embedding`) into each correlatable finding and writes full packets to **`data/correlate`** as `{original_stem}_correlated.json` (override with `CORRELATED_JSON_DIR`). One status line per finding on stdout.
+### Correlate
+
+Correlates enriched JSON findings (default directory `data/mapped`). For each finding, the pipeline:
+
+1. Embeds a **reformulated query** (`"Security control to remediate: {summary}. MITRE ATT&CK techniques: ..."`) to bridge the observation→remediation semantic gap.
+2. Runs a **composite-scored Cypher** query with `OPTIONAL MATCH` for MITRE and vendor gates — no hard AND filtering. Each candidate receives a weighted score: `vector_similarity + mitre_boost (0.3) + vendor_boost (0.2)`.
+3. Returns **top-N candidates** (default 3) ranked by composite score.
+4. Applies a **keyword-overlap reranker** that penalizes candidates whose remediation text has zero token overlap with the finding.
+
+Results are injected into `metadata.rag_correlation` and written to `data/correlate/` as `{original_stem}_correlated.json`.
 
 ```bash
 python -m src.section3_rag_correlation.cli.correlate
@@ -60,8 +75,54 @@ Examples:
 
 ```bash
 python -m src.section3_rag_correlation.cli.correlate --json "data/mapped/your_mapped.json" --max-findings 3
-python -m src.section3_rag_correlation.cli.correlate --tech-stack "Windows Server,Meraki MS"
+python -m src.section3_rag_correlation.cli.correlate --tech-stack "Windows Server,Ubuntu Linux,NIST SP 800-53"
 ```
+
+Terminal output shows one line per finding with match flags:
+
+```
+[OK] Correlated abc-123 -> Windows Server (Score: 1.32 [MITRE+vendor])
+```
+
+### Output schema
+
+Each correlated finding gets this structure in `metadata.rag_correlation`:
+
+```json
+{
+  "similarity_score": 0.82,
+  "composite_score": 1.32,
+  "vendor_name": "Windows Server",
+  "best_control": { "control_id": "...", "remediation_steps": "...", ... },
+  "mitre_matched": true,
+  "vendor_matched": true,
+  "candidates": [
+    {
+      "vector_similarity": 0.82,
+      "composite_score": 1.32,
+      "mitre_matched": true,
+      "vendor_matched": true,
+      "matched_mitre_ids": ["T1110"],
+      "vendor_name": "Windows Server",
+      "control": { "control_id": "...", "remediation_steps": "...", ... }
+    }
+  ]
+}
+```
+
+The `remediation_embedding` (768 floats) is stripped from all control objects before writing.
+
+## Correlation engine
+
+The Cypher query uses `OPTIONAL MATCH` so that MITRE and vendor gates degrade gracefully:
+
+- A control with a matching MITRE technique gets a **+0.3 boost**.
+- A control from a matching vendor gets a **+0.2 boost**.
+- Controls that match neither still appear (ranked by vector similarity alone), ensuring the pipeline never returns empty when relevant controls exist.
+
+Vendor matching uses both exact and `CONTAINS`-based partial matching, so "windows" in the tech stack matches both "Windows" and "Windows Server" vendor nodes. `NIST SP 800-53` is included in the default tech stack so framework-level controls are always considered.
+
+After Cypher retrieval, a lightweight keyword-overlap reranker penalizes candidates whose remediation text shares no meaningful tokens with the finding's technical summary, pushing irrelevant noise down the ranking.
 
 ## Graph model
 
@@ -75,16 +136,17 @@ python -m src.section3_rag_correlation.cli.correlate --tech-stack "Windows Serve
 
 | Path | Role |
 |------|------|
-| `data/raw/RAG_Corpus` | PDF corpus for ingestion |
+| `data/raw/RAG_Corpus` | PDF + NIST JSON corpus for ingestion |
 | `data/mapped/*.json` | Section 2 output (`technical_summary`, `mitre_mapping.mitre_ids`) |
-| `data/processed` | Section 1 only — **not** used for correlation |
+| `data/correlate/*.json` | Section 3 output (correlated findings with top-N candidates) |
+| `data/logs/` | Ingestion progress logs (PDF + OSCAL) |
 
 ## Tests
 
-From repo root (PowerShell: `$env:PYTHONPATH="."`; bash: `export PYTHONPATH=.`):
+From repo root:
 
 ```bash
 python -m pytest tests/section3 -v
 ```
 
-Covers progress log resume, `merge_security_control` (mocked Neo4j), unified correlation Cypher, enriched JSON parsing, and index-name validation (no live Neo4j or Gemini required).
+Covers progress log resume, `merge_security_control` (mocked Neo4j), composite-scored Cypher structure, query text reformulation, keyword reranker, enriched JSON parsing, candidate serialization, and index-name validation (no live Neo4j or Gemini required).

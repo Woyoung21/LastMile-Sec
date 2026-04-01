@@ -57,7 +57,7 @@ VECTOR_QUERY_TOP_K: int = _int("VECTOR_QUERY_TOP_K", 100)
 
 # --- Correlation ---
 GLOBAL_TECH_STACK: list[str] = _tech_stack_list(
-    os.environ.get("GLOBAL_TECH_STACK", "Windows Server,Meraki MS,M365")
+    os.environ.get("GLOBAL_TECH_STACK", "Windows Server,Meraki MS,M365,NIST SP 800-53")
 )
 
 

@@ -15,7 +15,11 @@ from src.section3_rag_correlation.correlation.enriched_input import (
     iter_enriched_findings_from_data,
     load_mapped_packet,
 )
-from src.section3_rag_correlation.correlation.three_way_filter import correlate_finding, normalized_tech_stack
+from src.section3_rag_correlation.correlation.three_way_filter import (
+    CandidateControl,
+    correlate_finding,
+    normalized_tech_stack,
+)
 from src.section3_rag_correlation.graph.neo4j_client import get_driver
 
 
@@ -44,6 +48,22 @@ def _best_control_for_output(control: dict[str, Any] | None) -> dict[str, Any] |
     c = copy(control)
     c.pop("remediation_embedding", None)
     return _json_safe(c)
+
+
+def _candidate_to_dict(cand: CandidateControl) -> dict[str, Any]:
+    """Serialize one candidate for JSON output."""
+    vendor_name = None
+    if cand.vendor:
+        vendor_name = cand.vendor.get("name")
+    return {
+        "vector_similarity": cand.vector_similarity,
+        "composite_score": cand.composite_score,
+        "mitre_matched": cand.mitre_matched,
+        "vendor_matched": cand.vendor_matched,
+        "matched_mitre_ids": cand.matched_mitre,
+        "vendor_name": vendor_name,
+        "control": _best_control_for_output(cand.control),
+    }
 
 
 def _write_correlated_packet(input_path: Path, data: dict[str, Any]) -> Path:
@@ -90,23 +110,48 @@ def run_correlate(
 
                 result = correlate_finding(driver, finding, tech_stack=ts)
                 meta = raw.setdefault("metadata", {})
-                vendor_name = None
-                if result.vendor:
-                    vendor_name = result.vendor.get("name")
+
+                best = result.best
+                best_vendor = None
+                best_score = None
+                if best:
+                    if best.vendor:
+                        best_vendor = best.vendor.get("name")
+                    best_score = best.composite_score
+
+                _FRAMEWORK_VENDOR = "NIST SP 800-53"
+                vendor_cands = [
+                    c for c in result.candidates
+                    if c.vendor and c.vendor.get("name") != _FRAMEWORK_VENDOR
+                ]
+                framework_cands = [
+                    c for c in result.candidates
+                    if not c.vendor or c.vendor.get("name") == _FRAMEWORK_VENDOR
+                ]
+
                 meta["rag_correlation"] = {
                     "similarity_score": result.similarity,
-                    "vendor_name": vendor_name,
+                    "composite_score": best_score,
+                    "vendor_name": best_vendor,
                     "best_control": _best_control_for_output(result.control),
+                    "mitre_matched": best.mitre_matched if best else False,
+                    "vendor_matched": best.vendor_matched if best else False,
+                    "vendor_controls": [_candidate_to_dict(c) for c in vendor_cands],
+                    "framework_controls": [_candidate_to_dict(c) for c in framework_cands],
                 }
 
                 score_part = (
-                    f"{result.similarity:.2f}"
-                    if result.similarity is not None
-                    else "n/a"
+                    f"{best_score:.2f}" if best_score is not None else "n/a"
                 )
-                v_disp = vendor_name if vendor_name else "—"
+                v_disp = best_vendor if best_vendor else "—"
+                flags = []
+                if best and best.mitre_matched:
+                    flags.append("MITRE")
+                if best and best.vendor_matched:
+                    flags.append("vendor")
+                flag_str = f" [{'+'.join(flags)}]" if flags else ""
                 print(
-                    f"[OK] Correlated {finding.finding_id} -> {v_disp} (Score: {score_part})"
+                    f"[OK] Correlated {finding.finding_id} -> {v_disp} (Score: {score_part}{flag_str})"
                 )
                 n += 1
 
