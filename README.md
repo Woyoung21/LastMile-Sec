@@ -17,7 +17,7 @@ A 4-stage AI pipeline that automates the "last mile" of security remediation:
 | **1. Ingestion** | Parse PDFs, CSV, PCAP → Normalized JSON | Complete |
 | **2. Reporter & Mapper** | Summarize events (Gemini) → Map to MITRE ATT&CK IDs (Mistral LoRA + Actian VectorAI RAG) | Complete |
 | **3. Correlation + RAG** | Ingest hardening docs into Neo4j graph → Composite-scored correlation (MITRE + vendor + vector similarity) → Top-N remediation candidates per finding | Complete |
-| **4. Output** | Step-by-step instructions for L1/L2 engineers | Planned |
+| **4. Remediation + Self-RAG** | LLM-generated vendor-tailored remediation with Self-RAG hallucination verification | Complete |
 
 ## Setup
 
@@ -79,39 +79,49 @@ LastMile-Sec/
 │   │   ├── mapper.py                  # Mapper Agent (Mistral LoRA + VectorAI RAG)
 │   │   ├── config.py                  # API keys, models, thresholds
 │   │   └── prompts.py                 # LLM prompt templates
-│   └── section3_rag_correlation/
+│   ├── section3_rag_correlation/
+│   │   ├── cli/
+│   │   │   ├── ingest.py              # PDF → Neo4j ingestion CLI
+│   │   │   ├── ingest_oscal.py        # NIST OSCAL JSON → Neo4j ingestion CLI
+│   │   │   └── correlate.py           # Three-way correlation CLI
+│   │   ├── correlation/
+│   │   │   ├── enriched_input.py      # Load Section 2 mapped JSON findings
+│   │   │   └── three_way_filter.py    # Composite-scored Cypher + reranker
+│   │   ├── graph/
+│   │   │   ├── neo4j_client.py        # Neo4j driver + schema application
+│   │   │   ├── merge_controls.py      # Idempotent MERGE for controls
+│   │   │   └── schema.cypher          # Constraints + 768-d vector index
+│   │   ├── ingestion/
+│   │   │   ├── extract.py             # Gemini 2.5 Flash structured extraction
+│   │   │   ├── pdf_batches.py         # PDF → multi-page batch loader
+│   │   │   ├── oscal_nist.py          # NIST OSCAL JSON parser
+│   │   │   └── progress.py            # Resume logging (PDF + OSCAL)
+│   │   ├── config.py                  # Section 3 configuration
+│   │   ├── embeddings_gemini.py       # gemini-embedding-001 (768-d)
+│   │   ├── llm.py                     # Gemini chat + embedding singletons
+│   │   └── schemas.py                 # SecurityControl Pydantic model
+│   └── section4_remediation/
 │       ├── cli/
-│       │   ├── ingest.py              # PDF → Neo4j ingestion CLI
-│       │   ├── ingest_oscal.py        # NIST OSCAL JSON → Neo4j ingestion CLI
-│       │   └── correlate.py           # Three-way correlation CLI
-│       ├── correlation/
-│       │   ├── enriched_input.py      # Load Section 2 mapped JSON findings
-│       │   └── three_way_filter.py    # Composite-scored Cypher + reranker
-│       ├── graph/
-│       │   ├── neo4j_client.py        # Neo4j driver + schema application
-│       │   ├── merge_controls.py      # Idempotent MERGE for controls
-│       │   └── schema.cypher          # Constraints + 768-d vector index
-│       ├── ingestion/
-│       │   ├── extract.py             # Gemini 2.5 Flash structured extraction
-│       │   ├── pdf_batches.py         # PDF → multi-page batch loader
-│       │   ├── oscal_nist.py          # NIST OSCAL JSON parser
-│       │   └── progress.py            # Resume logging (PDF + OSCAL)
-│       ├── config.py                  # Section 3 configuration
-│       ├── embeddings_gemini.py       # gemini-embedding-001 (768-d)
-│       ├── llm.py                     # Gemini chat + embedding singletons
-│       └── schemas.py                 # SecurityControl Pydantic model
+│       │   └── remediate.py           # Section 4 CLI (generate + verify)
+│       ├── config.py                  # Section 4 configuration + Self-RAG thresholds
+│       ├── generator.py               # Gemini structured remediation generation
+│       ├── prompts.py                 # Prompt templates (generation, grounding judge, retry)
+│       ├── schemas.py                 # RemediationOutput, VerificationResult models
+│       └── selfrag.py                 # Self-RAG verifier (grounding + relevance + completeness)
 ├── tests/
 │   ├── test_section1.py               # Section 1 unit tests
 │   ├── test_reporter.py               # Reporter unit tests
 │   ├── test_mapper.py                 # Mapper unit tests
 │   ├── manual_integration_test.py     # End-to-end pipeline test
-│   └── section3/                      # Section 3 unit tests (40 tests, no live Neo4j)
+│   ├── section3/                      # Section 3 unit tests (40 tests, no live Neo4j)
+│   └── section4/                      # Section 4 unit tests (38 tests, mocked LLM)
 ├── data/
 │   ├── raw/                           # Input files (not committed)
 │   │   └── RAG_Corpus/                # PDF + NIST JSON corpus for Section 3
 │   ├── processed/                     # Section 1 output (normalized JSON)
 │   ├── mapped/                        # Section 2 output (enriched with MITRE IDs)
 │   ├── correlate/                     # Section 3 output (*_correlated.json)
+│   ├── remediated/                    # Section 4 output (*_remediated.json)
 │   ├── cache/                         # Reporter summary cache
 │   └── logs/                          # Ingestion progress logs
 └── Weekly Review/                     # Project documentation
@@ -182,6 +192,52 @@ python -m src.section3_rag_correlation.cli.correlate --tech-stack "Windows Serve
 Correlated output is written to `data/correlate/` with a `_correlated.json` suffix. Each finding's `metadata.rag_correlation` block contains the top-N ranked candidates with composite scores, MITRE/vendor match flags, and sanitized control details.
 
 See [`src/section3_rag_correlation/README.md`](src/section3_rag_correlation/README.md) for the full Section 3 reference.
+
+### Section 4: Remediation Generation + Self-RAG Verification
+
+Requires `GOOGLE_API_KEY` set. Reads `_correlated.json` from Section 3 and produces `_remediated.json` with vendor-tailored L1/L2 remediation steps.
+
+```powershell
+# Generate remediation for all correlated findings
+python -m src.section4_remediation.cli.remediate
+
+# Single file with limited findings
+python -m src.section4_remediation.cli.remediate --json "data/correlate/your_correlated.json" --max-findings 5
+
+# Override tech stack
+python -m src.section4_remediation.cli.remediate --tech-stack "Windows Server,Ubuntu Linux,NIST SP 800-53"
+
+# Skip LLM-as-judge grounding (faster, heuristic-only verification)
+python -m src.section4_remediation.cli.remediate --skip-llm-judge
+```
+
+Output is written to `data/remediated/` with a `_remediated.json` suffix. Each finding's `metadata.remediation` block contains:
+
+- **steps** -- ordered remediation steps with title, command/action, explanation, and vendor
+- **priority** -- critical/high/medium/low
+- **estimated_effort** -- time estimate for the engineer
+- **prerequisites** -- access or tools needed
+- **verification_procedure** -- how to confirm the fix
+- **source_control_ids** -- traceability back to the ingested controls
+- **selfrag_verification** -- grounding, relevance, and completeness scores with pass/fail status
+
+The Self-RAG verification loop checks each generated remediation for:
+1. **Grounding** -- steps must be supported by the source control text (token overlap + LLM judge)
+2. **Relevance** -- steps must address the finding's technical summary and MITRE techniques
+3. **Completeness** -- steps must reference the top correlated controls
+
+If verification fails, the generator retries with augmented feedback (up to `SELFRAG_MAX_RETRIES`, default 2).
+
+See [`src/section4_remediation/README.md`](src/section4_remediation/README.md) for the full Section 4 reference.
+
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
+| `SELFRAG_GROUNDING_THRESHOLD` | `0.7` | Minimum grounding score to pass |
+| `SELFRAG_RELEVANCE_THRESHOLD` | `0.5` | Minimum relevance score to pass |
+| `SELFRAG_COMPLETENESS_THRESHOLD` | `0.5` | Minimum completeness score to pass |
+| `SELFRAG_MAX_RETRIES` | `2` | Max retry attempts on verification failure |
+| `REMEDIATION_LLM_TEMPERATURE` | `0.2` | LLM temperature for generation |
+| `REMEDIATED_JSON_DIR` | `data/remediated` | Output directory |
 
 ### Run Tests
 
