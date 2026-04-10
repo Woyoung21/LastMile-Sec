@@ -16,6 +16,7 @@ from src.section4_remediation.cli.remediate import (
 )
 from src.section4_remediation.schemas import (
     RemediationOutput,
+    RemediationProvenance,
     RemediationStep,
     VerificationResult,
 )
@@ -93,7 +94,8 @@ def test_write_remediated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
     )
     data = {"findings": []}
     out = _write_remediated(Path("test_correlated.json"), data)
-    assert out.name == "test_remediated.json"
+    assert out.name.startswith("test_remediated_")
+    assert out.name.endswith(".json")
     assert out.exists()
     loaded = json.loads(out.read_text())
     assert loaded == data
@@ -105,7 +107,8 @@ def test_write_remediated_strips_correlated_suffix(tmp_path: Path, monkeypatch: 
         tmp_path,
     )
     out = _write_remediated(Path("report_mapped_correlated.json"), {"x": 1})
-    assert out.name == "report_mapped_remediated.json"
+    assert out.name.startswith("report_mapped_remediated_")
+    assert out.name.endswith(".json")
 
 
 @patch("src.section4_remediation.cli.remediate.generate_with_verification")
@@ -136,7 +139,11 @@ def test_run_remediate_end_to_end(
         passed=True,
         attempts=1,
     )
-    mock_gwv.return_value = (mock_output, mock_vr)
+    mock_gwv.return_value = (
+        mock_output,
+        mock_vr,
+        RemediationProvenance(mode="graph_only"),
+    )
 
     input_file = tmp_path / "test_correlated.json"
     input_file.write_text(json.dumps(_sample_correlated_data()))
@@ -144,7 +151,7 @@ def test_run_remediate_end_to_end(
     run_remediate(json_path=input_file, skip_llm_judge=True)
 
     out_dir = tmp_path / "out"
-    remediated = list(out_dir.glob("*_remediated.json"))
+    remediated = list(out_dir.glob("*_remediated_*.json"))
     assert len(remediated) == 1
     data = json.loads(remediated[0].read_text())
     finding = data["findings"][0]

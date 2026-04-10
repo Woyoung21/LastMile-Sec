@@ -160,91 +160,110 @@
           "framework_controls": []
         },
         "remediation": {
-          "executive_summary": "The finding indicates suspicious RDP activity, potentially linked to brute force attempts (T1110) or RDP session hijacking (T1563.002). This remediation focuses on hardening Windows Server security settings by restricting anonymous access and configuring the Windows Firewall to reduce the attack surface for RDP and other services. These steps will help prevent unauthorized enumeration of accounts and shares, making brute-force attacks more difficult, and improve overall network security.",
+          "executive_summary": "Suspicious RDP activity from an unknown IP address (10.128.1.13) to an internal server (192.168.220.132) on port 3389 suggests potential unauthorized access or reconnaissance. This remediation plan focuses on hardening Windows Server network access and firewall configurations to prevent anonymous access and restrict inbound connections, thereby reducing the attack surface for RDP-related attacks. Implementing these steps will help mitigate brute-force attempts and unauthorized lateral movement.",
           "limitations": [],
           "steps": [
             {
               "step_number": 1,
-              "title": "Disable 'Network access: Let Everyone permissions apply to anonymous users'",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
-              "explanation": "Disabling this setting prevents anonymous users from being treated as members of the 'Everyone' group. This significantly limits the permissions available to unauthenticated connections, making it harder for attackers to enumerate resources or perform brute-force attacks (T1110) against RDP or other services, thereby reducing the risk of unauthorized access.",
-              "vendor_product": "Windows Server",
+              "title": "Harden Network Access: Disable 'Let Everyone permissions apply to anonymous users'",
+              "command_or_action": "Set 'Network access: Let Everyone permissions apply to anonymous users' to 'Disabled'.",
+              "explanation": "This setting prevents anonymous users from being treated as members of the 'Everyone' group, which could grant them unintended permissions and aid in reconnaissance or privilege escalation. Disabling this reduces the attack surface for anonymous access, making it harder for attackers to gain initial footholds or gather information.",
+              "vendor_product": "Windows",
+              "step_type": "hardening",
               "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open 'Group Policy Management Editor' or 'Local Group Policy Editor'.",
+                "Open the Group Policy Management Editor (or Local Security Policy Editor if applying locally).",
                 "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network access: Let Everyone permissions apply to anonymous users'.",
-                "Select the 'Disabled' radio button.",
-                "Click 'Apply' and then 'OK'."
+                "Locate the policy 'Network access: Let Everyone permissions apply to anonymous users'.",
+                "Double-click the policy, select the 'Disabled' radio button, and click 'OK'.",
+                "You should see the policy status change to 'Disabled' in the policy list."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 2,
-              "title": "Enable 'Network access: Do not allow anonymous enumeration of SAM accounts and shares'",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Do not allow anonymous enumeration of SAM accounts and shares",
-              "explanation": "Enabling this policy prevents anonymous users from listing user accounts and shared folders. This directly mitigates information gathering techniques used by attackers (T1110) to identify valid usernames for brute-force attacks against RDP or other authentication mechanisms, thereby reducing the risk of RDP hijacking (T1563.002).",
+              "title": "Harden Network Access: Enable 'Do not allow anonymous enumeration of SAM accounts and shares'",
+              "command_or_action": "Set 'Network access: Do not allow anonymous enumeration of SAM accounts and shares' to 'Enabled'.",
+              "explanation": "Enabling this policy prevents anonymous users from enumerating Security Account Manager (SAM) accounts and network shares. This significantly hinders attackers attempting to gather information about user accounts and shared resources, which is often a precursor to brute-force attacks (T1110) or lateral movement.",
               "vendor_product": "Windows Server",
+              "step_type": "hardening",
               "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open 'Group Policy Management Editor' or 'Local Group Policy Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network access: Do not allow anonymous enumeration of SAM accounts and shares'.",
-                "Select the 'Enabled' radio button.",
-                "Click 'Apply' and then 'OK'."
+                "In the Group Policy Management Editor (or Local Security Policy Editor), navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
+                "Locate the policy 'Network access: Do not allow anonymous enumeration of SAM accounts and shares'.",
+                "Double-click the policy, select the 'Enabled' radio button, and click 'OK'.",
+                "You should see the policy status change to 'Enabled' in the policy list."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 3,
-              "title": "Configure Windows Firewall Domain Profile to Block Inbound Connections",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security\\Windows Firewall with Advanced Security\\Windows Firewall Properties\\Domain Profile\\Inbound connections",
-              "explanation": "Setting the default inbound connections for the Domain Profile to 'Block (default)' significantly reduces the attack surface by preventing unsolicited incoming connections. While RDP might be explicitly allowed by other rules, this default ensures that only explicitly permitted traffic can reach the server, making it harder for attackers to establish unauthorized RDP connections (T1563.002) or exploit other services.",
+              "title": "Harden Network Security: Disable 'Allow LocalSystem NULL session fallback'",
+              "command_or_action": "Set 'Network security: Allow LocalSystem NULL session fallback' to 'Disabled'.",
+              "explanation": "This setting prevents the LocalSystem account from falling back to a NULL session when attempting to access network resources. Disabling this reduces the risk of information disclosure or unauthorized access via NULL sessions, which can be exploited by attackers to gain information or access.",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open 'Group Policy Management Editor' or 'Local Group Policy Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security'.",
-                "In the right pane, right-click 'Windows Firewall with Advanced Security - Local Group Policy Object' and select 'Properties'.",
-                "Go to the 'Domain Profile' tab.",
-                "Under 'State', set 'Inbound connections' to 'Block (default)'.",
-                "Click 'Apply' and then 'OK'."
+                "In the Group Policy Management Editor (or Local Security Policy Editor), navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
+                "Locate the policy 'Network security: Allow LocalSystem NULL session fallback'.",
+                "Double-click the policy, select the 'Disabled' radio button, and click 'OK'.",
+                "You should see the policy status change to 'Disabled' in the policy list."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 4,
-              "title": "Configure Windows Firewall Public Profile to Block Inbound Connections",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security\\Windows Firewall with Advanced Security\\Windows Firewall Properties\\Public Profile\\Inbound connections",
-              "explanation": "Similar to the Domain Profile, configuring the Public Profile to 'Block (default)' inbound connections is a critical security measure, especially for systems that might be exposed to less trusted networks. This helps prevent unauthorized access attempts, including brute-force attacks (T1110) and RDP hijacking (T1563.002), by ensuring only explicitly allowed traffic can reach the server.",
-              "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties",
+              "title": "Configure Windows Firewall Domain Profile to Block Inbound Connections",
+              "command_or_action": "Set 'Windows Firewall Properties > Domain Profile > Inbound connections' to 'Block (default)'.",
+              "explanation": "Setting the default inbound action for the Domain Profile to 'Block' significantly restricts unsolicited incoming network traffic, including RDP connections, unless explicitly allowed by a specific firewall rule. This is a critical step in preventing unauthorized access and mitigating RDP brute-force attacks (T1110) and lateral movement (T1563.002).",
+              "vendor_product": "Windows Firewall",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile",
               "substeps": [
-                "Open 'Group Policy Management Editor' or 'Local Group Policy Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security'.",
-                "In the right pane, right-click 'Windows Firewall with Advanced Security - Local Group Policy Object' and select 'Properties'.",
-                "Go to the 'Public Profile' tab.",
-                "Under 'State', set 'Inbound connections' to 'Block (default)'.",
-                "Click 'Apply' and then 'OK'."
+                "In the Group Policy Management Editor (or Local Security Policy Editor), navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security'.",
+                "Right-click 'Windows Firewall with Advanced Security' in the left pane and select 'Properties'.",
+                "Click on the 'Domain Profile' tab.",
+                "Under 'State', locate 'Inbound connections' and select 'Block (default)' from the dropdown menu.",
+                "Click 'Apply' and then 'OK'. You should see the 'Inbound connections' setting for the Domain Profile updated to 'Block (default)'."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Configure Windows Firewall Public Profile to Block Inbound Connections",
+              "command_or_action": "Set 'Windows Firewall Properties > Public Profile > Inbound connections' to 'Block (default)'.",
+              "explanation": "Similar to the Domain Profile, setting the default inbound action for the Public Profile to 'Block' ensures that when the server is connected to an untrusted or public network, all unsolicited inbound connections, including RDP, are blocked by default. This provides an additional layer of security against external threats and unauthorized RDP access.",
+              "vendor_product": "Windows Firewall",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Public Profile",
+              "substeps": [
+                "In the Group Policy Management Editor (or Local Security Policy Editor), navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security'.",
+                "Right-click 'Windows Firewall with Advanced Security' in the left pane and select 'Properties'.",
+                "Click on the 'Public Profile' tab.",
+                "Under 'State', locate 'Inbound connections' and select 'Block (default)' from the dropdown menu.",
+                "Click 'Apply' and then 'OK'. You should see the 'Inbound connections' setting for the Public Profile updated to 'Block (default)'."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             }
           ],
-          "priority": "medium",
+          "priority": "high",
           "estimated_effort": "30 minutes",
           "prerequisites": [
-            "Administrative access to the Windows Server.",
-            "Access to Group Policy Management Editor (if applying via GPO) or Local Group Policy Editor (if applying locally)."
+            "Administrative access to the target Windows Server.",
+            "Access to Group Policy Management Console (GPMC) if applying via Group Policy, or Local Security Policy Editor if applying locally."
           ],
-          "verification_procedure": "After applying the changes, navigate to the specified Group Policy UI paths for each step and confirm that the settings are configured as prescribed. For Group Policy Objects, ensure the GPO has been applied and verified on the target server.",
+          "verification_procedure": "After applying the Group Policy or local security settings, run 'gpupdate /force' on the target server. Then, open the Local Security Policy Editor (or Group Policy Management Editor) and navigate to the respective UI paths for each policy. Confirm that 'Network access: Let Everyone permissions apply to anonymous users' is 'Disabled', 'Network access: Do not allow anonymous enumeration of SAM accounts and shares' is 'Enabled', and 'Network security: Allow LocalSystem NULL session fallback' is 'Disabled'. For Windows Firewall, navigate to 'Windows Firewall with Advanced Security' properties and confirm that 'Inbound connections' for both 'Domain Profile' and 'Public Profile' are set to 'Block (default)'.",
           "source_control_ids": [
-            "2.3.10.4 (L1)",
-            "2.3.10.3 (L1)",
-            "9.1.2 (L1)",
+            "2.3.10.4",
+            "2.3.10.3",
+            "2.3.11.2",
+            "9.1.2",
             "9.3.2"
           ],
           "provenance": {
@@ -252,20 +271,15 @@
           },
           "model": "gemini-2.5-flash",
           "prompt_version": "remediation_v2",
-          "generated_at": "2026-04-10T04:19:29.255060+00:00",
+          "generated_at": "2026-04-10T05:35:31.438845+00:00",
           "selfrag_verification": {
             "grounding_score": 1.0,
             "relevance_score": 0.6786,
-            "completeness_score": 0.6667,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
             "passed": true,
-            "issues": [
-              {
-                "check": "completeness",
-                "severity": "warning",
-                "message": "Top controls not referenced in output: 2.3.11.2"
-              }
-            ],
-            "attempts": 2
+            "issues": [],
+            "attempts": 1
           }
         }
       }
@@ -430,116 +444,107 @@
           ]
         },
         "remediation": {
-          "executive_summary": "The observed RDP connection from an unusual source IP (10.128.1.113) to a server (192.168.220.241) on port 3389 indicates potential unauthorized access or suspicious activity. This remediation plan outlines steps to investigate the connection, block the suspicious IP, and harden Remote Desktop Services and general network access on Windows servers. These actions align with NIST-SI-04 for system monitoring and incident response to prevent similar incidents and mitigate associated risks.",
+          "executive_summary": "The observed RDP connection indicates potential unauthorized access or suspicious activity, which could lead to credential compromise or lateral movement within the network. This remediation plan focuses on investigating the initial event, hardening Windows Server RDP configurations to prevent similar incidents, and enhancing continuous monitoring to detect future unauthorized remote access attempts. Implementing these steps will reduce the attack surface and improve detection capabilities against remote access threats.",
           "limitations": [],
           "steps": [
             {
               "step_number": 1,
-              "title": "Investigate RDP connection logs on the target server (192.168.220.241)",
-              "command_or_action": "Review Event Viewer logs for RDP logon events",
-              "explanation": "This step helps determine if the observed RDP connection from 10.128.1.113 was successful, which user account was involved, and if there were failed attempts. This investigation is crucial for understanding the scope of potential unauthorized access (T1021.001) or brute-force attempts (T1110), aligning with NIST-SI-04 for system monitoring.",
+              "title": "Investigate the suspicious RDP connection in Windows Event Logs",
+              "command_or_action": "Open Event Viewer and review Security logs for RDP-related events.",
+              "explanation": "This step helps determine the nature and scope of the suspicious RDP connection (T1021.001). By examining login attempts, successful logins, and logoffs, you can identify the user account, source IP, and time of the activity, which is crucial for understanding potential credential access (T1110) or lateral movement (T1563.002, T1563).",
               "vendor_product": "Windows Server",
+              "step_type": "investigation",
               "ui_breadcrumb": "Event Viewer > Windows Logs > Security",
               "substeps": [
-                "Open \"Event Viewer\" on the target server (192.168.220.241).",
-                "Navigate to \"Windows Logs\" > \"Security\".",
-                "Click \"Filter Current Log...\" in the Actions pane.",
-                "In the \"Event IDs:\" field, enter \"4624, 4625\" (4624 for successful logon, 4625 for failed logon).",
-                "In the \"Logged:\" dropdown, select a relevant time frame covering the observed connection (e.g., \"Last 24 hours\" or \"Last 7 days\").",
-                "Click \"OK\" to apply the filter.",
-                "Review the filtered events for entries where \"Source Network Address\" is \"10.128.1.113\" and \"Logon Type\" is \"10\" (RemoteInteractive)."
+                "Open 'Event Viewer' by searching for it in the Start menu or running 'eventvwr.msc'.",
+                "In the left pane, navigate to 'Windows Logs' and then select 'Security'.",
+                "Filter the Security log for Event IDs related to RDP logins: 4624 (Successful logon), 4625 (Failed logon), 4634 (Logoff), 4647 (User initiated logoff), and 4776 (Credential Validation). Look for entries around the time of the reported suspicious connection (10.128.1.113 to 192.168.220.241 on port 3389).",
+                "Examine the 'Source Network Address' and 'Account Name' fields within these events to identify the origin and user associated with the RDP connection. You should see details confirming or denying the reported connection and associated user activity."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 2,
-              "title": "Block the suspicious source IP (10.128.1.113) on the Palo Alto Firewall",
-              "command_or_action": "Configure a security rule to deny traffic from 10.128.1.113 to 192.168.220.241 on port 3389",
-              "explanation": "Blocking the suspicious source IP prevents further unauthorized RDP connection attempts (T1021.001) and mitigates potential brute-force attacks (T1110) from this specific address. This is a critical immediate response action as part of system monitoring and incident response, aligning with NIST-SI-04 to adjust monitoring and response based on detected risk.",
-              "vendor_product": "Palo Alto Firewall",
-              "ui_breadcrumb": "Palo Alto Networks Web Interface > Policies > Security",
+              "title": "Deny RDP logon for Guest accounts via Group Policy",
+              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\User Rights Assignment\\Deny log on through Remote Desktop Services",
+              "explanation": "Restricting RDP access for Guest accounts prevents unauthorized or anonymous users from establishing remote desktop sessions, reducing the attack surface for remote access (T1021.001) and potential credential abuse (T1110).",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > User Rights Assignment",
               "substeps": [
-                "Log in to the Palo Alto Networks firewall web interface.",
-                "Navigate to \"Policies\" > \"Security\".",
-                "Click \"Add\" to create a new security rule.",
-                "Set \"Rule Name\" to something descriptive, e.g., \"Block_Suspicious_RDP_Source_10.128.1.113\".",
-                "In the \"Source\" tab, add \"10.128.1.113\" to the \"Source Address\" and select the appropriate \"Source Zone\" (e.g., \"Untrust\" or external zone).",
-                "In the \"Destination\" tab, add \"192.168.220.241\" to the \"Destination Address\" and select the appropriate \"Destination Zone\" (e.g., \"Trust\" or internal zone).",
-                "In the \"Application\" tab, select \"ms-rdp\" or \"any\" if specific RDP application is not defined.",
-                "In the \"Service/URL Category\" tab, select \"application-default\" or \"tcp/3389\".",
-                "In the \"Action\" tab, select \"Deny\".",
-                "Click \"OK\" to save the rule.",
-                "Commit the changes to the firewall."
+                "Open 'Group Policy Management' by searching for it in the Start menu or running 'gpmc.msc'.",
+                "Navigate to the appropriate GPO linked to your Windows Servers, right-click it, and select 'Edit'.",
+                "In the Group Policy Management Editor, navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'User Rights Assignment'.",
+                "Double-click 'Deny log on through Remote Desktop Services'. Check 'Define these policy settings' and ensure 'Guests' is added to the list. Click 'OK'.",
+                "Close the Group Policy Management Editor and run 'gpupdate /force' on the target server(s) to apply the policy immediately. You should see a confirmation that the policy update completed successfully."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 3,
-              "title": "Deny log on through Remote Desktop Services for Guests",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\User Rights Assignment\\Deny log on through Remote Desktop Services",
-              "explanation": "This configuration hardens Remote Desktop Services by explicitly preventing members of the 'Guests' group from logging on via RDP. This reduces the attack surface for unauthorized access (T1021.001) and makes brute-force attacks (T1110) against default guest accounts ineffective, aligning with control 2.2.24 (L1).",
-              "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > User Rights Assignment",
+              "title": "Disable 'Network access: Let Everyone permissions apply to anonymous users' via Group Policy",
+              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
+              "explanation": "Disabling this setting prevents anonymous users from being treated as members of the 'Everyone' group, which can limit their ability to enumerate network resources or gain unauthorized access, thereby mitigating potential credential access (T1110) and remote services (T1021.001) attacks.",
+              "vendor_product": "Windows",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open \"Group Policy Management Editor\" (or \"Local Security Policy\" for standalone servers).",
-                "Navigate to \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"User Rights Assignment\".",
-                "Double-click on \"Deny log on through Remote Desktop Services\".",
-                "Click \"Add User or Group...\".",
-                "Type \"Guests\" and click \"Check Names\", then \"OK\".",
-                "Ensure \"Guests\" is listed in the policy setting.",
-                "Click \"OK\" to apply the setting.",
-                "Run `gpupdate /force` in an elevated command prompt to apply the policy immediately."
+                "Open 'Group Policy Management' by searching for it in the Start menu or running 'gpmc.msc'.",
+                "Navigate to the appropriate GPO linked to your Windows systems, right-click it, and select 'Edit'.",
+                "In the Group Policy Management Editor, navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Double-click 'Network access: Let Everyone permissions apply to anonymous users'. Select 'Disabled' and click 'OK'.",
+                "Close the Group Policy Management Editor and run 'gpupdate /force' on the target system(s) to apply the policy immediately. You should see a confirmation message indicating the policy update was successful."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 4,
-              "title": "Disable 'Network access: Let Everyone permissions apply to anonymous users'",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
-              "explanation": "Disabling this setting prevents anonymous users from being treated as members of the 'Everyone' group, thereby restricting their access to network resources. This reduces the potential for information disclosure or unauthorized access that could be leveraged in various attacks, including those related to remote services (T1021.001) or brute force (T1110), aligning with control 2.3.10.4 (L1).",
-              "vendor_product": "Windows",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback' via Group Policy",
+              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network security: Allow LocalSystem NULL session fallback",
+              "explanation": "Disabling NULL session fallback prevents services running as LocalSystem from falling back to NULL sessions when authenticating to network resources. This reduces the risk of information disclosure and unauthorized access that could be leveraged for credential access (T1110) or remote services (T1021.001) attacks.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open \"Group Policy Management Editor\" (or \"Local Security Policy\" for standalone servers).",
-                "Navigate to \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
-                "Double-click on \"Network access: Let Everyone permissions apply to anonymous users\".",
-                "Select \"Disabled\".",
-                "Click \"OK\".",
-                "Run `gpupdate /force` in an elevated command prompt to apply the policy immediately."
+                "Open 'Group Policy Management' by searching for it in the Start menu or running 'gpmc.msc'.",
+                "Navigate to the appropriate GPO linked to your Windows Servers, right-click it, and select 'Edit'.",
+                "In the Group Policy Management Editor, navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Double-click 'Network security: Allow LocalSystem NULL session fallback'. Select 'Disabled' and click 'OK'.",
+                "Close the Group Policy Management Editor and run 'gpupdate /force' on the target server(s) to apply the policy immediately. You should see a message confirming the policy update completed successfully."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 5,
-              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network security: Allow LocalSystem NULL session fallback",
-              "explanation": "Disabling NULL session fallback prevents the LocalSystem account from using NULL sessions, which can be exploited for unauthorized access or information gathering. This further hardens the system against remote access techniques (T1021.001) and reduces the overall attack surface, aligning with control 2.3.11.2.",
+              "title": "Implement continuous monitoring for unauthorized RDP connections",
+              "command_or_action": "Configure Windows Event Log collection and alerting for RDP-related security events.",
+              "explanation": "Continuous monitoring of RDP activity is critical for detecting and responding to unauthorized remote desktop access (T1021.001), brute force attempts (T1110), or lateral movement (T1563.002, T1563) in real-time. This aligns with NIST-SI-04 for system monitoring.",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "step_type": "monitoring",
+              "ui_breadcrumb": "Event Viewer > Windows Logs > Security > Filter Current Log",
               "substeps": [
-                "Open \"Group Policy Management Editor\" (or \"Local Security Policy\" for standalone servers).",
-                "Navigate to \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
-                "Double-click on \"Network security: Allow LocalSystem NULL session fallback\".",
-                "Select \"Disabled\".",
-                "Click \"OK\".",
-                "Run `gpupdate /force` in an elevated command prompt to apply the policy immediately."
+                "On your Windows Server, open 'Event Viewer' and navigate to 'Windows Logs' > 'Security'.",
+                "Right-click 'Security' and select 'Filter Current Log...'. In the 'Event IDs:' field, enter '4624, 4625, 4634, 4776' to focus on RDP login/logoff and credential validation events.",
+                "If using a SIEM or centralized logging solution (e.g., Microsoft Sentinel via Azure Monitor Agent), ensure these specific Event IDs from your Windows Servers are being collected and forwarded. Verify that the data connector for Windows Security Events is configured to ingest these logs.",
+                "Configure alerts within your SIEM or monitoring system for multiple failed RDP login attempts (Event ID 4625) from a single source IP, or successful RDP logins (Event ID 4624) from unusual source IPs or at unusual times. You should receive a test alert if a simulated suspicious RDP event occurs, confirming the monitoring is active."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             }
           ],
-          "priority": "high",
-          "estimated_effort": "1-2 hours",
+          "priority": "medium",
+          "estimated_effort": "1 hour",
           "prerequisites": [
-            "Administrative access to the target Windows Server (192.168.220.241).",
-            "Administrative access to the Palo Alto Firewall.",
-            "Understanding of Group Policy Management (if applying via GPO) or Local Security Policy."
+            "Administrative access to Windows Server instances.",
+            "Access to Group Policy Management Editor (if managing via GPO).",
+            "Access to Event Viewer on target Windows Servers.",
+            "Access to your SIEM or centralized logging solution (if applicable)."
           ],
-          "verification_procedure": "To verify the firewall rule, attempt to connect from the blocked IP (if in a controlled test environment) or confirm the rule's active status in the Palo Alto UI. For Windows policies, run `gpresult /h C:\\temp\\gpreport.html` on the target server and review the generated report to confirm the settings are applied as prescribed. Additionally, attempt to log in via RDP as a guest user (if a guest account is enabled for testing) to confirm it is denied.",
+          "verification_procedure": "After applying the Group Policy settings, verify their application by navigating to the respective UI paths in the Group Policy Management Editor or Local Security Policy on a target server and confirming the settings are 'Disabled' or 'Guests' is added. For monitoring, simulate a failed RDP login and confirm an alert is generated in your monitoring system.",
           "source_control_ids": [
             "NIST-SI-04",
             "2.2.24 (L1)",
@@ -551,19 +556,14 @@
           },
           "model": "gemini-2.5-flash",
           "prompt_version": "remediation_v2",
-          "generated_at": "2026-04-10T04:20:25.397090+00:00",
+          "generated_at": "2026-04-10T05:41:50.407509+00:00",
           "selfrag_verification": {
             "grounding_score": 1.0,
-            "relevance_score": 0.65,
+            "relevance_score": 0.9333,
             "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
             "passed": true,
-            "issues": [
-              {
-                "check": "relevance",
-                "severity": "warning",
-                "message": "MITRE IDs not referenced in steps: T1563.002, T1563"
-              }
-            ],
+            "issues": [],
             "attempts": 2
           }
         }
@@ -777,68 +777,112 @@
           ]
         },
         "remediation": {
-          "executive_summary": "An unauthorized RDP connection was observed, indicating potential suspicious activity or unauthorized remote access. This remediation plan focuses on hardening Windows Server security settings to prevent future unauthorized remote access attempts. By restricting anonymous access and enumeration capabilities, we aim to reduce the attack surface commonly exploited in brute-force and password guessing attacks (MITRE ATT&CK T1110, T1110.001).",
+          "executive_summary": "The observed RDP connection from an unknown source IP (10.128.1.113) to an internal Windows Server (192.168.220.241) on port 3389 indicates potential unauthorized access or brute-force attempts (MITRE ATT&CK T1110, T1110.001). This remediation plan outlines steps to investigate the suspicious connection, review network logs, and harden Windows Server configurations to prevent anonymous access and information enumeration, thereby reducing the attack surface for such activities.",
           "limitations": [],
           "steps": [
             {
               "step_number": 1,
-              "title": "Disable 'Network access: Let Everyone permissions apply to anonymous users'",
-              "command_or_action": "Configure Group Policy setting",
-              "explanation": "Disabling this setting prevents anonymous users from being granted the same permissions as the 'Everyone' group. This significantly reduces the ability of an unauthenticated attacker to access system resources or perform reconnaissance, thereby hindering brute-force (MITRE ATT&CK T1110) and password guessing (MITRE ATT&CK T1110.001) attempts.",
+              "title": "Investigate RDP Connection Logs on Windows Server",
+              "command_or_action": "Review Windows Security Event Logs for RDP connection attempts.",
+              "explanation": "This step helps determine if the suspicious RDP connection was successful, which user account was involved, and if there were multiple failed login attempts indicative of brute-force activity (MITRE ATT&CK T1110, T1110.001).",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Start > Event Viewer > Windows Logs > Security",
               "substeps": [
-                "Open 'Group Policy Management Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network access: Let Everyone permissions apply to anonymous users'.",
-                "Select 'Disabled'.",
-                "Click 'Apply' then 'OK'."
+                "Open \"Event Viewer\" by searching for it in the Start menu.",
+                "In the left pane, navigate to \"Windows Logs\" and then click on \"Security\".",
+                "Filter the current log for Event IDs \"4624\" (Successful Logon), \"4625\" (Failed Logon), and \"4648\" (A logon was attempted using explicit credentials).",
+                "Look for events where the \"Source Network Address\" matches \"10.128.1.113\" and the \"Logon Type\" is \"10\" (RemoteInteractive - RDP).",
+                "Note the \"Account Name\" for successful logons or \"Account For Which Logon Failed\" for failed attempts.",
+                "You should see detailed event properties showing the source IP, target account, and logon success/failure status."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 2,
-              "title": "Enable 'Network access: Do not allow anonymous enumeration of SAM accounts and shares'",
-              "command_or_action": "Configure Group Policy setting",
-              "explanation": "Enabling this setting prevents anonymous users from enumerating Security Account Manager (SAM) accounts and shared folders. This makes it much harder for attackers to gather valid usernames or identify shared resources, which are common prerequisites for brute-force (MITRE ATT&CK T1110) and password guessing (MITRE ATT&CK T1110.001) attacks.",
-              "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "title": "Review Cisco Meraki Firewall Logs for RDP Traffic",
+              "command_or_action": "Access the Cisco Meraki dashboard to review network traffic logs.",
+              "explanation": "This step provides network-level visibility into the observed RDP connection, confirming if the traffic traversed the firewall and if any related alerts were generated. This helps in understanding the network path and potential external origin of the brute-force attempt (MITRE ATT&CK T1110).",
+              "vendor_product": "Cisco Meraki MX 250",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Meraki dashboard > Network-wide > Monitor > Event log",
               "substeps": [
-                "Open 'Group Policy Management Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network access: Do not allow anonymous enumeration of SAM accounts and shares'.",
-                "Select 'Enabled'.",
-                "Click 'Apply' then 'OK'."
+                "Log in to the Cisco Meraki dashboard.",
+                "In the left navigation pane, select \"Network-wide\" then \"Monitor\", and click on \"Event log\".",
+                "Use the search/filter options to look for traffic from \"Source IP: 10.128.1.113\" to \"Destination IP: 192.168.220.241\" on \"Destination Port: 3389\".",
+                "Review the results for any allowed or denied connections matching the criteria, noting timestamps and associated policies.",
+                "You should see log entries detailing the RDP connection attempts, including source/destination IPs and ports, and whether the traffic was allowed or blocked by the firewall."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 3,
-              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
-              "command_or_action": "Configure Group Policy setting",
-              "explanation": "Disabling this setting prevents the system from falling back to a NULL session when a LocalSystem account attempts to access a network resource. This further restricts unauthenticated access and reduces the attack surface that could be exploited by attackers attempting to gain unauthorized access (MITRE ATT&CK T1110).",
+              "title": "Disable 'Network access: Let Everyone permissions apply to anonymous users'",
+              "command_or_action": "Configure Group Policy to disable this setting.",
+              "explanation": "Disabling this policy prevents anonymous users from being treated as members of the 'Everyone' group, significantly reducing the permissions available to unauthenticated connections. This hardens the system against potential anonymous access exploits that could be used in conjunction with or after initial brute-force attempts (MITRE ATT&CK T1110).",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open 'Group Policy Management Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network security: Allow LocalSystem NULL session fallback'.",
-                "Select 'Disabled'.",
-                "Click 'Apply' then 'OK'."
+                "Open \"Group Policy Management Console\" (GPMC) on a domain controller or a machine with RSAT installed.",
+                "Navigate to the appropriate GPO linked to the target Windows Server (192.168.220.241) and \"Edit\" it.",
+                "In the Group Policy Management Editor, expand \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
+                "Locate the policy \"Network access: Let Everyone permissions apply to anonymous users\".",
+                "Double-click the policy, select \"Disabled\", and then click \"Apply\" and \"OK\".",
+                "You should see the \"Network access: Let Everyone permissions apply to anonymous users\" policy now shows \"Disabled\" in the Group Policy Management Editor."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Enable 'Network access: Do not allow anonymous enumeration of SAM accounts and shares'",
+              "command_or_action": "Configure Group Policy to enable this setting.",
+              "explanation": "Enabling this policy prevents anonymous users from enumerating Security Account Manager (SAM) accounts and shared folders. This is a critical step in preventing reconnaissance by attackers, who often enumerate user accounts as a precursor to brute-force or password guessing attacks (MITRE ATT&CK T1110, T1110.001).",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open \"Group Policy Management Console\" (GPMC) on a domain controller or a machine with RSAT installed.",
+                "Navigate to the appropriate GPO linked to the target Windows Server (192.168.220.241) and \"Edit\" it.",
+                "In the Group Policy Management Editor, expand \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
+                "Locate the policy \"Network access: Do not allow anonymous enumeration of SAM accounts and shares\".",
+                "Double-click the policy, select \"Enabled\", and then click \"Apply\" and \"OK\".",
+                "You should see the \"Network access: Do not allow anonymous enumeration of SAM accounts and shares\" policy now shows \"Enabled\" in the Group Policy Management Editor."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
+              "command_or_action": "Configure Group Policy to disable this setting.",
+              "explanation": "Disabling this policy prevents the LocalSystem account from falling back to a NULL session when attempting to access network resources. This reduces the risk of information disclosure or unauthorized access via NULL sessions, which could be leveraged by attackers during reconnaissance or post-exploitation phases, indirectly supporting brute-force efforts (MITRE ATT&CK T1110).",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open \"Group Policy Management Console\" (GPMC) on a domain controller or a machine with RSAT installed.",
+                "Navigate to the appropriate GPO linked to the target Windows Server (192.168.220.241) and \"Edit\" it.",
+                "In the Group Policy Management Editor, expand \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
+                "Locate the policy \"Network security: Allow LocalSystem NULL session fallback\".",
+                "Double-click the policy, select \"Disabled\", and then click \"Apply\" and \"OK\".",
+                "You should see the \"Network security: Allow LocalSystem NULL session fallback\" policy now shows \"Disabled\" in the Group Policy Management Editor."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             }
           ],
           "priority": "medium",
-          "estimated_effort": "30 minutes",
+          "estimated_effort": "1 hour",
           "prerequisites": [
-            "Administrative access to the target Windows Server.",
-            "Access to Group Policy Management Editor (or Local Group Policy Editor if not domain-joined)."
+            "Administrative access to the target Windows Server (192.168.220.241).",
+            "Access to the Cisco Meraki dashboard.",
+            "Group Policy Management Console (GPMC) access if applying changes via GPO."
           ],
-          "verification_procedure": "After applying the Group Policy, run 'gpupdate /force' on the affected server. Navigate to the specified UI paths in the Group Policy Management Editor and confirm the settings are as prescribed in the remediation steps. Alternatively, verify the registry values: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa:EveryoneIncludesAnonymous should be 0, and HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa:RestrictAnonymous should be 1.",
+          "verification_procedure": "After completing all steps, re-check Windows Event Logs and Meraki logs for any further suspicious RDP activity. Confirm that the specified Group Policy settings are applied and enforced on the target server.",
           "source_control_ids": [
             "NIST-SI-04",
             "2.3.10.4 (L1)",
@@ -850,19 +894,14 @@
           },
           "model": "gemini-2.5-flash",
           "prompt_version": "remediation_v2",
-          "generated_at": "2026-04-10T04:21:32.101581+00:00",
+          "generated_at": "2026-04-10T05:42:55.732512+00:00",
           "selfrag_verification": {
             "grounding_score": 1.0,
-            "relevance_score": 0.5357,
+            "relevance_score": 0.8929,
             "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
             "passed": true,
-            "issues": [
-              {
-                "check": "relevance",
-                "severity": "warning",
-                "message": "Low keyword overlap (0.07) between finding summary and steps."
-              }
-            ],
+            "issues": [],
             "attempts": 2
           }
         }
@@ -1021,43 +1060,42 @@
           ]
         },
         "remediation": {
-          "executive_summary": "A suspicious RDP connection from 10.128.1.176 to 192.168.220.132 was observed, indicating potential unauthorized access or lateral movement within the network. This remediation plan outlines steps to investigate the suspicious activity, enhance RDP security, and harden Windows Server configurations to prevent similar incidents. Implementing these measures will reduce the attack surface and improve the detection capabilities for unauthorized access attempts.",
+          "executive_summary": "An observed RDP connection from an unknown source IP (10.128.1.176) to an internal server (192.168.220.132) on port 3389 indicates potential unauthorized access or reconnaissance. This remediation plan outlines steps to investigate the connection, harden Windows Server RDP configurations to reduce the attack surface, and enhance monitoring capabilities to detect and prevent future suspicious RDP activity. Implementing these steps will help mitigate risks associated with brute-force attacks and lateral movement via RDP.",
           "limitations": [],
           "steps": [
             {
               "step_number": 1,
-              "title": "Investigate the suspicious RDP connection on the target server and firewall",
-              "command_or_action": "On server 192.168.220.132, open Event Viewer and review security logs. On the Palo Alto Firewall, review traffic logs for connections to 192.168.220.132 on port 3389.",
-              "explanation": "This step is crucial for understanding the scope and nature of the observed RDP connection, which could indicate brute force attempts (T1110) or lateral movement (T1563.002). Analyzing logs helps identify the source, user accounts involved, and success/failure of the connection, aligning with NIST-SI-04 for analyzing detected events and anomalies.",
-              "vendor_product": "Windows Server, Palo Alto Firewall",
-              "ui_breadcrumb": null,
+              "title": "Investigate the observed RDP connection on the destination server",
+              "command_or_action": "Review Windows Event Logs on 192.168.220.132 for RDP connection attempts and authentication events.",
+              "explanation": "This step is crucial for understanding the nature of the observed RDP connection. By reviewing logs, you can determine if the connection was legitimate, if it was a failed brute-force attempt (T1110), or if it resulted in unauthorized access or lateral movement (T1563.002). This aligns with NIST-SI-04 for system monitoring and analysis of detected events.",
+              "vendor_product": "Windows Server",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Event Viewer > Windows Logs > Security",
               "substeps": [
-                "On server 192.168.220.132, open 'Event Viewer' (eventvwr.msc).",
-                "Navigate to 'Windows Logs > Security'.",
-                "Filter current log for Event IDs: 4624 (Successful Logon), 4625 (Failed Logon), 21, 22, 24, 25 (TerminalServices-LocalSessionManager and TerminalServices-RemoteConnectionManager events).",
-                "Look for connections originating from 10.128.1.176.",
-                "Access the Palo Alto Firewall management interface.",
-                "Navigate to 'Monitor > Logs > Traffic'.",
-                "Filter logs for 'Destination IP' is '192.168.220.132' and 'Destination Port' is '3389'.",
-                "Identify any connections from 'Source IP' 10.128.1.176.",
-                "If the connection is confirmed unauthorized, immediately isolate the server 192.168.220.132 from the network."
+                "Open 'Event Viewer' on the destination server (192.168.220.132).",
+                "Navigate to 'Windows Logs' > 'Security'.",
+                "Filter the 'Security' log for Event IDs 4624 (Successful logon) and 4625 (Failed logon) during the time of the observed connection, specifically looking for source IP 10.128.1.176.",
+                "Navigate to 'Applications and Services Logs' > 'Microsoft' > 'Windows' > 'TerminalServices-LocalSessionManager' and filter for Event IDs 21 (Remote Desktop Services: Session logon succeeded) and 22 (Remote Desktop Services: Shell start notification) for the relevant timeframe and source IP.",
+                "Navigate to 'Applications and Services Logs' > 'Microsoft' > 'Windows' > 'TerminalServices-RemoteConnectionManager' and filter for Event ID 1149 (Remote Desktop Services: User authentication succeeded) for the relevant timeframe and source IP.",
+                "You should see detailed event entries indicating successful or failed RDP login attempts from the source IP, including the user account involved."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 2,
-              "title": "Ensure Windows Firewall blocks public inbound connections",
-              "command_or_action": "Configure the Windows Firewall to set 'Public: Inbound connections' to 'Block (default)'.",
-              "explanation": "Blocking inbound connections on public profiles helps prevent unauthorized access to the server, including RDP (T1563.002), by restricting network access. This aligns with control 9.3.2.",
-              "vendor_product": "Windows Server, Windows 11",
-              "ui_breadcrumb": "Control Panel > System and Security > Windows Defender Firewall > Advanced settings > Windows Defender Firewall with Advanced Security > Windows Defender Firewall Properties",
+              "title": "Ensure Windows Firewall blocks inbound connections on Public profiles",
+              "command_or_action": "Configure Group Policy to set 'Windows Firewall: Public: Inbound connections' to 'Block (default)'.",
+              "explanation": "Blocking inbound connections on public network profiles significantly reduces the attack surface, especially for services like RDP. This helps prevent unauthorized remote access attempts (T1563.002) by ensuring that if a server's network profile unexpectedly switches to 'Public', it is not exposed. This directly addresses control 9.3.2.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security - LDAP://...",
               "substeps": [
-                "Open 'Windows Defender Firewall with Advanced Security' by searching for 'Windows Firewall' and clicking 'Advanced settings'.",
-                "In the 'Windows Defender Firewall with Advanced Security' console, right-click 'Windows Defender Firewall with Advanced Security on Local Computer' and select 'Properties'.",
-                "Navigate to the 'Public Profile' tab.",
-                "Under 'State', ensure 'Inbound connections' is set to 'Block (default)'.",
-                "Click 'Apply' then 'OK'."
+                "Open 'Group Policy Management' on a domain controller or the local Group Policy Editor on the server.",
+                "Navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Windows Firewall with Advanced Security' > 'Windows Firewall with Advanced Security - LDAP://...'.",
+                "In the left pane, click on 'Windows Firewall with Advanced Security' and then select 'Windows Firewall Properties' in the right-hand 'Actions' pane.",
+                "Go to the 'Public Profile' tab and ensure 'Inbound connections' is set to 'Block (default)'.",
+                "Click 'Apply' and 'OK'. You should see the Public Profile's Inbound connections status updated to 'Block (default)'."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
@@ -1065,17 +1103,17 @@
             {
               "step_number": 3,
               "title": "Disable 'Network access: Let Everyone permissions apply to anonymous users'",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network access: Let Everyone permissions apply to anonymous users",
-              "explanation": "Disabling this setting prevents anonymous users from being treated as members of the 'Everyone' group, thereby restricting their access to shared resources and reducing the attack surface for unauthorized access (T1110). This directly addresses control 2.3.10.4.",
-              "vendor_product": "Windows Server, Windows 11",
+              "command_or_action": "Set the Group Policy 'Network access: Let Everyone permissions apply to anonymous users' to 'Disabled'.",
+              "explanation": "Disabling this setting prevents anonymous users from being treated as members of the 'Everyone' group, which can limit their ability to enumerate system information or access shared resources. This reduces the attack surface for reconnaissance activities that could precede brute-force attacks (T1110) or lateral movement (T1563.002). This directly addresses control 2.3.10.4.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
               "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open 'Group Policy Management Editor' (gpmc.msc) for domain-joined servers or 'Local Group Policy Editor' (gpedit.msc) for standalone servers.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network access: Let Everyone permissions apply to anonymous users'.",
-                "Select 'Disabled'.",
-                "Click 'Apply' then 'OK'.",
-                "Run `gpupdate /force` in an elevated command prompt to apply the policy immediately."
+                "Open 'Group Policy Management' on a domain controller or the local Group Policy Editor on the server.",
+                "Navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Locate the policy 'Network access: Let Everyone permissions apply to anonymous users'.",
+                "Double-click the policy, select 'Disabled', and click 'Apply' and 'OK'.",
+                "You should see the 'Network access: Let Everyone permissions apply to anonymous users' policy now shows 'Disabled' in the Group Policy Editor."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
@@ -1083,72 +1121,69 @@
             {
               "step_number": 4,
               "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
-              "command_or_action": "Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Network security: Allow LocalSystem NULL session fallback",
-              "explanation": "Disabling NULL session fallback prevents the LocalSystem account from using NULL sessions for network authentication, which can be exploited by attackers to gain unauthorized information or access (T1110). This aligns with control 2.3.11.2.",
+              "command_or_action": "Set the Group Policy 'Network security: Allow LocalSystem NULL session fallback' to 'Disabled'.",
+              "explanation": "Disabling NULL session fallback prevents the system from reverting to a NULL session if a LocalSystem account cannot authenticate. This mitigates potential information disclosure vulnerabilities that could be exploited by attackers during reconnaissance phases before attempting brute-force (T1110) or RDP lateral movement (T1563.002). This directly addresses control 2.3.11.2.",
               "vendor_product": "Windows Server",
+              "step_type": "hardening",
               "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
               "substeps": [
-                "Open 'Group Policy Management Editor' (gpmc.msc) for domain-joined servers or 'Local Group Policy Editor' (gpedit.msc) for standalone servers.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options'.",
-                "Locate and double-click 'Network security: Allow LocalSystem NULL session fallback'.",
-                "Select 'Disabled'.",
-                "Click 'Apply' then 'OK'.",
-                "Run `gpupdate /force` in an elevated command prompt to apply the policy immediately."
+                "Open 'Group Policy Management' on a domain controller or the local Group Policy Editor on the server.",
+                "Navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Locate the policy 'Network security: Allow LocalSystem NULL session fallback'.",
+                "Double-click the policy, select 'Disabled', and click 'Apply' and 'OK'.",
+                "You should see the 'Network security: Allow LocalSystem NULL session fallback' policy now shows 'Disabled' in the Group Policy Editor."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 5,
-              "title": "Configure 'NetBT NodeType configuration' to 'Enabled: P-node (recommended)'",
-              "command_or_action": "Computer Configuration\\Administrative Templates\\Network\\NetBIOS over TCP/IP\\NetBT NodeType configuration",
-              "explanation": "Setting the NetBT Node Type to P-node (Peer-to-Peer) ensures that NetBIOS name resolution relies solely on a WINS server, reducing reliance on broadcast-based name resolution (B-node) which can be vulnerable to spoofing and information disclosure. This aligns with control 18.3.4.",
+              "title": "Configure 'NetBT NodeType configuration' to 'P-node'",
+              "command_or_action": "Set the Group Policy 'NetBT NodeType configuration' to 'Enabled: P-node (recommended)'.",
+              "explanation": "Configuring NetBT NodeType to 'P-node' (Point-to-Point) ensures that NetBIOS name resolution relies primarily on a NetBIOS Name Server (NBNS) like WINS, rather than broadcasting. This reduces network traffic and limits the ability of attackers to perform NetBIOS-based enumeration or spoofing, which could be used in conjunction with brute-force (T1110) or lateral movement (T1563.002) attempts. This addresses control 18.3.4.",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Administrative Templates > Network > NetBIOS over TCP/IP",
               "substeps": [
-                "Open 'Group Policy Management Editor' (gpmc.msc) for domain-joined servers or 'Local Group Policy Editor' (gpedit.msc) for standalone servers.",
-                "Navigate to 'Computer Configuration > Administrative Templates > Network > NetBIOS over TCP/IP'.",
-                "Locate and double-click 'NetBT NodeType configuration'.",
-                "Select 'Enabled'.",
-                "From the 'Options' dropdown, select 'P-node (recommended)'.",
-                "Click 'Apply' then 'OK'.",
-                "Run `gpupdate /force` in an elevated command prompt to apply the policy immediately."
+                "Open 'Group Policy Management' on a domain controller or the local Group Policy Editor on the server.",
+                "Navigate to 'Computer Configuration' > 'Policies' > 'Administrative Templates' > 'Network' > 'NetBIOS over TCP/IP'.",
+                "Locate the policy 'NetBT NodeType configuration'.",
+                "Double-click the policy, select 'Enabled', and then choose 'P-node (recommended)' from the 'Options' dropdown.",
+                "Click 'Apply' and 'OK'. You should see the 'NetBT NodeType configuration' policy now shows 'Enabled' with 'P-node (recommended)' in the Group Policy Editor."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 6,
-              "title": "Review and restrict RDP access to authorized users and sources",
-              "command_or_action": "Review members of the 'Remote Desktop Users' group on 192.168.220.132. Ensure Network Level Authentication (NLA) is enabled for RDP. Consider implementing IP-based restrictions for RDP access.",
-              "explanation": "Restricting RDP access to only necessary users and from trusted IP addresses significantly reduces the attack surface for brute force attacks (T1110) and prevents unauthorized lateral movement (T1563.002). Enabling NLA adds an extra layer of security by requiring user authentication before a full RDP session is established.",
-              "vendor_product": "Windows Server, Palo Alto Firewall",
-              "ui_breadcrumb": null,
+              "title": "Review and enhance RDP monitoring and alerting",
+              "command_or_action": "Ensure RDP login auditing is enabled and consider network-level monitoring on Cisco Meraki MX 250.",
+              "explanation": "Proactive monitoring of RDP activity is essential for detecting unauthorized access attempts (T1110) and lateral movement (T1563.002). By ensuring comprehensive logging and setting up alerts, the security team can respond quickly to suspicious RDP connections. This aligns with NIST-SI-04 for continuous system monitoring and analysis.",
+              "vendor_product": "Windows Server, Cisco Meraki MX 250",
+              "step_type": "monitoring",
+              "ui_breadcrumb": "Cisco Meraki dashboard > Network-wide > Event log",
               "substeps": [
-                "On server 192.168.220.132, open 'Computer Management' (compmgmt.msc).",
-                "Navigate to 'Local Users and Groups > Groups'.",
-                "Double-click 'Remote Desktop Users' and review the member list. Remove any unauthorized users.",
-                "Open 'System Properties' (sysdm.cpl) and navigate to the 'Remote' tab.",
-                "Ensure 'Allow remote connections to this computer' is selected and 'Allow connections only from computers running Remote Desktop with Network Level Authentication (recommended)' is checked.",
-                "If not already in place, configure a firewall rule on the Palo Alto Firewall to restrict inbound RDP (port 3389) to 192.168.220.132 from only known and authorized source IP addresses/networks."
+                "Verify that 'Audit Logon Events' is enabled for both 'Success' and 'Failure' in the Group Policy 'Computer Configuration > Policies > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Logon/Logoff > Audit Logon'.",
+                "On the Cisco Meraki dashboard, navigate to 'Network-wide' > 'Event log' and filter for 'Firewall' or 'Traffic' events related to port 3389 (RDP) to identify any unusual patterns or connections from unexpected sources.",
+                "Configure custom alerts in the Cisco Meraki dashboard by navigating to 'Network-wide' > 'Alerts' and creating a new rule to notify administrators of unusual RDP traffic patterns or connections from external IPs to internal RDP ports.",
+                "You should see audit policies configured for logon events, and Meraki alerts should be active for RDP traffic anomalies."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             }
           ],
           "priority": "medium",
-          "estimated_effort": "1 hour",
+          "estimated_effort": "2 hours",
           "prerequisites": [
-            "Administrative access to Windows Server 192.168.220.132.",
-            "Access to Group Policy Management Editor (GPMC) for domain-joined servers or Local Group Policy Editor (gpedit.msc) for standalone servers.",
-            "Access to Palo Alto Firewall management interface.",
-            "Access to security information and event management (SIEM) or log aggregation system if available."
+            "Administrative access to affected Windows Servers (192.168.220.132).",
+            "Administrative access to a domain controller for Group Policy Management (if applicable).",
+            "Administrative access to the Cisco Meraki dashboard."
           ],
-          "verification_procedure": "After applying all steps, verify that Group Policy settings are correctly applied by running `gpresult /h C:\\gpresult.html` and reviewing the report. Confirm Windows Firewall rules are active. Monitor network traffic and security logs for any further suspicious RDP connections to 192.168.220.132.",
+          "verification_procedure": "After applying the remediation steps, monitor Windows Event Logs (Security, TerminalServices-LocalSessionManager, TerminalServices-RemoteConnectionManager) for any further suspicious RDP activity. Verify that the Group Policy settings are applied by checking the local security policy on the affected server or running 'gpresult /h gpresult.html' and reviewing the report. Confirm that Cisco Meraki alerts are configured and functioning as expected.",
           "source_control_ids": [
             "NIST-SI-04",
-            "2.3.10.4",
-            "18.3.4",
+            "2.3.10.4 (L1)",
+            "18.3.4 (L1)",
             "2.3.11.2",
             "9.3.2"
           ],
@@ -1157,11 +1192,12 @@
           },
           "model": "gemini-2.5-flash",
           "prompt_version": "remediation_v2",
-          "generated_at": "2026-04-10T04:22:16.538606+00:00",
+          "generated_at": "2026-04-10T05:43:48.490289+00:00",
           "selfrag_verification": {
             "grounding_score": 1.0,
-            "relevance_score": 0.8571,
+            "relevance_score": 0.9286,
             "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
             "passed": true,
             "issues": [],
             "attempts": 2
@@ -1320,68 +1356,128 @@
           ]
         },
         "remediation": {
-          "executive_summary": "An observed RDP connection from an unexpected source indicates potential suspicious activity. This remediation focuses on strengthening the Windows Firewall configuration to prevent unauthorized RDP access and enhancing system monitoring to detect future attempts. Implementing these steps will help mitigate risks associated with brute-force attacks (T1110, T1110.001) and ensure better visibility into RDP usage.",
+          "executive_summary": "An RDP connection from an unknown source (10.128.1.176) to a target server (10.100.104.132) on port 3389 was observed, indicating potential unauthorized access attempts or a misconfigured service. This remediation plan outlines steps to investigate the observed connection, harden the target Windows Server against unauthorized RDP access, and improve overall system monitoring to detect similar activities in the future. Implementing these steps will reduce the attack surface related to RDP and enhance visibility into potential brute-force attacks (T1110, T1110.001).",
           "limitations": [],
           "steps": [
             {
               "step_number": 1,
-              "title": "Configure Windows Firewall to block inbound connections by default for the Domain Profile",
-              "command_or_action": "Configure Group Policy to set the default inbound action for the Domain Profile to 'Block (default)'.",
-              "explanation": "Blocking inbound connections by default on the Windows Firewall's Domain Profile helps prevent unauthorized access, including RDP connections (port 3389), which could be used in brute-force attacks (MITRE ATT&CK T1110, T1110.001). This ensures that only explicitly allowed services can communicate with the server.",
+              "title": "Investigate the Observed RDP Connection on the Target Server",
+              "command_or_action": "Review Windows Event Logs for RDP connection attempts and successful logins on the target server (10.100.104.132).",
+              "explanation": "This step helps determine the legitimacy and context of the observed RDP connection. By reviewing security logs, you can identify if the connection was successful, which user account was involved, and if there were any failed login attempts (T1110, T1110.001). This aligns with NIST-SI-04 for system monitoring.",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Event Viewer > Windows Logs > Security",
               "substeps": [
-                "Open 'Group Policy Management Editor'.",
-                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security'.",
-                "In the left pane, right-click 'Windows Firewall with Advanced Security' and select 'Properties'.",
-                "Go to the 'Domain Profile' tab.",
-                "Under 'State', ensure 'Inbound connections' is set to 'Block (default)'.",
-                "Click 'Apply' and then 'OK'."
+                "On the target server (10.100.104.132), open 'Event Viewer' by searching for it in the Start menu.",
+                "In the 'Event Viewer' window, navigate to 'Windows Logs' and then select 'Security'.",
+                "Filter the logs for Event ID 4624 (Successful Logon) and 4625 (Failed Logon) for the time frame around the observed connection. Look specifically for entries with the source IP address 10.128.1.176.",
+                "You should see entries detailing successful or failed RDP login attempts, including the source IP address and the user account involved, or confirmation that no such events occurred."
               ],
               "evidence_tier": "graph",
               "supporting_urls": []
             },
             {
               "step_number": 2,
-              "title": "Review and enhance system monitoring for RDP activity",
-              "command_or_action": "Review existing monitoring solutions or implement event log monitoring for RDP connection attempts on Windows Servers.",
-              "explanation": "Monitoring system events, especially RDP connection attempts, is crucial for detecting unauthorized access and potential attacks. This aligns with NIST-SI-04, which emphasizes monitoring for attacks and unauthorized connections. Regular review of these logs helps identify suspicious activity and allows for timely incident response.",
+              "title": "Harden Windows Firewall to Block Inbound Connections by Default",
+              "command_or_action": "Configure Windows Firewall with Advanced Security via Group Policy to block inbound connections by default for the Domain Profile.",
+              "explanation": "Implementing this control (9.1.2) ensures that all inbound connections are blocked by default, significantly reducing the attack surface, including for RDP (port 3389). This forces explicit rules for legitimate services, making it harder for attackers to establish connections and mitigating brute-force attempts (T1110, T1110.001).",
               "vendor_product": "Windows Server",
-              "ui_breadcrumb": null,
-              "substeps": [],
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile",
+              "substeps": [
+                "Open 'Group Policy Management Editor' on a domain controller or a workstation with RSAT installed.",
+                "Navigate through the console tree to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Windows Firewall with Advanced Security' > 'Windows Firewall with Advanced Security'.",
+                "Right-click on 'Windows Firewall with Advanced Security' in the left pane and select 'Properties'.",
+                "Go to the 'Domain Profile' tab.",
+                "Under the 'State' section, ensure that 'Inbound connections' is set to 'Block (default)'.",
+                "Click 'Apply' and then 'OK'. You should see the 'Inbound connections' setting for the Domain Profile now listed as 'Block (default)'."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 3,
+              "title": "Configure NetBT NodeType to P-node",
+              "command_or_action": "Configure the 'NetBT NodeType configuration' policy via Group Policy to 'Enabled: P-node (recommended)'.",
+              "explanation": "This step implements control 18.3.4 (L1) by configuring NetBIOS over TCP/IP to use P-node. P-node relies on a WINS server for name resolution, reducing broadcast traffic and potentially limiting information disclosure that could be exploited by attackers.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "substeps": [
+                "Open 'Group Policy Management Editor' on a domain controller or a workstation with RSAT installed.",
+                "Navigate through the console tree to 'Computer Configuration' > 'Policies' > 'Administrative Templates' > 'Network' > 'NetBIOS over TCP/IP'.",
+                "Double-click the policy setting 'NetBT NodeType configuration'.",
+                "Select 'Enabled' and then choose 'P-node (recommended)' from the 'Options' dropdown menu.",
+                "Click 'Apply' and then 'OK'. You should see the 'State' column for 'NetBT NodeType configuration' now showing 'Enabled'."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Disable LocalSystem NULL Session Fallback",
+              "command_or_action": "Set the security policy 'Network security: Allow LocalSystem NULL session fallback' to 'Disabled' via Group Policy.",
+              "explanation": "This step implements control 2.3.11.2 by preventing anonymous access to system resources through NULL sessions. Disabling this fallback reduces the attack surface and prevents potential information disclosure or unauthorized access attempts.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open 'Group Policy Management Editor' on a domain controller or a workstation with RSAT installed.",
+                "Navigate through the console tree to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Locate and double-click the policy setting 'Network security: Allow LocalSystem NULL session fallback'.",
+                "Select 'Disabled'.",
+                "Click 'Apply' and then 'OK'. You should see the 'Security Setting' column for 'Network security: Allow LocalSystem NULL session fallback' now showing 'Disabled'."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Review and Restrict RDP Specific Firewall Rules",
+              "command_or_action": "Review existing RDP inbound rules in Windows Firewall with Advanced Security and restrict allowed source IP addresses to only trusted networks or hosts.",
+              "explanation": "Following the default block in Step 2, this step ensures that if RDP is required, it is only accessible from explicitly authorized sources. This significantly limits the exposure of RDP to the internet or untrusted internal networks, directly mitigating brute-force attacks (T1110, T1110.001) by reducing the pool of potential attackers.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Windows Firewall with Advanced Security > Inbound Rules",
+              "substeps": [
+                "On the target server (10.100.104.132), open 'Windows Firewall with Advanced Security' by searching for 'wf.msc' in the Start menu.",
+                "In the left pane, select 'Inbound Rules'.",
+                "Locate any active 'Remote Desktop (TCP-In)' rules. There might be several, for different profiles or versions.",
+                "For each active 'Remote Desktop (TCP-In)' rule, right-click and select 'Properties'. Go to the 'Scope' tab.",
+                "Under 'Remote IP address', ensure 'These IP addresses' is selected and add only the specific, authorized source IP addresses or subnets that require RDP access. Remove any 'Any IP address' entries if not explicitly required.",
+                "Click 'Apply' and then 'OK'. You should see the RDP inbound rules now explicitly listing allowed remote IP addresses, rather than 'Any'."
+              ],
               "evidence_tier": "graph",
               "supporting_urls": []
             }
           ],
-          "priority": "medium",
-          "estimated_effort": "30 minutes",
+          "priority": "high",
+          "estimated_effort": "1 hour",
           "prerequisites": [
-            "Administrative access to Group Policy Management Editor or local administrator rights on the Windows Server.",
-            "Understanding of existing monitoring infrastructure (e.g., SIEM, Windows Event Forwarding)."
+            "Administrative access to the target Windows Server (10.100.104.132).",
+            "Administrative access to a Domain Controller or a workstation with Remote Server Administration Tools (RSAT) installed for Group Policy Management.",
+            "Understanding of your network's authorized RDP source IP ranges."
           ],
-          "verification_procedure": "After applying the Group Policy, run 'gpupdate /force' on the target server. Verify the firewall setting by navigating to 'Windows Defender Firewall with Advanced Security' on the server, right-clicking 'Windows Defender Firewall with Advanced Security - Local Group Policy Object', selecting 'Properties', and confirming 'Inbound connections' for the 'Domain Profile' is set to 'Block (default)'. For monitoring, confirm that RDP connection attempts are being logged and reviewed in your security information and event management (SIEM) system or Windows Event Viewer.",
+          "verification_procedure": "After applying the Group Policies, force a Group Policy update on the target server(s) using `gpupdate /force` in an elevated command prompt and then restart the server if necessary. Verify the firewall rules and registry settings are applied as expected. For RDP, attempt to connect from an *unauthorized* IP address; the connection should be blocked. Attempt to connect from an *authorized* IP address; the connection should succeed.",
           "source_control_ids": [
             "NIST-SI-04",
-            "9.1.2 (L1)"
+            "18.3.4 (L1)",
+            "9.1.2 (L1)",
+            "2.3.11.2"
           ],
           "provenance": {
             "mode": "graph_only"
           },
           "model": "gemini-2.5-flash",
           "prompt_version": "remediation_v2",
-          "generated_at": "2026-04-10T04:22:54.360721+00:00",
+          "generated_at": "2026-04-10T05:44:46.770108+00:00",
           "selfrag_verification": {
             "grounding_score": 1.0,
-            "relevance_score": 0.75,
-            "completeness_score": 0.6667,
+            "relevance_score": 0.7857,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
             "passed": true,
-            "issues": [
-              {
-                "check": "completeness",
-                "severity": "warning",
-                "message": "Top controls not referenced in output: 18.3.4 (L1) Ensure 'NetBT NodeType configuration' is set to "
-              }
-            ],
+            "issues": [],
             "attempts": 2
           }
         }
@@ -1536,6 +1632,141 @@
               }
             }
           ]
+        },
+        "remediation": {
+          "executive_summary": "The finding indicates an RDP connection from an internal IP to another internal IP, which could be suspicious or require better monitoring. This remediation plan focuses on hardening RDP security on Windows Servers by configuring the Windows Firewall to block unsolicited inbound RDP connections, ensuring proper NetBT node type configuration, and disabling NULL session fallback. Additionally, it includes steps to investigate the observed connection and establish ongoing monitoring for RDP activity to detect potential brute-force attacks (MITRE ATT&CK T1110, T1110.001) or unauthorized access.",
+          "limitations": [],
+          "steps": [
+            {
+              "step_number": 1,
+              "title": "Investigate Observed RDP Connection",
+              "command_or_action": "Review Windows Event Logs on 10.100.104.132",
+              "explanation": "This step aims to understand the nature of the RDP connection from 10.128.1.176 to 10.100.104.132. It helps determine if the connection was legitimate, unauthorized, or part of a potential brute-force attempt (MITRE ATT&CK T1110, T1110.001). This aligns with NIST-SI-04 for system monitoring and attack detection.",
+              "vendor_product": "Windows Server",
+              "step_type": "investigation",
+              "ui_breadcrumb": null,
+              "substeps": [
+                "Log in to the Windows Server at 10.100.104.132 with administrative privileges.",
+                "Open \"Event Viewer\" by searching for it in the Start menu.",
+                "Navigate to \"Windows Logs\" > \"Security\" and filter for Event ID 4624 (Successful Logon) and 4625 (Failed Logon) for the timeframe around the observed connection. Look for source IP 10.128.1.176.",
+                "Additionally, check \"Applications and Services Logs\" > \"Microsoft\" > \"Windows\" > \"TerminalServices-LocalSessionManager\" > \"Operational\" for Event ID 21 (Remote Desktop Services: User logoff) and 24 (Remote Desktop Services: User logon succeeded) to confirm RDP session activity.",
+                "You should see entries detailing successful or failed RDP login attempts from the source IP, including the user account used."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 2,
+              "title": "Configure Windows Firewall to Block Inbound Connections by Default",
+              "command_or_action": "Group Policy Management Editor",
+              "explanation": "This hardens the Windows Firewall by setting the default inbound action for the Domain Profile to 'Block'. This prevents unsolicited RDP connections and other services from being exposed, reducing the attack surface and mitigating potential brute-force attacks (MITRE ATT&CK T1110, T1110.001). This directly addresses control 9.1.2 (L1) for Windows Firewall.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile",
+              "substeps": [
+                "Open \"Group Policy Management\" on a domain controller or a machine with RSAT installed.",
+                "Navigate to the appropriate GPO linked to the Organizational Unit (OU) containing the target Windows Servers. Right-click the GPO and select \"Edit\".",
+                "In the Group Policy Management Editor, navigate to \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Windows Firewall with Advanced Security\" > \"Windows Firewall with Advanced Security\".",
+                "Right-click \"Windows Firewall with Advanced Security\" in the left pane and select \"Properties\".",
+                "Go to the \"Domain Profile\" tab. Under \"State\", locate \"Inbound connections\" and set it to \"Block (default)\".",
+                "Click \"Apply\" and \"OK\". You should see the \"Inbound connections\" setting for the Domain Profile now listed as \"Block (default)\"."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 3,
+              "title": "Set NetBT NodeType Configuration to P-node",
+              "command_or_action": "Group Policy Management Editor",
+              "explanation": "Configuring NetBT NodeType to P-node (Peer-to-peer) ensures that NetBIOS name resolution primarily relies on a NetBIOS Name Server (NBNS) like WINS, rather than broadcasting. This reduces network traffic and potential information leakage, aligning with control 18.3.4 (L1).",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "substeps": [
+                "Open \"Group Policy Management\" on a domain controller or a machine with RSAT installed.",
+                "Navigate to the appropriate GPO linked to the Organizational Unit (OU) containing the target Windows Servers. Right-click the GPO and select \"Edit\".",
+                "In the Group Policy Management Editor, navigate to \"Computer Configuration\" > \"Policies\" > \"Administrative Templates\" > \"Network\" > \"NetBIOS over TCP/IP\".",
+                "Double-click the policy setting \"NetBT NodeType configuration\".",
+                "Select \"Enabled\" and then choose \"P-node (recommended)\" from the \"Options\" dropdown menu.",
+                "Click \"Apply\" and \"OK\". You should see the \"NetBT NodeType configuration\" policy now shows \"Enabled\" with \"P-node (recommended)\" in the status column."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Disable LocalSystem NULL Session Fallback",
+              "command_or_action": "Group Policy Management Editor",
+              "explanation": "Disabling 'Network security: Allow LocalSystem NULL session fallback' prevents services running as LocalSystem from falling back to a NULL session when attempting to access network resources. This enhances security by preventing unauthenticated access to system resources, addressing control 2.3.11.2.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open \"Group Policy Management\" on a domain controller or a machine with RSAT installed.",
+                "Navigate to the appropriate GPO linked to the Organizational Unit (OU) containing the target Windows Servers. Right-click the GPO and select \"Edit\".",
+                "In the Group Policy Management Editor, navigate to \"Computer Configuration\" > \"Policies\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
+                "Locate and double-click the policy \"Network security: Allow LocalSystem NULL session fallback\".",
+                "Select \"Disabled\".",
+                "Click \"Apply\" and \"OK\". You should see the \"Network security: Allow LocalSystem NULL session fallback\" policy now shows \"Disabled\" in the status column."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Implement Ongoing RDP Connection Monitoring and Alerting",
+              "command_or_action": "Configure Windows Event Forwarding or SIEM integration",
+              "explanation": "Proactive monitoring of RDP connections is crucial for detecting unauthorized access attempts, brute-force attacks (MITRE ATT&CK T1110, T1110.001), and suspicious activity. This aligns with NIST-SI-04 by establishing continuous system monitoring.",
+              "vendor_product": "Windows Server",
+              "step_type": "monitoring",
+              "ui_breadcrumb": "Event Viewer > Subscriptions (for Event Forwarding) or SIEM Console (e.g., Microsoft Sentinel)",
+              "substeps": [
+                "Configure Event Forwarding (if not using a SIEM): On the target Windows Server (10.100.104.132), open \"Event Viewer\", navigate to \"Subscriptions\", and configure a new subscription to forward \"Security\" logs (Event IDs 4624, 4625) and \"TerminalServices-LocalSessionManager/Operational\" logs (Event IDs 21, 24) to a central log collector.",
+                "Configure SIEM Alerts (if applicable): If a Security Information and Event Management (SIEM) system is in use (e.g., Microsoft Sentinel), ensure logs from 10.100.104.132 are ingested. Create or verify existing alert rules for: multiple failed RDP login attempts from a single source IP within a short timeframe (indicating brute-force, T1110.001); successful RDP logins from unusual source IPs or at unusual times; and RDP logins using highly privileged accounts.",
+                "Test Alerting: Initiate a few failed RDP login attempts from a test machine to 10.100.104.132 and confirm that alerts are triggered in your SIEM or log collection system.",
+                "You should receive notifications or see incidents generated in your SIEM/monitoring dashboard for suspicious RDP activity, confirming the monitoring is active."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            }
+          ],
+          "priority": "medium",
+          "estimated_effort": "1 hour",
+          "prerequisites": [
+            "Administrative access to the Windows Server 10.100.104.132.",
+            "Administrative access to a Domain Controller or a machine with Group Policy Management Console (GPMC) and Remote Server Administration Tools (RSAT) installed.",
+            "Understanding of Group Policy application and inheritance.",
+            "Access to your organization's SIEM or log management solution."
+          ],
+          "verification_procedure": "After applying the Group Policy settings, force a Group Policy update on the affected servers (`gpupdate /force`) and then verify the settings locally by navigating to the specified UI paths. For monitoring, confirm that alerts are generated in your SIEM or log management system for test cases of suspicious RDP activity.",
+          "source_control_ids": [
+            "NIST-SI-04",
+            "18.3.4 (L1)",
+            "9.1.2 (L1)",
+            "9.1.2",
+            "2.3.11.2"
+          ],
+          "provenance": {
+            "mode": "graph_only"
+          },
+          "model": "gemini-2.5-flash",
+          "prompt_version": "remediation_v2",
+          "generated_at": "2026-04-10T05:45:42.640926+00:00",
+          "selfrag_verification": {
+            "grounding_score": 1.0,
+            "relevance_score": 0.8571,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
+            "passed": true,
+            "issues": [
+              {
+                "check": "substep_quality",
+                "severity": "warning",
+                "message": "Step 1 ('Investigate Observed RDP Connection') appears to be UI-based but has no ui_breadcrumb."
+              }
+            ],
+            "attempts": 2
+          }
         }
       }
     },
@@ -1687,6 +1918,143 @@
               }
             }
           ]
+        },
+        "remediation": {
+          "executive_summary": "The observed RDP connection from an internal IP to another internal IP on port 3389 indicates potential suspicious activity or a service requiring enhanced monitoring. This remediation plan focuses on investigating the legitimacy of the connection, hardening RDP access controls, and improving system monitoring. These steps will help detect and prevent unauthorized RDP usage, which could be indicative of brute force attacks (T1110) or lateral movement (T1563.002).",
+          "limitations": [],
+          "steps": [
+            {
+              "step_number": 1,
+              "title": "Investigate RDP Connection Logs",
+              "command_or_action": "Event Viewer",
+              "explanation": "Reviewing RDP connection logs helps determine the legitimacy of the observed connection, identify the user account involved, and understand the timing and frequency of access. This aligns with NIST-SI-04 for system monitoring, providing crucial insights into potential unauthorized access attempts (T1110) or lateral movement (T1563.002).",
+              "vendor_product": "Windows Server, Windows 11",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Event Viewer > Windows Logs > Security",
+              "substeps": [
+                "Open \"Event Viewer\" by typing `eventvwr.msc` in the Run dialog (Win+R) or searching in the Start Menu.",
+                "In the left pane, navigate to \"Windows Logs\" and then select \"Security\".",
+                "Filter the logs for Event ID 4624 (Successful logon) and 4625 (Failed logon) with \"Logon Type\" 10 (RemoteInteractive) to identify RDP login attempts to the destination IP 192.168.220.132. Specifically, look for the source IP 10.128.1.176.",
+                "You should see detailed event properties showing the source IP, destination IP, user account, and logon time for RDP connections, indicating success or failure."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 2,
+              "title": "Review Existing Windows Firewall Rules for RDP",
+              "command_or_action": "Windows Defender Firewall with Advanced Security",
+              "explanation": "Before making changes, it's crucial to understand the current RDP firewall configuration to ensure that only authorized connections are permitted. Overly permissive rules can expose systems to unauthorized access, which could facilitate brute force attacks (T1110) or lateral movement (T1563.002). This aligns with CIS 9.3.2.",
+              "vendor_product": "Windows Server, Windows 11",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Windows Defender Firewall with Advanced Security > Inbound Rules",
+              "substeps": [
+                "Open \"Windows Defender Firewall with Advanced Security\" by searching in the Start Menu or running `wf.msc` from the Run dialog.",
+                "In the left pane, click on \"Inbound Rules\".",
+                "Filter or scroll through the rules to find any rules named \"Remote Desktop (TCP-In)\" or similar, specifically those allowing inbound connections on port 3389.",
+                "You should see a list of inbound rules, including any that explicitly allow RDP connections, along with their enabled status and the scope of allowed remote IP addresses."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 3,
+              "title": "Harden Windows Firewall to Restrict RDP Access",
+              "command_or_action": "Windows Defender Firewall with Advanced Security",
+              "explanation": "Restricting RDP access to only trusted source IP addresses significantly reduces the attack surface, preventing unauthorized access attempts (T1110) and limiting potential lateral movement (T1563.002). This directly implements CIS 9.3.2 by ensuring inbound connections are blocked by default unless explicitly allowed from specific, authorized sources.",
+              "vendor_product": "Windows Server, Windows 11",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Windows Defender Firewall with Advanced Security > Inbound Rules",
+              "substeps": [
+                "Open \"Windows Defender Firewall with Advanced Security\" by searching in the Start Menu or running `wf.msc`.",
+                "In the left pane, click on \"Inbound Rules\". Locate the \"Remote Desktop (TCP-In)\" rule (or the relevant RDP rule identified in Step 2).",
+                "Right-click the rule and select \"Properties\". Go to the \"Scope\" tab. Under \"Remote IP address\", select \"These IP addresses\" and add the specific trusted IP addresses (e.g., 10.128.1.176 if it's a legitimate source, or other management IPs) that are allowed to connect via RDP. Remove any \"Any IP address\" entries.",
+                "Click \"Apply\" and then \"OK\" to save the changes. You should see the \"Remote IP address\" scope for the RDP rule updated to only include the specified trusted IP addresses."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Configure NetBT NodeType to P-node",
+              "command_or_action": "Local Group Policy Editor",
+              "explanation": "Setting the NetBT NodeType to P-node (peer-to-peer) prevents the system from using broadcast queries for name resolution, which can reduce network noise and potential information leakage. This contributes to a more secure network environment by reducing the attack surface and aligns with control 18.3.4 (L1) for Windows Server.",
+              "vendor_product": "Windows Server, Windows 11",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Local Computer Policy > Computer Configuration > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "substeps": [
+                "Open the \"Local Group Policy Editor\" by typing `gpedit.msc` in the Run dialog (Win+R) or searching in the Start Menu.",
+                "In the left pane, navigate to \"Computer Configuration\" > \"Administrative Templates\" > \"Network\" > \"NetBIOS over TCP/IP\".",
+                "Double-click the policy setting \"NetBT NodeType configuration\".",
+                "Select \"Enabled\" and then choose \"P-node (recommended)\" from the \"Options\" dropdown menu. Click \"Apply\" and \"OK\". You should see the \"State\" column for \"NetBT NodeType configuration\" change to \"Enabled\" and the setting description confirm \"P-node\"."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Disable LocalSystem NULL Session Fallback",
+              "command_or_action": "Local Group Policy Editor",
+              "explanation": "Disabling the \"Network security: Allow LocalSystem NULL session fallback\" policy prevents services running as LocalSystem from falling back to a NULL session when attempting to access network resources. This reduces the risk of unauthorized access to network resources via NULL sessions, enhancing overall network security and directly addressing control 2.3.11.2 for Windows Server.",
+              "vendor_product": "Windows Server, Windows 11",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Local Computer Policy > Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open the \"Local Group Policy Editor\" by typing `gpedit.msc` in the Run dialog (Win+R) or searching in the Start Menu.",
+                "In the left pane, navigate to \"Computer Configuration\" > \"Windows Settings\" > \"Security Settings\" > \"Local Policies\" > \"Security Options\".",
+                "Double-click the policy setting \"Network security: Allow LocalSystem NULL session fallback\".",
+                "Select \"Disabled\". Click \"Apply\" and \"OK\". You should see the \"Security Setting\" column for \"Network security: Allow LocalSystem NULL session fallback\" change to \"Disabled\"."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 6,
+              "title": "Implement Account Lockout Policy for RDP Brute Force Protection",
+              "command_or_action": "Local Group Policy Editor",
+              "explanation": "Configuring an account lockout policy helps prevent brute-force attacks (T1110) against RDP by temporarily locking out user accounts after a specified number of failed login attempts. This is a critical component of system monitoring and protection as per NIST-SI-04, making it harder for attackers to guess credentials and achieve lateral movement (T1563.002).",
+              "vendor_product": "Windows Server, Windows 11",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Local Computer Policy > Computer Configuration > Windows Settings > Security Settings > Account Policies > Account Lockout Policy",
+              "substeps": [
+                "Open the \"Local Group Policy Editor\" by typing `gpedit.msc` in the Run dialog (Win+R) or searching in the Start Menu.",
+                "In the left pane, navigate to \"Computer Configuration\" > \"Windows Settings\" > \"Security Settings\" > \"Account Policies\" > \"Account Lockout Policy\".",
+                "Double-click \"Account lockout threshold\" and set it to a reasonable number (e.g., 5 invalid logon attempts) before an account is locked out.",
+                "Double-click \"Account lockout duration\" and set it (e.g., 30 minutes). Then, double-click \"Reset account lockout counter after\" and set it to the same duration (e.g., 30 minutes). Click \"Apply\" and \"OK\" for each. You should see the \"Security Setting\" column for these policies updated with the configured values."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            }
+          ],
+          "priority": "medium",
+          "estimated_effort": "1 hour",
+          "prerequisites": [
+            "Administrative access to the Windows Server (192.168.220.132) and any relevant Windows 11 client machines.",
+            "Understanding of legitimate RDP usage patterns within the environment."
+          ],
+          "verification_procedure": "1. Attempt to RDP from an unauthorized IP address to 192.168.220.132. The connection should be blocked by the firewall. 2. Attempt to RDP from an authorized IP address to 192.168.220.132. The connection should succeed. 3. From an authorized IP, intentionally fail RDP login attempts multiple times (e.g., 5 times) to verify the account lockout policy is active. The account should temporarily lock out. 4. Review Event Viewer logs (Event ID 4625 for failed logons) for failed RDP login attempts to confirm firewall blocks and account lockouts are being logged.",
+          "source_control_ids": [
+            "NIST-SI-04",
+            "18.3.4 (L1)",
+            "2.3.11.2",
+            "CIS 9.3.2",
+            "9.3.2"
+          ],
+          "provenance": {
+            "mode": "graph_only"
+          },
+          "model": "gemini-2.5-flash",
+          "prompt_version": "remediation_v2",
+          "generated_at": "2026-04-10T05:46:47.592030+00:00",
+          "selfrag_verification": {
+            "grounding_score": 1.0,
+            "relevance_score": 0.75,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
+            "passed": true,
+            "issues": [],
+            "attempts": 2
+          }
         }
       }
     },
@@ -1837,6 +2205,129 @@
               }
             }
           ]
+        },
+        "remediation": {
+          "executive_summary": "A suspicious RDP connection was observed from 10.128.1.164 to 10.100.105.132 on port 3389. This activity could indicate an unauthorized access attempt or a brute-force attack (T1110). This remediation plan outlines steps to investigate the connection, harden the target system against RDP-based attacks, and enhance monitoring to detect similar future incidents.",
+          "limitations": [],
+          "steps": [
+            {
+              "step_number": 1,
+              "title": "Investigate the suspicious RDP connection on the target server",
+              "command_or_action": "Review Windows Event Logs on 10.100.105.132 for RDP connection attempts and logon activity.",
+              "explanation": "This step aims to determine the nature of the suspicious RDP connection, identify if it was successful, and if any user accounts were compromised. This directly addresses the T1110 (Brute Force) MITRE ATT&CK ID by looking for signs of repeated failed login attempts or successful unauthorized access.",
+              "vendor_product": "Windows Server",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Event Viewer > Windows Logs > Security",
+              "substeps": [
+                "Open 'Event Viewer' on the target server (10.100.105.132).",
+                "Navigate to 'Windows Logs' and then select 'Security'.",
+                "Filter the logs for Event IDs related to RDP connections and logon attempts (e.g., 4624 for successful logon, 4625 for failed logon, 4776 for credential validation, 4648 for a logon attempt using explicit credentials). Look for entries originating from 10.128.1.164.",
+                "You should see a list of security events, allowing you to identify successful or failed RDP login attempts from the suspicious IP address."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 2,
+              "title": "Configure Windows Firewall to block inbound RDP connections on the target server",
+              "command_or_action": "Configure Group Policy or local Windows Firewall to block inbound connections for the Domain Profile.",
+              "explanation": "Blocking inbound RDP connections by default significantly reduces the attack surface, especially against brute-force attacks (T1110) targeting port 3389. This aligns with control 9.1.2 from the source controls.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile",
+              "substeps": [
+                "Open 'Group Policy Management Editor' (if managing via GPO) or 'Windows Defender Firewall with Advanced Security' (if managing locally) on the target server.",
+                "Navigate to 'Windows Firewall with Advanced Security' > 'Windows Firewall Properties'.",
+                "Select the 'Domain Profile' tab.",
+                "Under 'State', locate 'Inbound connections' and set it to 'Block (default)'.",
+                "Click 'Apply' and 'OK'. You should see the 'Inbound connections' setting for the Domain Profile now explicitly showing 'Block (default)'."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 3,
+              "title": "Ensure NetBT NodeType configuration is set to P-node",
+              "command_or_action": "Configure Group Policy or local registry setting for NetBT NodeType.",
+              "explanation": "Setting the NetBT NodeType to P-node (peer-to-peer) prevents the system from using broadcast for name resolution, reducing exposure to NetBIOS-based enumeration and potential attacks. This aligns with control 18.3.4 (L1) from the source controls.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "substeps": [
+                "Open 'Group Policy Management Editor' (if managing via GPO) or 'Local Group Policy Editor' (if managing locally).",
+                "Navigate to 'Computer Configuration' > 'Policies' > 'Administrative Templates' > 'Network' > 'NetBIOS over TCP/IP'.",
+                "Double-click on the policy 'NetBT NodeType configuration'.",
+                "Set the policy to 'Enabled' and select 'P-node (recommended)' from the 'Options' dropdown.",
+                "Click 'Apply' and 'OK'. You should see the 'NetBT NodeType configuration' policy now listed as 'Enabled' with 'P-node' as the configured type."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
+              "command_or_action": "Configure Group Policy or local security policy to disable LocalSystem NULL session fallback.",
+              "explanation": "Disabling this setting prevents services running as LocalSystem from falling back to a NULL session when attempting to access network resources. This hardens the system against potential information disclosure or unauthorized access via NULL sessions, aligning with control 2.3.11.2 from the source controls.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open 'Group Policy Management Editor' (if managing via GPO) or 'Local Security Policy' (if managing locally).",
+                "Navigate to 'Computer Configuration' > 'Policies' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Locate and double-click the policy 'Network security: Allow LocalSystem NULL session fallback'.",
+                "Set the policy to 'Disabled'.",
+                "Click 'Apply' and 'OK'. You should see the 'Network security: Allow LocalSystem NULL session fallback' policy now showing 'Disabled' in the policy list."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Implement enhanced system monitoring for unauthorized connections",
+              "command_or_action": "Configure Cisco Meraki MX 250 firewall rules and alerts for RDP traffic.",
+              "explanation": "Proactive monitoring helps detect and respond to unauthorized RDP connection attempts, including brute-force attacks (T1110), in real-time. This aligns with NIST-SI-04 by monitoring for unauthorized network connections.",
+              "vendor_product": "Cisco Meraki MX 250",
+              "step_type": "monitoring",
+              "ui_breadcrumb": "Meraki dashboard > Security & SD-WAN > Firewall > Layer 3 firewall rules",
+              "substeps": [
+                "Log in to the Cisco Meraki dashboard.",
+                "Navigate to 'Security & SD-WAN' > 'Firewall' > 'Layer 3 firewall rules'. Review existing firewall rules to ensure that only authorized IPs or networks can initiate RDP (port 3389) connections to internal servers. If unauthorized RDP is allowed, create a new rule to block it.",
+                "Navigate to 'Network-wide' > 'Monitor' > 'Event log' and filter for 'Firewall' events related to RDP (port 3389) to identify blocked or allowed connections.",
+                "Navigate to 'Network-wide' > 'Alerts' and configure an alert for 'Firewall event log' entries that match RDP traffic (port 3389) from unexpected sources or to sensitive internal IPs. You should receive a confirmation that the alert rule has been saved and is active."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            }
+          ],
+          "priority": "medium",
+          "estimated_effort": "1 hour",
+          "prerequisites": [
+            "Administrative access to the target Windows Server (10.100.105.132).",
+            "Administrative access to Group Policy Management (if managing via GPO).",
+            "Administrative access to the Cisco Meraki dashboard."
+          ],
+          "verification_procedure": "After applying the remediation steps, verify that RDP connections from unauthorized sources are blocked and that monitoring alerts are configured to detect future suspicious activity. Attempt an RDP connection from a known unauthorized IP to confirm it is blocked by the firewall.",
+          "source_control_ids": [
+            "NIST-SI-04",
+            "18.3.4 (L1)",
+            "9.1.2",
+            "2.3.11.2"
+          ],
+          "provenance": {
+            "mode": "graph_only"
+          },
+          "model": "gemini-2.5-flash",
+          "prompt_version": "remediation_v2",
+          "generated_at": "2026-04-10T05:47:40.880449+00:00",
+          "selfrag_verification": {
+            "grounding_score": 1.0,
+            "relevance_score": 0.7917,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
+            "passed": true,
+            "issues": [],
+            "attempts": 2
+          }
         }
       }
     },
@@ -1988,6 +2479,155 @@
               }
             }
           ]
+        },
+        "remediation": {
+          "executive_summary": "An RDP connection from an unknown source IP was observed, indicating potential unauthorized access or a service requiring enhanced monitoring. This remediation plan focuses on investigating the specific RDP event, hardening the Windows Server's RDP and network security configurations, and implementing robust monitoring to detect and prevent future suspicious RDP activities. These steps align with NIST guidelines for system monitoring and specific Windows security baselines.",
+          "limitations": [],
+          "steps": [
+            {
+              "step_number": 1,
+              "title": "Investigate the Observed RDP Connection",
+              "command_or_action": "Review Windows Event Logs on the destination server (192.168.220.132) for RDP connection events.",
+              "explanation": "This step is critical to understand the nature of the observed RDP connection. By reviewing logs, you can determine if the connection was legitimate, identify the user account involved, and check for any associated suspicious activities like failed login attempts, which aligns with NIST-SI-04's requirement to detect attacks and unauthorized connections.",
+              "vendor_product": "Windows Server",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Event Viewer > Windows Logs > Security",
+              "substeps": [
+                "On the destination server (192.168.220.132), open 'Event Viewer' by searching for it in the Start menu.",
+                "Navigate to 'Windows Logs' and then select 'Security'.",
+                "Filter the logs for Event ID 4624 (successful logon) and 4625 (failed logon) during the time the RDP connection from 10.128.1.164 was observed.",
+                "Examine the 'Source Network Address' field within these events to identify connections originating from 10.128.1.164.",
+                "Note the 'Account Name' for successful logons and the 'Failure Reason' for failed logons.",
+                "You should see detailed entries for RDP connection attempts, including source IP, user account, and success/failure status."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 2,
+              "title": "Ensure RDP Connection Logging is Enabled",
+              "command_or_action": "Configure Group Policy to enable auditing for RDP connections.",
+              "explanation": "Enabling comprehensive auditing for RDP connections ensures that all attempts, successful or failed, are logged. This is a fundamental aspect of system monitoring as per NIST-SI-04, providing essential data for future investigations and anomaly detection.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Local Group Policy Editor > Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Logon/Logoff",
+              "substeps": [
+                "Open 'Local Group Policy Editor' by typing 'gpedit.msc' in the Run dialog (Win+R).",
+                "Navigate to 'Computer Configuration' > 'Windows Settings' > 'Security Settings' > 'Advanced Audit Policy Configuration' > 'Audit Policies' > 'Logon/Logoff'.",
+                "Double-click on 'Audit Logon' and 'Audit Logoff' policies. Check 'Configure the following audit events' and ensure 'Success' and 'Failure' checkboxes are marked.",
+                "Navigate to 'Computer Configuration' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Audit Policy'. Ensure 'Audit logon events' is set to 'Success and Failure'.",
+                "Apply the changes and run 'gpupdate /force' in an elevated Command Prompt to ensure the new policy settings are applied immediately.",
+                "You should see 'Success and Failure' selected for 'Audit Logon' and 'Audit Logoff' policies, indicating that RDP connection events will be logged."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 3,
+              "title": "Harden Windows Firewall for RDP Inbound Connections",
+              "command_or_action": "Configure Windows Defender Firewall to block inbound connections by default and create specific rules for authorized RDP access.",
+              "explanation": "Blocking inbound connections by default significantly reduces the attack surface, preventing unauthorized network connections as required by NIST-SI-04 and directly implementing controls 9.1.2 and 9.3.2. Specific rules should only allow RDP from trusted source IPs.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Windows Defender Firewall with Advanced Security > Inbound Rules",
+              "substeps": [
+                "Open 'Windows Defender Firewall with Advanced Security' by searching for it in the Start menu.",
+                "In the left pane, click on 'Windows Defender Firewall Properties'.",
+                "For each profile (Domain, Private, Public), ensure 'Inbound connections' is set to 'Block (default)'. Click 'OK'.",
+                "In the left pane, click 'Inbound Rules'. Locate the existing 'Remote Desktop (TCP-In)' rules.",
+                "Right-click on the 'Remote Desktop (TCP-In)' rule(s) that allow RDP and select 'Properties'. Go to the 'Scope' tab and under 'Remote IP address', select 'These IP addresses' and add only the specific, authorized source IP addresses (e.g., 10.128.1.164 if it's legitimate) that should be allowed to connect via RDP. Remove any 'Any IP address' entries.",
+                "You should see the firewall profiles set to 'Block (default)' for inbound connections and the RDP inbound rules explicitly listing only authorized source IP addresses."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
+              "command_or_action": "Set the Group Policy 'Network security: Allow LocalSystem NULL session fallback' to 'Disabled'.",
+              "explanation": "Disabling NULL session fallback prevents anonymous access to system resources, which can be exploited by attackers to enumerate user accounts or share information. This is a direct hardening measure to reduce the attack surface and prevent unauthorized use, aligning with control 2.3.11.2.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Local Group Policy Editor > Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open 'Local Group Policy Editor' by typing 'gpedit.msc' in the Run dialog (Win+R).",
+                "Navigate to 'Computer Configuration' > 'Windows Settings' > 'Security Settings' > 'Local Policies' > 'Security Options'.",
+                "Locate and double-click the policy 'Network security: Allow LocalSystem NULL session fallback'.",
+                "Select the 'Disabled' option.",
+                "Click 'Apply' and then 'OK'. Run 'gpupdate /force' in an elevated Command Prompt.",
+                "You should see the 'Network security: Allow LocalSystem NULL session fallback' policy status as 'Disabled'."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Configure 'NetBT NodeType configuration' to 'P-node'",
+              "command_or_action": "Set the Group Policy 'NetBT NodeType configuration' to 'Enabled: P-node (recommended)'.",
+              "explanation": "Configuring NetBT NodeType to P-node (Point-to-Point) ensures that NetBIOS name resolution relies primarily on a NetBIOS Name Server (WINS) and does not broadcast name queries, reducing the risk of NetBIOS-related attacks and information leakage on the network. This aligns with control 18.3.4.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Local Group Policy Editor > Computer Configuration > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "substeps": [
+                "Open 'Local Group Policy Editor' by typing 'gpedit.msc' in the Run dialog (Win+R).",
+                "Navigate to 'Computer Configuration' > 'Administrative Templates' > 'Network' > 'NetBIOS over TCP/IP'.",
+                "Locate and double-click the policy 'NetBT NodeType configuration'.",
+                "Select 'Enabled' and then choose 'P-node (recommended)' from the 'Options:' dropdown menu.",
+                "Click 'Apply' and then 'OK'. Run 'gpupdate /force' in an elevated Command Prompt.",
+                "You should see the 'NetBT NodeType configuration' policy status as 'Enabled' with 'P-node (recommended)' selected."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 6,
+              "title": "Implement Ongoing RDP Monitoring and Alerting",
+              "command_or_action": "Create custom Event Viewer views and consider integrating with a centralized logging solution for RDP activity.",
+              "explanation": "Proactive monitoring and alerting for RDP connections are essential for detecting suspicious activity in real-time, as emphasized by NIST-SI-04. This allows for rapid response to potential brute-force attacks (T1110) or RDP hijacking attempts (T1563.002).",
+              "vendor_product": "Windows Server",
+              "step_type": "monitoring",
+              "ui_breadcrumb": "Event Viewer > Custom Views",
+              "substeps": [
+                "Open 'Event Viewer' and navigate to 'Custom Views'. Right-click and select 'Create Custom View...'.",
+                "In the 'Create Custom View' dialog, select 'By log' and choose 'Security'. In the 'Event IDs' field, enter '4624, 4625, 4634, 4647, 4776, 4820, 5140, 5142' (common RDP and logon/logoff events).",
+                "Optionally, filter by 'Source' (e.g., 'Microsoft-Windows-Security-Auditing') and 'Keywords' (e.g., 'Audit Success', 'Audit Failure'). Give the custom view a descriptive name like 'RDP Activity Monitoring'.",
+                "Regularly review this custom view for unusual patterns, such as multiple failed login attempts from a single source IP, successful logins from unexpected locations, or RDP sessions outside of normal business hours.",
+                "If a centralized logging solution (e.g., SIEM) is available in the environment, configure Windows Event Forwarding to send these RDP-related security events to it for automated alerting.",
+                "You should see a new custom view in Event Viewer populated with relevant RDP and logon/logoff events, providing a focused dashboard for monitoring."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            }
+          ],
+          "priority": "medium",
+          "estimated_effort": "2 hours",
+          "prerequisites": [
+            "Administrative access to the target Windows Server (192.168.220.132).",
+            "Understanding of network topology and legitimate RDP source IP addresses."
+          ],
+          "verification_procedure": "After applying the remediation steps, attempt an RDP connection from an unauthorized IP address and verify that it is blocked by the firewall. Attempt a legitimate RDP connection and verify that successful logon events (Event ID 4624) are logged in the Event Viewer's Security log and appear in the custom RDP monitoring view. Confirm that the specified Group Policy settings are applied by re-checking them in 'gpedit.msc' or by running 'gpresult /h C:\\gpresult.html' and reviewing the generated report.",
+          "source_control_ids": [
+            "NIST-SI-04",
+            "2.3.11.2",
+            "18.3.4",
+            "9.1.2",
+            "9.3.2"
+          ],
+          "provenance": {
+            "mode": "graph_only"
+          },
+          "model": "gemini-2.5-flash",
+          "prompt_version": "remediation_v2",
+          "generated_at": "2026-04-10T05:48:15.804208+00:00",
+          "selfrag_verification": {
+            "grounding_score": 1.0,
+            "relevance_score": 0.8571,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
+            "passed": true,
+            "issues": [],
+            "attempts": 1
+          }
         }
       }
     },
@@ -2135,6 +2775,131 @@
             }
           ],
           "framework_controls": []
+        },
+        "remediation": {
+          "executive_summary": "A suspicious RDP connection was observed, indicating potential unauthorized access attempts, possibly a brute-force attack (T1110). This remediation plan outlines steps to investigate the specific RDP activity, harden Windows Firewall configurations to restrict RDP access, and apply additional security configurations to Windows Servers to reduce the attack surface. These measures will help prevent future unauthorized RDP connections and improve overall system security.",
+          "limitations": [],
+          "steps": [
+            {
+              "step_number": 1,
+              "title": "Investigate Observed RDP Connection",
+              "command_or_action": "Review security logs and network flow data for RDP connections.",
+              "explanation": "This step aims to determine the nature and origin of the suspicious RDP connection, identify if it was legitimate or malicious, and assess the extent of any potential compromise. This directly addresses the T1110 finding by looking for evidence of brute force or successful RDP access.",
+              "vendor_product": "Windows Server, M365",
+              "step_type": "investigation",
+              "ui_breadcrumb": "Microsoft 365 Defender > Incidents & alerts > Alerts",
+              "substeps": [
+                "Navigate to the Microsoft 365 Defender portal and select \"Incidents & alerts\" then \"Alerts\" from the left-hand navigation pane.",
+                "Filter alerts for RDP-related activities or search for connections involving the source IP '10.128.1.176' and destination IP '10.100.104.132' on port '3389'.",
+                "Examine the details of the observed connection, including user accounts involved, connection duration, and any associated authentication failures, to determine if it was legitimate or indicative of a brute-force attempt.",
+                "You should see detailed log entries or alerts related to the RDP connection, indicating success or failure, and user context."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 2,
+              "title": "Configure Windows Firewall to Block Inbound Connections for Domain Profile",
+              "command_or_action": "Set 'Windows Firewall: Domain: Inbound connections' to 'Block (default)' via Group Policy.",
+              "explanation": "This hardening step prevents unauthorized inbound connections, including RDP, to systems joined to the domain, significantly reducing the attack surface for brute-force attacks (T1110) and other network-based exploits.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile",
+              "substeps": [
+                "Open \"Group Policy Management Editor\" on a domain controller or a management workstation with RSAT installed.",
+                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security' in the console tree.",
+                "Right-click \"Windows Firewall with Advanced Security\" in the left pane and select \"Properties\".",
+                "Go to the \"Domain Profile\" tab. Under \"State\", ensure \"Inbound connections\" is set to \"Block (default)\".",
+                "Click \"Apply\" and \"OK\". You should see the \"Inbound connections\" setting for the Domain Profile now explicitly showing \"Block (default)\"."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 3,
+              "title": "Configure Windows Firewall to Block Inbound Connections for Public Profile",
+              "command_or_action": "Set 'Windows Firewall: Public: Inbound connections' to 'Block (default)' via Group Policy.",
+              "explanation": "This step extends the firewall hardening to systems operating on public networks, ensuring that even if a system is not on the domain, it is protected from unauthorized inbound connections, including RDP.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security > Windows Firewall Properties > Public Profile",
+              "substeps": [
+                "Open \"Group Policy Management Editor\" on a domain controller or a management workstation with RSAT installed.",
+                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall with Advanced Security' in the console tree.",
+                "Right-click \"Windows Firewall with Advanced Security\" in the left pane and select \"Properties\".",
+                "Go to the \"Public Profile\" tab. Under \"State\", ensure \"Inbound connections\" is set to \"Block (default)\".",
+                "Click \"Apply\" and \"OK\". You should see the \"Inbound connections\" setting for the Public Profile now explicitly showing \"Block (default)\"."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 4,
+              "title": "Configure NetBT NodeType to P-node",
+              "command_or_action": "Set 'NetBT NodeType configuration' to 'Enabled: P-node (recommended)' via Group Policy.",
+              "explanation": "Configuring NetBIOS over TCP/IP (NetBT) to P-node (peer-to-peer) prevents systems from relying on broadcast for name resolution, reducing the risk of NetBIOS-related attacks like spoofing or information disclosure. This is a general hardening measure for Windows Server.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Administrative Templates > Network > NetBIOS over TCP/IP",
+              "substeps": [
+                "Open \"Group Policy Management Editor\" on a domain controller or a management workstation with RSAT installed.",
+                "Navigate to 'Computer Configuration > Policies > Administrative Templates > Network > NetBIOS over TCP/IP' in the console tree.",
+                "Locate and double-click the policy setting \"NetBT NodeType configuration\" in the right pane.",
+                "Select \"Enabled\" and then choose \"P-node (recommended)\" from the \"Node Type\" dropdown menu.",
+                "Click \"Apply\" and \"OK\". You should see the \"NetBT NodeType configuration\" policy now showing \"Enabled\" with \"P-node (recommended)\" as its setting."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            },
+            {
+              "step_number": 5,
+              "title": "Disable 'Network security: Allow LocalSystem NULL session fallback'",
+              "command_or_action": "Set 'Network security: Allow LocalSystem NULL session fallback' to 'Disabled' via Group Policy.",
+              "explanation": "Disabling this setting prevents services running as LocalSystem from falling back to a NULL session when attempting to access network resources. This reduces the risk of unauthorized access or information disclosure through unauthenticated NULL sessions.",
+              "vendor_product": "Windows Server",
+              "step_type": "hardening",
+              "ui_breadcrumb": "Group Policy Management Editor > Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options",
+              "substeps": [
+                "Open \"Group Policy Management Editor\" on a domain controller or a management workstation with RSAT installed.",
+                "Navigate to 'Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > Security Options' in the console tree.",
+                "Locate and double-click the policy setting \"Network security: Allow LocalSystem NULL session fallback\" in the right pane.",
+                "Select \"Disabled\".",
+                "Click \"Apply\" and \"OK\". You should see the \"Network security: Allow LocalSystem NULL session fallback\" policy now showing \"Disabled\"."
+              ],
+              "evidence_tier": "graph",
+              "supporting_urls": []
+            }
+          ],
+          "priority": "medium",
+          "estimated_effort": "1 hour",
+          "prerequisites": [
+            "Administrative access to a Domain Controller or a workstation with Group Policy Management Editor and RSAT installed.",
+            "Access to Microsoft 365 Defender portal or Azure Monitor for log investigation.",
+            "Network connectivity to the affected Windows Servers."
+          ],
+          "verification_procedure": "After applying Group Policies, force a Group Policy update on target servers using 'gpupdate /force' in an elevated command prompt. Verify the firewall settings by checking the 'Windows Firewall with Advanced Security' console on a target server and confirming 'Inbound connections' is set to 'Block' for both Domain and Public profiles. Verify the NetBT NodeType by checking the registry key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters and looking for NodeType (should be 0x2 for P-node). Verify the NULL session fallback setting by checking the registry key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa and looking for AllowLsaNullSessionFallback (should be 0). Monitor network logs for any further suspicious RDP connections from the identified source or to the identified destination.",
+          "source_control_ids": [
+            "18.3.4 (L1)",
+            "9.1.2 (L1)",
+            "2.3.11.2",
+            "9.1.2",
+            "CIS 9.3.2"
+          ],
+          "provenance": {
+            "mode": "graph_only"
+          },
+          "model": "gemini-2.5-flash",
+          "prompt_version": "remediation_v2",
+          "generated_at": "2026-04-10T05:49:04.095925+00:00",
+          "selfrag_verification": {
+            "grounding_score": 1.0,
+            "relevance_score": 0.9167,
+            "completeness_score": 1.0,
+            "substep_quality_score": 1.0,
+            "passed": true,
+            "issues": [],
+            "attempts": 2
+          }
         }
       }
     },

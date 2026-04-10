@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -42,7 +43,8 @@ def _write_remediated(input_path: Path, data: dict[str, Any]) -> Path:
     stem = input_path.stem
     if stem.endswith("_correlated"):
         stem = stem[: -len("_correlated")]
-    out_path = config.REMEDIATED_JSON_DIR / f"{stem}_remediated.json"
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    out_path = config.REMEDIATED_JSON_DIR / f"{stem}_remediated_{ts}.json"
     with out_path.open("w", encoding="utf-8") as fp:
         json.dump(data, fp, indent=2, ensure_ascii=False)
         fp.write("\n")
@@ -55,6 +57,7 @@ def run_remediate(
     max_findings: int | None = None,
     tech_stack: str | None = None,
     skip_llm_judge: bool = False,
+    enable_search_augmentation: bool = False,
 ) -> None:
     ts: list[str] | None = None
     if tech_stack:
@@ -90,24 +93,33 @@ def run_remediate(
                 break
 
             fid = finding.get("id", "?")
-            output, verification = generate_with_verification(
+            output, verification, provenance = generate_with_verification(
                 finding,
                 correlation,
                 ts,
                 use_llm_judge=not skip_llm_judge,
+                enable_search_augmentation=enable_search_augmentation,
             )
 
             meta = finding.setdefault("metadata", {})
-            meta["remediation"] = build_remediation_metadata(output, verification)
+            meta["remediation"] = build_remediation_metadata(
+                output, verification, provenance,
+            )
 
             status = "PASS" if verification.passed else "FAIL"
             n_steps = len(output.steps)
             att = verification.attempts
             g = verification.grounding_score
             r = verification.relevance_score
+            mode = provenance.mode
+            if provenance.mode == "graph_plus_search":
+                print(
+                    f"  [search] {fid} -> Google Search grounding "
+                    f"({provenance.search_trigger_reason or 'policy'})"
+                )
             print(
                 f"  [{status}] {fid} -> {n_steps} steps "
-                f"(G:{g:.2f} R:{r:.2f} attempts:{att})"
+                f"(G:{g:.2f} R:{r:.2f} attempts:{att} mode:{mode})"
             )
             total_processed += 1
 
@@ -139,6 +151,11 @@ def main() -> None:
         "--skip-llm-judge", action="store_true",
         help="Use heuristic grounding only (faster, no extra LLM calls for verification)",
     )
+    p.add_argument(
+        "--enable-search-augmentation",
+        action="store_true",
+        help="Allow Gemini Google Search grounding when retrieval policy says vendor/UI gaps",
+    )
     args = p.parse_args()
     run_remediate(
         json_path=args.json,
@@ -146,6 +163,7 @@ def main() -> None:
         max_findings=args.max_findings,
         tech_stack=args.tech_stack,
         skip_llm_judge=args.skip_llm_judge,
+        enable_search_augmentation=args.enable_search_augmentation,
     )
 
 

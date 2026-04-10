@@ -7,6 +7,7 @@ import pytest
 from src.section4_remediation.schemas import (
     RemediationOutput,
     RemediationStep,
+    StepType,
     VerificationIssue,
     VerificationResult,
 )
@@ -89,6 +90,7 @@ def test_verification_result_defaults() -> None:
     assert vr.grounding_score == 0.0
     assert vr.relevance_score == 0.0
     assert vr.completeness_score == 0.0
+    assert vr.substep_quality_score == 0.0
     assert vr.passed is False
     assert vr.issues == []
     assert vr.attempts == 1
@@ -99,8 +101,32 @@ def test_verification_result_passing() -> None:
         grounding_score=0.9,
         relevance_score=0.8,
         completeness_score=1.0,
+        substep_quality_score=0.85,
         passed=True,
         attempts=1,
     )
     assert vr.passed is True
     assert vr.grounding_score == 0.9
+    assert vr.substep_quality_score == 0.85
+
+
+def test_step_type_field() -> None:
+    s = RemediationStep(**_make_step(step_type="hardening"))
+    assert s.step_type == "hardening"
+
+
+def test_step_type_optional() -> None:
+    s = RemediationStep(**_make_step())
+    assert s.step_type is None
+
+
+def test_step_type_all_values() -> None:
+    for st in ("investigation", "hardening", "monitoring"):
+        s = RemediationStep(**_make_step(step_type=st))
+        assert s.step_type == st
+
+
+def test_step_type_in_dump() -> None:
+    s = RemediationStep(**_make_step(step_type="monitoring"))
+    d = s.model_dump()
+    assert d["step_type"] == "monitoring"
