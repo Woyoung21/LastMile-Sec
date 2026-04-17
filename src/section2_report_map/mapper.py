@@ -19,7 +19,13 @@ from pydantic import BaseModel, Field
 
 from .config import ATTACKMapperConfig, ReporterConfig
 from .prompts import AttackMapperPrompts
-from .validation import MappingValidator, ValidationResult
+from .validation import (
+    MappingValidator,
+    ValidationResult,
+    _TACTIC_KEYWORD_MAP,
+    _TECHNIQUE_TACTIC_ROOTS,
+    summary_supports_t1102_web_service_c2,
+)
 
 
 class _LocalDecodingGuards:
@@ -216,6 +222,39 @@ class MitreValidator:
                 valid_ids.append(normalized)
 
         return valid_ids
+
+
+def _rerank_reference_examples(
+    technical_summary: str,
+    examples: list[ReferenceExample],
+) -> list[ReferenceExample]:
+    """Rerank vector hits: boost examples whose labeled tactics match summary keywords; downrank T1102 without C2 evidence."""
+    if len(examples) <= 1:
+        return examples
+
+    summary_tactics: set[str] = set()
+    sl = technical_summary.lower()
+    for tactic, keywords in _TACTIC_KEYWORD_MAP.items():
+        if any(kw in sl for kw in keywords):
+            summary_tactics.add(tactic)
+
+    c2_ok = summary_supports_t1102_web_service_c2(technical_summary)
+    scored: list[tuple[float, ReferenceExample]] = []
+
+    for ex in examples:
+        base = float(ex.similarity_score if ex.similarity_score is not None else 0.0)
+        bonus = 0.0
+        for mid in ex.mitre_ids:
+            root = mid.split(".", 1)[0].upper()
+            tactics = _TECHNIQUE_TACTIC_ROOTS.get(root)
+            if tactics and summary_tactics.intersection(set(tactics)):
+                bonus += 0.12
+            if root == "T1102" and not c2_ok:
+                bonus -= 0.35
+        scored.append((base + bonus, ex))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [ex for _, ex in scored]
 
 
 class ActianVectorAIDBClient:
@@ -479,10 +518,15 @@ class Mapper:
         embed_ms = (time.perf_counter() - embed_start) * 1000.0
 
         vector_start = time.perf_counter()
+        pool_k = max(ATTACKMapperConfig.VECTOR_DB_TOP_K, ATTACKMapperConfig.RERANK_POOL_K)
         reference_examples = self.vector_db_client.query_similar(
             embedding=embedding,
-            top_k=ATTACKMapperConfig.VECTOR_DB_TOP_K,
+            top_k=pool_k,
         )
+        reference_examples = _rerank_reference_examples(
+            report.technical_summary,
+            list(reference_examples),
+        )[: ATTACKMapperConfig.VECTOR_DB_TOP_K]
         vector_query_ms = (time.perf_counter() - vector_start) * 1000.0
 
         generate_start = time.perf_counter()

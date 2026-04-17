@@ -29,6 +29,10 @@ Requirements:
    - "enables"
    - "exposes"
    - "permits"
+8. State the situation clearly for mapping:
+   - If the finding is only a vulnerable, misconfigured, or end-of-life (EOL) product on a public-facing or internal host, say so explicitly (e.g. "end-of-life", "no longer receives security updates", "exposes the host to unpatched flaws"). Do not imply command-and-control or covert channels unless the evidence describes them.
+   - If the finding is only a configuration weakness or missing patch, do not describe adversary actions that are not in the evidence.
+   - Name specific software (e.g. nginx, jQuery) and ports when present; avoid vague "web service" when you mean HTTP/HTTPS application or web server software.
 
 Do NOT include:
 - severity labels
@@ -56,6 +60,7 @@ Affected Services: {services}
 Affected Ports: {ports}
 
 Ignore severity labels, CVSS scores, and scanner scoring metadata even if they appear in the evidence text.
+Write for MITRE mapping: distinguish exposure/EOL/patch gaps from observed attacker behavior; be concrete about products and ports.
 Return ONLY the sentence."""
 
 
@@ -130,7 +135,15 @@ Return ONLY the JSON object using the required schema."""
 
     LOCAL_USER_PROMPT_TEMPLATE = """<s>
 ### Instruction:
-You are a cybersecurity assistant. Your task is to analyze a system log and assign the most appropriate MITRE ATT&CK technique(s).
+You are a cybersecurity assistant. Your task is to map a normalized finding summary to MITRE ATT&CK Enterprise technique IDs.
+
+Output format: output ONLY a Python list of technique IDs in ATT&CK form, e.g. ['T1190'] or ['T1059.001', 'T1190']. At most 5 IDs. No prose, no JSON, no explanation.
+
+Mapping discipline (critical):
+- Distinguish exposure (vulnerable, EOL, misconfiguration, missing patches) from observed adversary behavior (intrusion, malware, C2, credential theft). If the text only describes a weak or EOL public-facing service, prefer Initial Access (e.g. T1190 Exploit Public-Facing Application) when exploitation is plausible, and never invent Command and Control techniques.
+- T1102 (Web Service) and sub-techniques are for adversary use of web services for C2 or dead drops. Do NOT map to T1102.x unless the summary clearly describes C2, covert channels, beacons, callbacks, drop resolvers, or similar—not merely HTTP/HTTPS, nginx, or a generic web server.
+- Prefer precision over recall. If uncertain, output a shorter list or a single best ID.
+- Do not emit sub-technique IDs unless the evidence clearly supports that specificity.
 
 ### Reference Examples from Database:
 {db_results}

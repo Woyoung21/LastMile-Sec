@@ -6,9 +6,42 @@ Section 2 takes normalized JSON packets from Section 1 (Ingestion) and produces 
 
 1. **Reporter Agent** (Gemini 2.5 Flash) -- generates a concise technical summary sentence per finding
 2. **Mapper Agent** (Mistral-7B LoRA v2 + Actian VectorAI RAG) -- maps each summary to MITRE ATT&CK Enterprise technique IDs
-3. **Validation Layer** -- three-gate validation pipeline (format, consistency, policy) governs output quality
+3. **Validation Layer** -- validation pipeline (format, semantic, consistency, policy) governs output quality; optional **T1190 fallback** when T1102 is rejected
 
 The final deliverable from Section 2 is an enriched JSON packet where every finding carries both a `technical_summary` and a `mitre_mapping` with validated technique IDs.
+
+## Environment setup (Windows / local GPU)
+
+1. **Python** — Use **3.12 or 3.11 (64-bit)**. PyTorch **CUDA** wheels for **3.14** are often missing, which shows up as `No matching distribution found for torch` when using the CUDA index.
+
+2. **PyTorch + CUDA** — Install from the [official PyTorch matrix](https://pytorch.org/get-started/locally/) (e.g. CUDA 12.4):
+
+   ```powershell
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   ```
+
+   After any full `pip install -r requirements.txt`, confirm you still have a **`+cu...`** build, not **`+cpu`**:
+
+   ```powershell
+   python scripts/check_torch_cuda.py
+   ```
+
+3. **Actian `actiancortex`** — The Mapper imports `from cortex import CortexClient` via the **`actiancortex`** distribution. It is **not** on public PyPI under that name. Install the **`.whl`** from Actian or your team (example path: `C:\Users\WillYoung\Downloads\actiancortex-0.1.0b1-py3-none-any.whl`), then the rest of the dependencies:
+
+   ```powershell
+   pip install "C:\Users\WillYoung\Downloads\actiancortex-0.1.0b1-py3-none-any.whl"
+   pip install -r requirements.txt
+   ```
+
+   Verify: `python -c "from cortex import CortexClient; print('ok')"`.
+
+4. **Hugging Face** — Local mapper loads `sentence-transformers/all-MiniLM-L6-v2` and `mistralai/Mistral-7B-Instruct-v0.1`. Optional: set **`HF_TOKEN`** if you hit Hub rate limits.
+
+5. **LoRA adapter** — `LOCAL_ADAPTER_PATH` in [`config.py`](config.py) must point at your trained adapter directory (default in repo: `final_adapter_v2`).
+
+6. **Vector DB** — Actian VectorAI must be reachable at `VECTOR_DB_ADDRESS`; seed and check with `scripts/seed_vector_db.py` and `scripts/check_vector_db.py`.
+
+**`--routing-mode cloud`** uses Gemini for mapping but still loads the Actian client for RAG retrieval unless you inject a custom client in code—install **`actiancortex`** for the default path.
 
 ## Pipeline Architecture
 
@@ -56,8 +89,11 @@ Section 1 JSON (data/processed/*.json)
 |         to ATT&CK ID characters only         |
 |    6. Extract technique IDs (ast.literal_eval|
 |       -> JSON -> regex fallback)             |
-|    7. Three-gate validation:                 |
+|    7. Validation gates:                      |
 |       - Format: well-formed + known ID?      |
+|       - Semantic: drop T1102 without C2 text  |
+|       - Fallback: infer T1190 if empty + IA  |
+|         heuristics (see validation.py)       |
 |       - Consistency: tactic-summary match    |
 |         (advisory, does not block)           |
 |       - Policy: max techniques per finding   |
@@ -130,13 +166,15 @@ These are implemented in the `_LocalDecodingGuards` class. Combined with `max_ne
 2. `json.loads` for JSON arrays
 3. Regex `T\d{4}(?:\.\d{3})?` as last resort
 
-### `validation.py` -- Three-Gate Validation Layer
+### `validation.py` -- Validation Layer
 
-Implements the validation pipeline from the Esposito thesis (Section 4.3):
+Implements the validation pipeline from the Esposito thesis (Section 4.3), extended with semantic filtering and an optional T1190 fallback:
 
 | Gate | Type | Behavior |
 |------|------|----------|
 | **Format** | Hard gate | Rejects malformed IDs and IDs not in ATT&CK Enterprise v18.1 |
+| **Semantic** | Hard filter | Drops **T1102** (Web Service / C2) when the summary lacks explicit C2-like evidence (avoids dead-drop false positives on scanner “HTTP/EOL” text). |
+| **Fallback** | Inference | If **Semantic** removed all IDs and at least one was T1102, and `ATTACK_MAPPER_T1102_FALLBACK_T1190` is true (default), inject **T1190** when the summary matches Initial Access keyword overlap (Exploit Public-Facing Application). Emits an `info` issue with `gate="fallback"`. |
 | **Consistency** | Advisory | Warns when a technique's tactic family has no keyword overlap with the summary. Does not block validation. |
 | **Policy** | Hard gate | Drops excess IDs when count exceeds `MAX_TECHNIQUES_PER_FINDING` (default: 5) |
 
@@ -156,6 +194,7 @@ The `MappingValidator` class is injected into the `Mapper` and runs after ID ext
 | `ATTACK_MAPPER_REQUIRE_RAG` | true | Fail fast if VectorAI collection is not ready |
 | `ATTACK_VERSION` | 18.1 | Enterprise framework version |
 | `MAX_TECHNIQUES_PER_FINDING` | 5 | Policy gate limit |
+| `ATTACK_MAPPER_T1102_FALLBACK_T1190` | true | After T1102 rejection, infer T1190 when Initial Access heuristics match |
 | `ROUTING_MODE` | local | Default routing for Mapper |
 
 ### `prompts.py` -- Prompt Templates
@@ -279,7 +318,7 @@ The Reporter caches valid Gemini summaries to avoid redundant API calls.
 
 - **Key**: SHA-256 hash of (prompt version + model + title + description + CVEs + services + ports)
 - **Storage**: `data/cache/` as plain text files
-- **Invalidation**: Bump `SUMMARY_PROMPT_VERSION` in config when prompts or validation logic change (currently `summary_v3`)
+- **Invalidation**: Bump `SUMMARY_PROMPT_VERSION` in config when prompts or validation logic change (currently `summary_v4`)
 
 ## File Structure
 

@@ -32,7 +32,7 @@ class ReporterConfig:
     # - model choice
     # - summary validation logic
     # - evidence formatting / cache key inputs
-    SUMMARY_PROMPT_VERSION: str = "summary_v3"
+    SUMMARY_PROMPT_VERSION: str = "summary_v4"
 
     # Generation parameters
     SUMMARY_MAX_TOKENS: int = 150
@@ -88,6 +88,8 @@ class ATTACKMapperConfig:
     # Retrieval / embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     VECTOR_DB_TOP_K: int = 1
+    # Retrieve this many neighbors from VectorAI, rerank to tactic-aligned examples, then keep TOP_K.
+    RERANK_POOL_K: int = int(os.getenv("ATTACK_MAPPER_RERANK_POOL_K", "8"))
     VECTOR_DB_ADDRESS: str = os.getenv("ATTACK_MAPPER_VECTOR_DB_ADDRESS", "localhost:50051")
     VECTOR_DB_COLLECTION: str = os.getenv("ATTACK_MAPPER_VECTOR_DB_COLLECTION", "mitre_v18_1")
 
@@ -99,6 +101,8 @@ class ATTACKMapperConfig:
     # Technique mapping settings
     MIN_CONFIDENCE_THRESHOLD: float = 0.7
     MAX_TECHNIQUES_PER_FINDING: int = 5
+    # When T1102 is semantically rejected and nothing remains, inject T1190 if the summary matches Initial Access heuristics.
+    T1102_FALLBACK_T1190: bool = os.getenv("ATTACK_MAPPER_T1102_FALLBACK_T1190", "true").lower() == "true"
 
     # Tactic categories to consider
     ENABLED_TACTICS = [

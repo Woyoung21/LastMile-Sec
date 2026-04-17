@@ -28,7 +28,7 @@ class TestPDFParserLangExtractInitialization:
             
             assert parser.api_key == "test-key-123"
             assert parser.file_path.name == "test.pdf"
-            assert parser.model_id == "gemini-2.0-flash"
+            assert parser.model_id == "gemini-2.5-flash"
     
     def test_init_with_custom_model(self):
         """Test initialization with custom model ID."""
@@ -74,7 +74,7 @@ class TestPDFParserLangExtractInitialization:
     def test_parser_name_and_version(self):
         """Test parser metadata."""
         assert PDFParserLangExtract.PARSER_NAME == "pdf_parser_langextract"
-        assert PDFParserLangExtract.PARSER_VERSION == "1.0.0"
+        assert PDFParserLangExtract.PARSER_VERSION == "2.0.0"
         assert PDFParserLangExtract.SOURCE_TYPE == SourceType.VULNERABILITY_REPORT
         assert ".pdf" in PDFParserLangExtract.SUPPORTED_EXTENSIONS
 
@@ -290,8 +290,8 @@ class TestPDFParserLangExtractTextExtraction:
         mock_page2 = Mock()
         mock_page2.get_text.return_value = "Page 2 text"
         
-        mock_doc = Mock()
-        mock_doc.__iter__.return_value = [mock_page1, mock_page2]
+        mock_doc = MagicMock()
+        mock_doc.__iter__.return_value = iter([mock_page1, mock_page2])
         mock_doc.__enter__.return_value = mock_doc
         mock_doc.__exit__.return_value = False
         
@@ -311,8 +311,8 @@ class TestPDFParserLangExtractTextExtraction:
         mock_page2 = Mock()
         mock_page2.get_text.side_effect = Exception("Unable to extract")
         
-        mock_doc = Mock()
-        mock_doc.__iter__.return_value = [mock_page1, mock_page2]
+        mock_doc = MagicMock()
+        mock_doc.__iter__.return_value = iter([mock_page1, mock_page2])
         mock_doc.__enter__.return_value = mock_doc
         mock_doc.__exit__.return_value = False
         
@@ -345,7 +345,7 @@ class TestPDFParserLangExtractLangExtractAvailability:
             findings = parser.parse()
             
             assert findings == []
-            assert len(parser.errors) > 0
+            assert any("LangExtract not installed" in w for w in parser.warnings)
     
     @patch('pathlib.Path.exists', return_value=True)
     def test_parse_without_api_key(self, mock_exists):
@@ -357,7 +357,7 @@ class TestPDFParserLangExtractLangExtractAvailability:
                 findings = parser.parse()
                 
                 assert findings == []
-                assert len(parser.errors) > 0
+                assert any("GOOGLE_API_KEY" in w for w in parser.warnings)
 
 
 class TestPDFParserLangExtractParsing:
@@ -386,10 +386,10 @@ class TestPDFParserLangExtractParsing:
             parser._langextract_available = True
             
             # Mock PDF text
-            mock_doc = Mock()
+            mock_doc = MagicMock()
             mock_page = Mock()
             mock_page.get_text.return_value = "Test vulnerability content"
-            mock_doc.__iter__.return_value = [mock_page]
+            mock_doc.__iter__.return_value = iter([mock_page])
             mock_doc.__enter__.return_value = mock_doc
             mock_doc.__exit__.return_value = False
             mock_fitz_open.return_value = mock_doc
@@ -477,7 +477,8 @@ class TestPDFParserLangExtractDocumentSummary:
     
     def test_extract_summary_from_text(self, parser):
         """Test extracting summary from document text."""
-        parser.full_text = "This is a summary paragraph with enough text.\n\nAnother paragraph."
+        long_para = "This is a summary paragraph with enough text. " * 5
+        parser.full_text = f"{long_para}\n\nAnother paragraph."
         
         summary = parser.extract_document_summary()
         
@@ -532,6 +533,67 @@ class TestPDFParserLangExtractErrorHandling:
         
         assert len(parser.warnings) == 2
         assert len(parser.errors) == 1
+
+
+class TestLangExtractGeminiRetry:
+    """Retry/backoff for transient Gemini errors during lx.extract."""
+
+    @pytest.fixture
+    def parser(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            return PDFParserLangExtract("test.pdf", api_key="key")
+
+    def test_is_retryable_503(self):
+        from src.section1_ingestion.parsers.pdf_parser_langextract import _is_retryable_gemini_error
+
+        assert _is_retryable_gemini_error(RuntimeError("503 UNAVAILABLE. high demand"))
+        assert _is_retryable_gemini_error(Exception("429 Too Many Requests"))
+
+    def test_is_not_retryable_401(self):
+        from src.section1_ingestion.parsers.pdf_parser_langextract import _is_retryable_gemini_error
+
+        assert not _is_retryable_gemini_error(Exception("401 Unauthorized"))
+
+    def test_retry_then_success(self, parser):
+        calls = {"n": 0}
+
+        def flaky():
+            calls["n"] += 1
+            if calls["n"] < 3:
+                raise RuntimeError("503 UNAVAILABLE: Gemini API error")
+            return MagicMock(extractions=[])
+
+        sleeps: list[float] = []
+
+        def fake_sleep(s: float) -> None:
+            sleeps.append(s)
+
+        result = parser._run_langextract_with_retry(flaky, sleep_fn=fake_sleep)
+        assert result is not None
+        assert calls["n"] == 3
+        assert sum(sleeps) <= 60
+        assert sleeps == [2.0, 4.0]
+
+    def test_non_retryable_raises_immediately(self, parser):
+        sleeps: list[float] = []
+
+        def auth_fail():
+            raise RuntimeError("403 Forbidden: invalid API key")
+
+        with pytest.raises(RuntimeError, match="403"):
+            parser._run_langextract_with_retry(auth_fail, sleep_fn=lambda s: sleeps.append(s))
+        assert sleeps == []
+
+    def test_backoff_budget_stops_sleeping(self, parser, monkeypatch):
+        monkeypatch.setenv("LANGEXTRACT_GEMINI_MAX_BACKOFF_SECONDS", "5")
+        sleeps: list[float] = []
+
+        def always_503():
+            raise RuntimeError("503 UNAVAILABLE")
+
+        with pytest.raises(RuntimeError, match="503"):
+            parser._run_langextract_with_retry(always_503, sleep_fn=lambda s: sleeps.append(s))
+        assert sum(sleeps) <= 5
 
 
 if __name__ == "__main__":

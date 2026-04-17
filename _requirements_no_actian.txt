@@ -1,0 +1,47 @@
+# LastMile-Sec Dependencies
+# Section 1: Ingestion Pipeline
+
+# PDF Parsing
+PyMuPDF>=1.23.0          # Fast PDF text extraction (fitz)
+pdfplumber>=0.10.0       # Alternative PDF parser with table support
+
+# LLM-based Extraction (Alternative PDF parser)
+langextract>=0.1.0       # Gemini-powered information extraction
+google-generativeai>=0.5.0  # Gemini API client
+
+# CSV Parsing
+pandas>=2.1.0            # DataFrame operations for CSV
+
+# PCAP Parsing
+scapy>=2.5.0             # Network packet analysis
+
+# Data Validation & Schemas
+pydantic>=2.5.0          # Type-safe data models with JSON serialization
+
+# Section 2: Hybrid Mapper
+sentence-transformers>=3.0.0  # Embeddings for VectorAI retrieval
+transformers>=4.45.0      # Local Mistral inference
+peft>=0.13.0              # LoRA adapter loading
+accelerate>=0.34.0        # Device mapping for local inference
+bitsandbytes>=0.43.0      # 4-bit NF4 quantization
+
+# Configuration
+pyyaml>=6.0              # YAML config file support
+python-dotenv>=1.0.0     # Load .env environment variables
+
+# Utilities
+python-dateutil>=2.8.0   # Date parsing utilities
+uuid7>=0.1.0             # UUIDv7 for time-sortable IDs
+
+# Section 3: Hybrid GraphRAG (Neo4j + LangChain Gemini)
+# Unpinned: add missing packages without forcing upgrades to existing Section 1 & 2 pins.
+langchain-core
+langchain-google-genai
+langchain-community
+neo4j
+langchain-neo4j
+unstructured[pdf]
+
+# Development
+pytest>=7.4.0            # Testing framework
+black>=23.0.0            # Code formatting

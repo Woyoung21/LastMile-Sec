@@ -21,19 +21,52 @@ A 4-stage AI pipeline that automates the "last mile" of security remediation:
 
 ## Setup
 
+Use **Python 3.12 or 3.11 (64-bit)**. **Python 3.14** often has **no PyTorch CUDA wheels** on Windows, so `pip install torch` from the CUDA index fails with `No matching distribution found`.
+
 ```powershell
 # Navigate to project directory
 cd C:\Users\WillYoung\Downloads\CSC699\Project\LastMile-Sec
 
-# Create virtual environment
-python -m venv venv
+# Create virtual environment (example: Python 3.12 from the Store / python.org)
+py -3.12 -m venv venv
 
 # Activate (Windows PowerShell)
 .\venv\Scripts\activate
 
-# Install dependencies
+python -m pip install -U pip
+```
+
+**PyTorch (CUDA) for Section 2 local mapper** — install the CUDA build **before** or **after** `requirements.txt`, but **re-run this** if a later `pip install` replaces your build with `+cpu`:
+
+```powershell
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+
+(Use the exact [PyTorch install command](https://pytorch.org/get-started/locally/) for your OS if the CUDA line differs.)
+
+**Actian VectorAI client (`actiancortex`)** — the package **`actiancortex`** is **not** on the public PyPI index. Install the **`.whl`** supplied by Actian (or your team). Example location used on this project machine:
+
+`C:\Users\WillYoung\Downloads\actiancortex-0.1.0b1-py3-none-any.whl`
+
+```powershell
+pip install "C:\Users\WillYoung\Downloads\actiancortex-0.1.0b1-py3-none-any.whl"
 pip install -r requirements.txt
 ```
+
+Adjust the path if you store the wheel elsewhere.
+
+If `requirements.txt` fails on `actiancortex`, install the wheel first, then run `pip install -r requirements.txt` again (or temporarily comment that line out).
+
+**Verify GPU + client:**
+
+```powershell
+python scripts/check_torch_cuda.py
+python -c "from cortex import CortexClient; print('actiancortex OK')"
+```
+
+Expect `torch.__version__` to show **`+cu124`** (or similar) and `torch.cuda.is_available(): True`. Pip may warn about `protobuf`/`google-*` version overlap after installing `actiancortex`; if Gemini calls fail, upgrade Google client packages or align `protobuf` per their docs.
+
+**Optional:** set `HF_TOKEN` if Hugging Face downloads models slowly or rate-limit.
 
 ### Neo4j (Section 3 — GraphRAG)
 
@@ -61,6 +94,7 @@ Copy `.env.example` to `.env` and fill in the required keys:
 ```
 LastMile-Sec/
 ├── run.py                             # Section 1 CLI (parse files)
+├── run_pipeline.py                    # Sections 1–4 orchestrator (subprocess; Neo4j pre-populated for S3)
 ├── run_reporter.py                    # Section 2 Reporter-only CLI
 ├── run_section2.py                    # Section 2 full pipeline CLI
 ├── docker-compose.yml                 # Neo4j 5.23 container for Section 3
@@ -131,6 +165,18 @@ LastMile-Sec/
 
 ## Usage
 
+### Full pipeline (Sections 1–4)
+
+Runs [`run_pipeline.py`](run_pipeline.py): Section 1 with **LangExtract** for PDFs, Section 2 (Reporter + Mapper), Section 3 **correlate only** (assumes Neo4j is **already seeded**), Section 4 **remediate** with LLM-as-judge enabled.
+
+Requires `GOOGLE_API_KEY`, Neo4j reachable, Vector DB seeded for Section 2 (`scripts/seed_vector_db.py` / `check_vector_db.py`) as needed.
+
+```powershell
+.\venv\Scripts\activate
+python run_pipeline.py "data/raw/your_report.pdf"
+python run_pipeline.py "data/raw/your_report.pdf" --routing-mode local --max-findings 5
+```
+
 ### Section 1: Parse Raw Files
 
 ```powershell
@@ -142,6 +188,8 @@ python run.py "data/raw/your_report.pdf"
 ```
 
 Output is saved to `data/processed/` as normalized JSON.
+
+**PDF + LangExtract** (`--pdf-parser langextract`): extraction calls Gemini via LangExtract. Transient **503/429** / **UNAVAILABLE** responses are retried with exponential backoff; cumulative **sleep** between attempts is capped at **60** seconds by default (`LANGEXTRACT_GEMINI_MAX_BACKOFF_SECONDS`). If extraction still fails or returns no findings, the parser falls back to the regex PDF parser.
 
 ### Section 2: Reporter + Mapper Pipeline
 

@@ -74,7 +74,9 @@ class FakeCortexClient:
         return self.results
 
 
-def test_mapper_local_mode_uses_reporter_input_and_rag_context():
+def test_mapper_local_mode_uses_reporter_input_and_rag_context(monkeypatch):
+    monkeypatch.setattr(ATTACKMapperConfig, "VECTOR_DB_TOP_K", 2)
+    monkeypatch.setattr(ATTACKMapperConfig, "RERANK_POOL_K", 8)
     embedder = FakeEmbedder()
     vector_db = FakeVectorDB(
         [
@@ -120,7 +122,9 @@ def test_mapper_local_mode_uses_reporter_input_and_rag_context():
     assert result.metadata["db_context"] == "Actian-VectorAI"
     assert len(result.reference_examples) == 2
     assert embedder.calls == ["A vulnerable public-facing web service can allow remote code execution."]
-    assert vector_db.calls[0][1] == 2
+    assert vector_db.calls[0][1] == max(
+        ATTACKMapperConfig.VECTOR_DB_TOP_K, ATTACKMapperConfig.RERANK_POOL_K
+    )
     assert "Reference Examples from Database" in captured_prompts[0]
     assert "A vulnerable public-facing web service can allow remote code execution." in captured_prompts[0]
     timing = result.metadata.get("timing_ms")
@@ -319,6 +323,19 @@ def test_local_generator_requires_cuda_when_enabled(monkeypatch):
 
 
 def test_run_local_mapping_direct_generate_slices_prompt_and_passes_generation_args(monkeypatch):
+    from transformers import LogitsProcessorList, StoppingCriteriaList
+
+    monkeypatch.setattr(
+        mapper_module._LocalDecodingGuards,
+        "create_logits_processor",
+        lambda tokenizer: LogitsProcessorList([]),
+    )
+    monkeypatch.setattr(
+        mapper_module._LocalDecodingGuards,
+        "create_stopping_criteria",
+        lambda tokenizer: StoppingCriteriaList([]),
+    )
+
     class FakeTokenizer:
         def __init__(self):
             self.pad_token_id = 0

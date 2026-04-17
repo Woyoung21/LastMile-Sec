@@ -34,6 +34,7 @@ _TACTIC_KEYWORD_MAP: dict[str, set[str]] = {
         "valid accounts", "default credentials", "public-facing",
         "vulnerable", "remote code execution", "rce", "injection",
         "overflow", "unauthenticated", "bypass",
+        "end-of-life", "end of life", "eol", "unsupported", "outdated",
     },
     "execution": {
         "command", "script", "powershell", "cmd", "wmi", "scheduled task",
@@ -106,11 +107,44 @@ _TECHNIQUE_TACTIC_ROOTS: dict[str, list[str]] = {
     "T1205": ["command-and-control"],
     "T1080": ["lateral-movement"],
     "T1584": ["initial-access"],
+    "T1102": ["command-and-control"],
     "T1567": ["exfiltration"],
     "T1486": ["impact"],
     "T1499": ["impact"],
     "T1498": ["impact"],
 }
+
+
+def summary_supports_t1190_fallback(technical_summary: str) -> bool:
+    """True if the summary has Initial Access keyword overlap (Exploit Public-Facing Application context)."""
+    if not technical_summary:
+        return False
+    sl = technical_summary.lower()
+    keywords = _TACTIC_KEYWORD_MAP.get("initial-access", set())
+    return any(kw in sl for kw in keywords)
+
+
+def summary_supports_t1102_web_service_c2(summary: str) -> bool:
+    """T1102 (Web Service) is a Command and Control technique.
+
+    Require explicit C2 / covert-channel signals. Generic HTTP/HTTPS, nginx,
+    or \"web server\" wording alone is insufficient (avoids Dead Drop Resolver
+    false positives on scanner EOL findings).
+    """
+    if not summary:
+        return False
+    s = summary.lower()
+    return bool(
+        re.search(
+            r"\b("
+            r"c2|command and control|command-and-control|beacon|callback|"
+            r"dead drop|drop resolver|dns tunnel|covert channel|ingress tool|"
+            r"steganograph|covert comms|exfiltration channel"
+            r")\b",
+            s,
+            re.I,
+        )
+    )
 
 
 @dataclass
@@ -173,6 +207,11 @@ class MappingValidator:
         format_ok = self._gate_format(candidate_ids, raw_model_output, result)
         result.gate_results["format"] = format_ok
 
+        semantic_ok = self._gate_semantic(technical_summary, result)
+        result.gate_results["semantic"] = semantic_ok
+
+        self._apply_t1190_fallback_if_needed(technical_summary, result)
+
         consistency_ok = self._gate_consistency(
             result.accepted_ids or candidate_ids,
             technical_summary,
@@ -184,8 +223,8 @@ class MappingValidator:
         result.gate_results["policy"] = policy_ok
 
         # Consistency gate is advisory -- it logs warnings but does not
-        # block validation.  Only format and policy gates are hard gates.
-        result.passed = format_ok and policy_ok
+        # block validation. Format, semantic, and policy gates are hard gates.
+        result.passed = format_ok and semantic_ok and policy_ok
         return result
 
     # ------------------------------------------------------------------
@@ -245,6 +284,67 @@ class MappingValidator:
             result.accepted_ids.append(normalized)
 
         return ok
+
+    # ------------------------------------------------------------------
+    # Gate 1b: Semantic (hard filter on known mis-mappings)
+    # ------------------------------------------------------------------
+
+    def _gate_semantic(self, technical_summary: str, result: ValidationResult) -> bool:
+        """Drop technique IDs that contradict the summary (e.g. T1102 without C2 evidence)."""
+        if not result.accepted_ids:
+            return True
+
+        kept: list[str] = []
+        for tid in result.accepted_ids:
+            root = tid.upper().split(".", 1)[0]
+            if root == "T1102" and not summary_supports_t1102_web_service_c2(technical_summary):
+                result.issues.append(
+                    ValidationIssue(
+                        gate="semantic",
+                        severity="warning",
+                        message=(
+                            f"Rejected {tid}: Web Service (T1102) requires C2-like evidence in "
+                            "the summary (not merely HTTP/HTTPS or a generic web server)."
+                        ),
+                        technique_id=tid,
+                    )
+                )
+                result.rejected_ids.append(tid)
+                continue
+            kept.append(tid)
+
+        result.accepted_ids = kept
+        return True
+
+    def _apply_t1190_fallback_if_needed(
+        self, technical_summary: str, result: ValidationResult
+    ) -> None:
+        """If semantic gate removed T1102 only and nothing remains, suggest T1190 when the summary fits Initial Access."""
+        if not ATTACKMapperConfig.T1102_FALLBACK_T1190:
+            return
+        if result.accepted_ids:
+            return
+        had_t1102_rejection = any(
+            (tid or "").upper().split(".", 1)[0] == "T1102" for tid in result.rejected_ids
+        )
+        if not had_t1102_rejection:
+            return
+        if not summary_supports_t1190_fallback(technical_summary):
+            return
+        if "T1190" not in self.known_ids:
+            return
+        result.accepted_ids.append("T1190")
+        result.issues.append(
+            ValidationIssue(
+                gate="fallback",
+                severity="info",
+                message=(
+                    "Inferred T1190 after T1102 was rejected (no C2 evidence): summary matches "
+                    "Initial Access heuristics (Exploit Public-Facing Application)."
+                ),
+                technique_id="T1190",
+            )
+        )
 
     # ------------------------------------------------------------------
     # Gate 2: Consistency
