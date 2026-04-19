@@ -32,11 +32,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
       >
-        <JobProvider>
-          <RemediationProvider>
-            <AppShell>{children}</AppShell>
-          </RemediationProvider>
-        </JobProvider>
+        <div className="flex min-h-screen flex-col">
+          <JobProvider>
+            <RemediationProvider>
+              <AppShell>{children}</AppShell>
+            </RemediationProvider>
+          </JobProvider>
+        </div>
       </body>
     </html>
   );

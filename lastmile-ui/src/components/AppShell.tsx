@@ -9,6 +9,7 @@ import { ProgressStepper } from "@/components/ProgressStepper";
 const NAV = [
   { href: "/upload", label: "Upload" },
   { href: "/mitre", label: "MITRE Map" },
+  { href: "/correlation", label: "Correlation" },
   { href: "/remediation", label: "Remediation" },
 ];
 
@@ -16,7 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-0 flex-1 flex-col bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-surface-border/80 bg-[#0a0a0a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-6">
@@ -50,7 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 lg:px-8">
+      <main className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col px-4 lg:px-8">
         {children}
       </main>
     </div>

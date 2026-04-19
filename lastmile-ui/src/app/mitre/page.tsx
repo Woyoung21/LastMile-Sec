@@ -98,7 +98,7 @@ export default function MitrePage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 py-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           MITRE <span className="text-attack">ATT&amp;CK</span> mapper

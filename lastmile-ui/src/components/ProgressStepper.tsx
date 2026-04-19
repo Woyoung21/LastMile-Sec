@@ -6,13 +6,14 @@ import { usePathname } from "next/navigation";
 const STAGES = [
   { label: "Ingestion", href: "/upload" },
   { label: "Mapping", href: "/mitre" },
-  { label: "Correlation", href: "/mitre" },
+  { label: "Correlation", href: "/correlation" },
   { label: "Remediation", href: "/remediation" },
 ] as const;
 
-/** upload → active0; mitre → done0, active1; remediation → done0–2, active3 */
+/** upload → active0; mitre → done0, active1; correlation → done0–1, active2; remediation → done0–2, active3 */
 function derive(pathname: string): { doneBefore: number; active: number } {
   if (pathname.startsWith("/remediation")) return { doneBefore: 2, active: 3 };
+  if (pathname.startsWith("/correlation")) return { doneBefore: 1, active: 2 };
   if (pathname.startsWith("/mitre")) return { doneBefore: 0, active: 1 };
   return { doneBefore: -1, active: 0 };
 }

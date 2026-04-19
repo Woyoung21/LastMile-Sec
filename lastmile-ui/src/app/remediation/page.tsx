@@ -42,7 +42,7 @@ export default function RemediationPage() {
   }, [remediation]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 py-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           Remediation <span className="text-accent">action center</span>

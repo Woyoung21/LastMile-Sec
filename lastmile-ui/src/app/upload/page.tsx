@@ -20,7 +20,7 @@ export default function UploadPage() {
   }, [startSimulatedJob]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 py-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Ingestion & <span className="text-accent">live telemetry</span>
