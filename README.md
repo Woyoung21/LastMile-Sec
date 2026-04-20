@@ -70,17 +70,17 @@ Expect `torch.__version__` to show **`+cu124`** (or similar) and `torch.cuda.is_
 
 ### Neo4j (Section 3 — GraphRAG)
 
-Section 3 requires a Neo4j 5.13+ instance with native vector index support. A pre-configured container is provided via Docker Compose:
+Section 3 requires a Neo4j 5.13+ instance with native vector index support. If you have a **`docker-compose.yml`** (often maintained locally; see [Local-only configuration files](#local-only-configuration-files)), start the bundled container:
 
 ```powershell
 docker compose up -d
 ```
 
-This starts a Neo4j Community 5.23 container with the browser at [http://localhost:7474](http://localhost:7474) and Bolt at `bolt://localhost:7687`. Default credentials are `neo4j` / `changeme` (set `NEO4J_PASSWORD` in `.env` to match).
+That typically starts a Neo4j Community 5.23 container with the browser at [http://localhost:7474](http://localhost:7474) and Bolt at `bolt://localhost:7687`. Default credentials are `neo4j` / `changeme` (set `NEO4J_PASSWORD` in `.env` to match).
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` and fill in the required keys:
+Create a **`.env`** file in the repo root (use a team-supplied **`.env.example`** as a template if available) and fill in the required keys:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -88,6 +88,10 @@ Copy `.env.example` to `.env` and fill in the required keys:
 | `NEO4J_PASSWORD` | Yes | Must match the `docker-compose.yml` auth (default `changeme`) |
 | `NEO4J_URI` | No | Override Bolt URI (default `bolt://localhost:7687`) |
 | `GLOBAL_TECH_STACK` | No | Comma-separated vendor names for correlation (default `Windows Server,Meraki MS,M365,NIST SP 800-53`) |
+
+### Local-only configuration files
+
+This repository’s [`.gitignore`](.gitignore) excludes **`docker-compose.yml`** and **`.env.example`**, so a fresh `git clone` may not contain them. Add your own Neo4j Compose file and environment template (or obtain copies from your team), then create **`.env`** with the keys from the table above. Without a Compose file, run Neo4j 5.13+ another way and point `NEO4J_URI` / `NEO4J_PASSWORD` at it.
 
 ## Project Structure
 
@@ -97,8 +101,19 @@ LastMile-Sec/
 ├── run_pipeline.py                    # Sections 1–4 orchestrator (subprocess; Neo4j pre-populated for S3)
 ├── run_reporter.py                    # Section 2 Reporter-only CLI
 ├── run_section2.py                    # Section 2 full pipeline CLI
-├── docker-compose.yml                 # Neo4j 5.23 container for Section 3
+├── docker-compose.yml                 # Neo4j 5.23 container (often not committed; see above)
 ├── requirements.txt
+├── _requirements_no_actian.txt        # Optional: dependencies without actiancortex line
+├── scripts/
+│   ├── check_json.py
+│   ├── check_torch_cuda.py            # Verify PyTorch CUDA build
+│   ├── check_vector_db.py             # VectorAI collection readiness
+│   ├── compare_parsers.py
+│   ├── regenerate_json.py
+│   ├── review_mapped.py               # Review mapped MITRE output
+│   └── seed_vector_db.py              # Seed ATT&CK + mapped findings into VectorAI
+├── lastmile-ui/                       # Next.js UI (MITRE matrix, remediation, graph demos)
+├── vde_storage/                       # Local Actian Vector DB persisted state (when used)
 ├── src/
 │   ├── section1_ingestion/
 │   │   ├── schemas.py                 # Pydantic data models
@@ -111,8 +126,11 @@ LastMile-Sec/
 │   ├── section2_report_map/
 │   │   ├── reporter.py                # Reporter Agent (Gemini summaries)
 │   │   ├── mapper.py                  # Mapper Agent (Mistral LoRA + VectorAI RAG)
+│   │   ├── validation.py             # MITRE ID validation gates + fallback policy
 │   │   ├── config.py                  # API keys, models, thresholds
-│   │   └── prompts.py                 # LLM prompt templates
+│   │   ├── prompts.py                 # LLM prompt templates
+│   │   ├── SECTION2_README.md         # Extended Section 2 reference
+│   │   └── FineTuningNotebook/        # LoRA training notebooks
 │   ├── section3_rag_correlation/
 │   │   ├── cli/
 │   │   │   ├── ingest.py              # PDF → Neo4j ingestion CLI
@@ -145,15 +163,14 @@ LastMile-Sec/
 │       ├── grounding_serialization.py # Grounding blobs for JSON + Self-RAG
 │       └── selfrag.py                 # Self-RAG verifier (4 checks) + retry loop orchestration
 ├── tests/
-│   ├── test_section1.py               # Section 1 unit tests
-│   ├── test_reporter.py               # Reporter unit tests
-│   ├── test_mapper.py                 # Mapper unit tests
-│   ├── manual_integration_test.py     # End-to-end pipeline test
-│   ├── section3/                      # Section 3 unit tests (40 tests, no live Neo4j)
-│   └── section4/                      # Section 4 unit tests (mocked LLM)
+│   ├── manual_integration_test.py     # End-to-end pipeline test (mocked)
+│   ├── section3/                      # Section 3 unit tests (no live Neo4j)
+│   ├── section4/                      # Section 4 unit tests (mocked LLM)
+│   └── test_*.py                      # Sections 1–2, parsers, validation, VectorAI, etc.
 ├── data/
-│   ├── raw/                           # Input files (not committed)
-│   │   └── RAG_Corpus/                # PDF + NIST JSON corpus for Section 3
+│   ├── corpus/                        # MITRE STIX, NIST JSON, CIS/hardening PDFs (typical layout)
+│   ├── raw/                           # Input reports (contents often gitignored)
+│   │   └── RAG_Corpus/                # Alternate: PDF + JSON corpus (Section 3 default path)
 │   ├── processed/                     # Section 1 output (normalized JSON)
 │   ├── mapped/                        # Section 2 output (enriched with MITRE IDs)
 │   ├── correlate/                     # Section 3 output (*_correlated.json)
@@ -162,6 +179,8 @@ LastMile-Sec/
 │   └── logs/                          # Ingestion progress logs
 └── Weekly Review/                     # Project documentation
 ```
+
+**Corpus paths:** Section 3 PDF ingest defaults to **`RAG_CORPUS_DIR=data/raw/RAG_Corpus`** (see [`src/section3_rag_correlation/config.py`](src/section3_rag_correlation/config.py)). This repo often keeps MITRE/NIST/CIS assets under **`data/corpus/`** (e.g. `enterprise-attack-18.1.json` for seeding). To ingest those PDFs, set `RAG_CORPUS_DIR` to `data/corpus` or pass **`--corpus`** to the ingest CLI. Vector DB seeding examples use `data/corpus/enterprise-attack-18.1.json` for the ATT&CK bundle.
 
 ## Usage
 
@@ -225,9 +244,11 @@ Requires Neo4j running (`docker compose up -d`) and `GOOGLE_API_KEY` set.
 python -m src.section3_rag_correlation.cli.ingest
 
 # 2. Ingest NIST OSCAL JSON (deterministic, no LLM)
+# Catalog: use data/corpus if you keep NIST JSON alongside other corpus files.
+# Attack mapping: download the NIST↔ATT&CK mapping JSON (e.g. from NIST/OSCAL releases) if not present locally.
 python -m src.section3_rag_correlation.cli.ingest_oscal `
-  --oscal-catalog "data/raw/RAG_Corpus/NIST_SP-800-53_rev5_catalog.json" `
-  --attack-mapping "data/raw/RAG_Corpus/nist_800_53-rev5_attack-16.1-enterprise_json.json"
+  --oscal-catalog "data/corpus/NIST_SP-800-53_rev5_catalog.json" `
+  --attack-mapping "data/corpus/nist_800_53-rev5_attack-16.1-enterprise_json.json"
 
 # 3. Correlate Section 2 findings against the graph
 python -m src.section3_rag_correlation.cli.correlate

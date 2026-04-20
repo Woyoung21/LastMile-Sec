@@ -4,8 +4,8 @@ Ingest hardening guidance from PDFs and NIST OSCAL JSON into a Neo4j graph, then
 
 ## Prerequisites
 
-1. **Environment** — use the repo-root `.env` you already have; ensure `GOOGLE_API_KEY` is set for Gemini. For Neo4j and paths, merge any missing keys from `.env.example` (Section 3 block). **Embeddings** use the Gemini API model **`gemini-embedding-001`** at **768** dimensions via [`embeddings_gemini.py`](embeddings_gemini.py) (`google.genai.Client.embed_content`). **Chat** extraction uses [`ChatGoogleGenerativeAI`](llm.py) from `langchain-google-genai`.
-2. **Neo4j 5.13+** — vector indexes required. From repo root:
+1. **Environment** — use the repo-root `.env`; ensure `GOOGLE_API_KEY` is set for Gemini. Merge Neo4j and path keys from a team **`.env.example`** if your project provides one (see root [README.md](../../README.md#local-only-configuration-files)). **Embeddings** use the Gemini API model **`gemini-embedding-001`** at **768** dimensions via [`embeddings_gemini.py`](embeddings_gemini.py) (`google.genai.Client.embed_content`). **Chat** extraction uses [`ChatGoogleGenerativeAI`](llm.py) from `langchain-google-genai`.
+2. **Neo4j 5.13+** — vector indexes required. From repo root, if **`docker-compose.yml`** is present:
 
    ```bash
    docker compose up -d
@@ -33,7 +33,7 @@ python -m src.section3_rag_correlation.cli.ingest
 
 Options:
 
-- `--corpus PATH` — override `RAG_CORPUS_DIR` (default `data/raw/RAG_Corpus`).
+- `--corpus PATH` — override `RAG_CORPUS_DIR` (default `data/raw/RAG_Corpus`; set to `data/corpus` if your PDFs live there, or export `RAG_CORPUS_DIR`).
 - `--no-schema` — skip applying `schema.cypher` (use if schema already applied).
 - `--limit-pdfs N` / `--limit-batches N` — smoke-test without full corpus.
 
@@ -45,9 +45,11 @@ Deterministic parse — no LLM extraction. Uses padded join keys + MITRE mapping
 
 ```bash
 python -m src.section3_rag_correlation.cli.ingest_oscal \
-  --oscal-catalog "data/raw/RAG_Corpus/NIST_SP-800-53_rev5_catalog.json" \
-  --attack-mapping "data/raw/RAG_Corpus/nist_800_53-rev5_attack-16.1-enterprise_json.json"
+  --oscal-catalog "data/corpus/NIST_SP-800-53_rev5_catalog.json" \
+  --attack-mapping "data/corpus/nist_800_53-rev5_attack-16.1-enterprise_json.json"
 ```
+
+The NIST↔ATT&CK mapping JSON may need to be downloaded separately; adjust `--attack-mapping` to its path on disk.
 
 Options:
 
@@ -136,7 +138,8 @@ After Cypher retrieval, a lightweight keyword-overlap reranker penalizes candida
 
 | Path | Role |
 |------|------|
-| `data/raw/RAG_Corpus` | PDF + NIST JSON corpus for ingestion |
+| `data/raw/RAG_Corpus` | Default **`RAG_CORPUS_DIR`** for PDF ingest (configurable; see [`config.py`](config.py)) |
+| `data/corpus/` | Typical team layout for MITRE STIX, NIST JSON, and CIS/hardening PDFs; use **`--corpus data/corpus`** or `RAG_CORPUS_DIR=data/corpus` to ingest from here |
 | `data/mapped/*.json` | Section 2 output (`technical_summary`, `mitre_mapping.mitre_ids`) |
 | `data/correlate/*.json` | Section 3 output (correlated findings with top-N candidates) |
 | `data/logs/` | Ingestion progress logs (PDF + OSCAL) |

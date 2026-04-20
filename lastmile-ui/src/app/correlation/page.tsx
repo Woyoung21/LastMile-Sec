@@ -35,7 +35,7 @@ export default function CorrelationPage() {
           <ul className="space-y-3 text-foreground/95">
             <li className="flex items-center gap-3">
               <span
-                className="h-3 w-3 shrink-0 rounded-full border border-white/20 bg-white"
+                className="h-3 w-3 shrink-0 rounded-full border border-indigo-400/40 bg-indigo-400"
                 aria-hidden
               />
               <span>Framework / Source</span>
