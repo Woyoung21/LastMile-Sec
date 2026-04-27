@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from langchain_core.prompts import ChatPromptTemplate
 
+from src.common.gemini_transient import invoke_with_transient_retry
 from src.section3_rag_correlation.llm import get_chat_llm
 from src.section3_rag_correlation.schemas import ExtractionBatch, SecurityControl
 
@@ -29,5 +30,7 @@ def extract_batch(page_text: str) -> list[SecurityControl]:
     llm = get_chat_llm()
     structured = llm.with_structured_output(ExtractionBatch)
     chain = EXTRACTION_PROMPT | structured
-    result: ExtractionBatch = chain.invoke({"text": page_text})
+    result: ExtractionBatch = invoke_with_transient_retry(
+        lambda: chain.invoke({"text": page_text})
+    )
     return list(result.controls)

@@ -22,6 +22,8 @@ __pycache__/
 data/raw/*
 data/processed/*
 data/cache/*
+data/remediated/*
+data/correlate/*
 !data/raw/.gitkeep
 
 # Processed output (may contain client info)

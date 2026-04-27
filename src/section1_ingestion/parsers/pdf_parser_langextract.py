@@ -12,32 +12,24 @@ Reference: https://developers.googleblog.com/introducing-langextract-a-gemini-po
 
 import os
 import re
-import time
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 import fitz  # PyMuPDF for text extraction
+
+from src.common.gemini_transient import (
+    invoke_with_transient_retry,
+    is_transient_gemini_error,
+    parse_gemini_fallback_models,
+)
 
 from ..schemas import Finding, Severity, AffectedAsset, SourceType
 from .base_parser import BaseParser
 
 
 def _is_retryable_gemini_error(exc: BaseException) -> bool:
-    """True for transient Gemini / quota pressure; false for auth and client errors."""
-    msg = str(exc).upper()
-    if re.search(r"\b401\b", msg) or re.search(r"\b403\b", msg):
-        return False
-    if "PERMISSION_DENIED" in msg or "API_KEY_INVALID" in msg:
-        return False
-    if re.search(r"\b503\b", msg) or re.search(r"\b429\b", msg):
-        return True
-    if "UNAVAILABLE" in msg or "RESOURCE_EXHAUSTED" in msg:
-        return True
-    if "HIGH DEMAND" in msg or "TRY AGAIN" in msg:
-        return True
-    if "RATE LIMIT" in msg or "OVERLOADED" in msg or "TOO MANY REQUESTS" in msg:
-        return True
-    return False
+    """Backward-compatible name for tests; delegates to shared transient detection."""
+    return is_transient_gemini_error(exc)
 
 
 class PDFParserLangExtract(BaseParser):
@@ -365,37 +357,6 @@ Recommendation: Renew the SSL certificate.""",
             self.add_warning(f"Regex fallback also failed: {exc}")
             return []
 
-    def _run_langextract_with_retry(
-        self,
-        extract_callable: Callable[[], Any],
-        sleep_fn: Callable[[float], None] | None = None,
-    ) -> Any:
-        """Call LangExtract / Gemini with exponential backoff; cumulative sleep capped at env max (default 60s)."""
-        sleep = sleep_fn or time.sleep
-        max_total = float(os.getenv("LANGEXTRACT_GEMINI_MAX_BACKOFF_SECONDS", "60"))
-        delay = 2.0
-        max_per_step = 20.0
-        total_slept = 0.0
-        attempt = 0
-        while True:
-            attempt += 1
-            try:
-                return extract_callable()
-            except Exception as e:
-                if not _is_retryable_gemini_error(e):
-                    raise
-                sleep_for = min(delay, max_per_step)
-                if total_slept + sleep_for > max_total:
-                    raise
-                self.add_warning(
-                    f"LangExtract Gemini transient error (attempt {attempt}): {e!s}. "
-                    f"Retrying in {sleep_for:.1f}s (cumulative backoff will be "
-                    f"{total_slept + sleep_for:.1f}s / {max_total:.0f}s max)."
-                )
-                sleep(sleep_for)
-                total_slept += sleep_for
-                delay *= 2.0
-
     def parse(self) -> list[Finding]:
         """Parse the PDF using LangExtract, with regex fallback."""
         findings: list[Finding] = []
@@ -421,18 +382,33 @@ Recommendation: Renew the SSL certificate.""",
                 os.environ["LANGEXTRACT_API_KEY"] = self.api_key
 
             import warnings
+
+            fallbacks = parse_gemini_fallback_models()
+            model_chain = [self.model_id] + fallbacks
+
+            def _on_retry(
+                attempt: int, model: str | None, exc: BaseException, sleep_sec: float
+            ) -> None:
+                self.add_warning(
+                    f"LangExtract Gemini transient error (model={model!s} attempt {attempt}): {exc!s}. "
+                    f"Sleeping {sleep_sec:.1f}s before retry."
+                )
+
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=FutureWarning)
-                result = self._run_langextract_with_retry(
-                    lambda: lx.extract(
+                result = invoke_with_transient_retry(
+                    per_model=lambda mid: lx.extract(
                         text_or_documents=self.full_text,
                         prompt_description=self._get_extraction_prompt(),
                         examples=self._get_few_shot_examples(),
-                        model_id=self.model_id,
+                        model_id=mid,
                         max_char_buffer=self.max_char_buffer,
                         extraction_passes=self.extraction_passes,
                         max_workers=self.max_workers,
-                    )
+                    ),
+                    models=model_chain,
+                    allow_fallback=bool(fallbacks),
+                    on_retry=_on_retry,
                 )
 
             if hasattr(result, "extractions"):

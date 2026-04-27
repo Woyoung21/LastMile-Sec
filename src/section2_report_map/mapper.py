@@ -17,6 +17,8 @@ from typing import Any, Optional
 import google.genai
 from pydantic import BaseModel, Field
 
+from src.common.gemini_transient import invoke_with_transient_retry, parse_gemini_fallback_models
+
 from .config import ATTACKMapperConfig, ReporterConfig
 from .prompts import AttackMapperPrompts
 from .validation import (
@@ -867,19 +869,28 @@ class Mapper:
 
         from google.genai import types
 
-        response = self.cloud_client.models.generate_content(
-            model=ATTACKMapperConfig.CLOUD_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=AttackMapperPrompts.SYSTEM_PROMPT,
-                temperature=0.1,
-                top_p=0.9,
-                max_output_tokens=300,
-                thinking_config=types.ThinkingConfig(thinking_budget=0),
-            ),
-        )
+        fallbacks = parse_gemini_fallback_models()
+        models = [ATTACKMapperConfig.CLOUD_MODEL] + fallbacks
 
-        return (response.text or "").strip()
+        def _per_model(mid: str):
+            r = self.cloud_client.models.generate_content(
+                model=mid,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=AttackMapperPrompts.SYSTEM_PROMPT,
+                    temperature=0.1,
+                    top_p=0.9,
+                    max_output_tokens=300,
+                    thinking_config=types.ThinkingConfig(thinking_budget=0),
+                ),
+            )
+            return (r.text or "").strip()
+
+        return invoke_with_transient_retry(
+            per_model=_per_model,
+            models=models,
+            allow_fallback=bool(fallbacks),
+        )
 
     def _run_local_mapping(self, report: FindingReport, reference_examples: list[ReferenceExample]) -> str:
         """Map using the local fine-tuned Mistral-7B LoRA adapter.

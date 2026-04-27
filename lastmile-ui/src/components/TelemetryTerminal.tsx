@@ -36,15 +36,28 @@ export function TelemetryTerminal({ lines }: { lines: TelemetryLine[] }) {
         {lines.length === 0 ? (
           <p className="text-log-debug">Awaiting job…</p>
         ) : (
-          lines.map((ln, i) =>
-            ln.kind === "banner" ? (
-              <div
-                key={`banner-${i}`}
-                className="whitespace-pre-wrap break-all text-foreground/90"
-              >
-                {ln.text}
-              </div>
-            ) : (
+          lines.map((ln, i) => {
+            if (ln.kind === "banner") {
+              return (
+                <div
+                  key={`banner-${i}`}
+                  className="whitespace-pre-wrap break-all text-foreground/90"
+                >
+                  {ln.text}
+                </div>
+              );
+            }
+            if (ln.kind === "plain") {
+              return (
+                <div
+                  key={`plain-${i}`}
+                  className="whitespace-pre-wrap break-all text-foreground/85"
+                >
+                  {ln.text || " "}
+                </div>
+              );
+            }
+            return (
               <div
                 key={`log-${ln.t}-${i}`}
                 className="whitespace-pre-wrap break-all"
@@ -55,8 +68,8 @@ export function TelemetryTerminal({ lines }: { lines: TelemetryLine[] }) {
                 </span>{" "}
                 <span className="text-foreground/85">{ln.text}</span>
               </div>
-            ),
-          )
+            );
+          })
         )}
       </div>
     </div>

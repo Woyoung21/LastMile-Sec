@@ -18,6 +18,7 @@ from typing import Any
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.section4_remediation import config
+from src.section4_remediation.gemini_retry import invoke_with_transient_retry
 from src.section4_remediation.generator import (
     _format_controls_text,
     generate_remediation,
@@ -120,14 +121,15 @@ def _llm_judge_grounding(
     supported = 0
 
     for step in output.steps:
-        resp = chain.invoke({
+        vars_ = {
             "source_text": source_text,
             "step_title": step.title,
             "step_action": step.command_or_action,
             "step_breadcrumb": step.ui_breadcrumb or "N/A",
             "step_substeps": "\n".join(f"  - {s}" for s in step.substeps) if step.substeps else "N/A",
             "step_explanation": step.explanation,
-        })
+        }
+        resp = invoke_with_transient_retry(lambda v=vars_: chain.invoke(v))
         verdict_text = resp.content.strip().upper() if hasattr(resp, "content") else str(resp).upper()
 
         if verdict_text.startswith("SUPPORTED"):

@@ -12,6 +12,7 @@ from typing import Any
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.section4_remediation import config
+from src.section4_remediation.gemini_retry import invoke_with_transient_retry
 from src.section4_remediation.grounding_serialization import json_safe_grounding_metadata
 from src.section4_remediation.prompts import (
     REMEDIATION_PROMPT,
@@ -153,7 +154,7 @@ def generate_remediation(
         prompt_vars["rejection_issues"] = rejection_issues or ""
 
     chain = _chain_for_mode(use_search=use_search, retry=retry)
-    raw_result = chain.invoke(prompt_vars)
+    raw_result = invoke_with_transient_retry(lambda: chain.invoke(prompt_vars))
     output, g_raw = _parse_structured_invoke(raw_result)
 
     if use_search:

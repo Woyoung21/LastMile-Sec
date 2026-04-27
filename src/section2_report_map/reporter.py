@@ -15,6 +15,8 @@ from typing import Optional
 
 import google.genai
 
+from src.common.gemini_transient import invoke_with_transient_retry, parse_gemini_fallback_models
+
 from .config import ReporterConfig
 from .prompts import SummaryPrompts
 
@@ -206,13 +208,13 @@ class Reporter:
 
         return self._sanitize_summary_text(summary)
 
-    def _generate_summary_result(self, finding_dict: dict) -> tuple[str, bool, str]:
-        """Generate a summary and report whether it came from cache, llm, or fallback."""
+    def _generate_summary_result(self, finding_dict: dict) -> tuple[str, bool, str, str]:
+        """Generate a summary and report cache hit, source label, and model id used (or default)."""
         cache_key = self._get_cache_key(finding_dict)
         cached_summary = self._load_from_cache(cache_key)
         if cached_summary:
             self._last_summary_source = "cache"
-            return cached_summary, True, "cache"
+            return cached_summary, True, "cache", ReporterConfig.GEMINI_MODEL
 
         prepared = self._extract_reporter_evidence(finding_dict)
         user_prompt = SummaryPrompts.USER_PROMPT_TEMPLATE.format(
@@ -225,13 +227,17 @@ class Reporter:
         user_prompt += f"\n\nHigh-Signal Evidence:\n{prepared['evidence_text']}\n"
 
         summary = None
+        used_model = ReporterConfig.GEMINI_MODEL
 
-        for attempt in range(ReporterConfig.RETRY_ATTEMPTS):
-            try:
-                from google.genai import types
+        try:
+            from google.genai import types
 
-                response = self.client.models.generate_content(
-                    model=ReporterConfig.GEMINI_MODEL,
+            fallback = parse_gemini_fallback_models()
+            models = [ReporterConfig.GEMINI_MODEL] + fallback
+
+            def _gen(mid: str):
+                return self.client.models.generate_content(
+                    model=mid,
                     contents=user_prompt,
                     config=types.GenerateContentConfig(
                         system_instruction=SummaryPrompts.SYSTEM_PROMPT,
@@ -241,35 +247,38 @@ class Reporter:
                         thinking_config=types.ThinkingConfig(thinking_budget=0),
                     ),
                 )
-                summary = self._sanitize_summary_text(response.text or "")
-                if summary and not summary.endswith("."):
-                    summary += "."
-                break
-            except Exception as exc:
-                if attempt < ReporterConfig.RETRY_ATTEMPTS - 1:
-                    print(
-                        f"WARNING: attempt {attempt + 1} failed: {exc}. "
-                        f"Retrying in {ReporterConfig.RETRY_DELAY_SECONDS}s..."
-                    )
-                    time.sleep(ReporterConfig.RETRY_DELAY_SECONDS)
-                else:
-                    print(f"ERROR: LLM request failed after retries: {exc}")
-                    summary = None
+
+            def _per_model(mid: str):
+                nonlocal used_model
+                used_model = mid
+                return _gen(mid)
+
+            response = invoke_with_transient_retry(
+                per_model=_per_model,
+                models=models,
+                allow_fallback=bool(fallback),
+            )
+            summary = self._sanitize_summary_text(response.text or "")
+            if summary and not summary.endswith("."):
+                summary += "."
+        except Exception as exc:
+            print(f"ERROR: LLM request failed after transient retries: {exc}")
+            summary = None
 
         if not summary:
             fallback = self._build_fallback_summary(finding_dict)
             self._last_summary_source = "fallback"
-            return fallback, False, "fallback"
+            return fallback, False, "fallback", ReporterConfig.GEMINI_MODEL
 
         if not self._is_valid_summary(summary):
             fallback = self._build_fallback_summary(finding_dict)
             print(f"WARNING: summary failed validation, using fallback: {fallback}")
             self._last_summary_source = "fallback"
-            return fallback, False, "fallback"
+            return fallback, False, "fallback", ReporterConfig.GEMINI_MODEL
 
         self._save_to_cache(cache_key, summary)
         self._last_summary_source = "llm"
-        return summary, False, "llm"
+        return summary, False, "llm", used_model
 
     def generate_summary(self, finding_dict: dict) -> tuple[str, bool]:
         """
@@ -282,7 +291,7 @@ class Reporter:
             Tuple of (technical summary sentence, cache_hit flag).
             On errors, falls back to a deterministic local summary.
         """
-        summary, cache_hit, source = self._generate_summary_result(finding_dict)
+        summary, cache_hit, source, _model = self._generate_summary_result(finding_dict)
         self._last_summary_source = source
         return summary, cache_hit
 
@@ -305,8 +314,12 @@ class Reporter:
         else:
             print(f"\nProcessing packet with {len(findings)} findings...")
 
+        last_model = ReporterConfig.GEMINI_MODEL
         for index, finding in enumerate(findings, 1):
-            summary, is_cache_hit, summary_source = self._generate_summary_result(finding)
+            summary, is_cache_hit, summary_source, summary_model = self._generate_summary_result(
+                finding
+            )
+            last_model = summary_model
 
             if "metadata" not in finding:
                 finding["metadata"] = {}
@@ -315,7 +328,7 @@ class Reporter:
             finding["metadata"]["summary_source"] = summary_source
             finding["metadata"]["summary_generated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
             finding["metadata"]["summary_prompt_version"] = ReporterConfig.SUMMARY_PROMPT_VERSION
-            finding["metadata"]["summary_model"] = ReporterConfig.GEMINI_MODEL
+            finding["metadata"]["summary_model"] = summary_model
 
             if index % 5 == 0 or index == 1:
                 print(f"  OK {index}/{len(findings)} findings processed")
@@ -334,7 +347,7 @@ class Reporter:
             "cache_misses": self.cache_misses,
             "processing_timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "summary_prompt_version": ReporterConfig.SUMMARY_PROMPT_VERSION,
-            "summary_model": ReporterConfig.GEMINI_MODEL,
+            "summary_model": last_model,
         }
 
         return packet_data

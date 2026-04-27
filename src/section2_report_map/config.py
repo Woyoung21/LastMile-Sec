@@ -43,6 +43,7 @@ class ReporterConfig:
     # Kept for future expansion if you later batch or parallelize requests.
     MAX_CONCURRENT_REQUESTS: int = 1
     REQUEST_TIMEOUT_SECONDS: int = 30
+    # Retries are implemented via src.common.gemini_transient (env GEMINI_MAX_ATTEMPTS, etc.).
     RETRY_ATTEMPTS: int = 3
     RETRY_DELAY_SECONDS: int = 2
 
@@ -83,7 +84,12 @@ class ATTACKMapperConfig:
 
     # Local routing
     LOCAL_BASE_MODEL: str = "mistralai/Mistral-7B-Instruct-v0.1"
-    LOCAL_ADAPTER_PATH: Path = Path(r"C:\Users\WillYoung\Downloads\CSC699\final_adapter_v2")
+    LOCAL_ADAPTER_PATH: Path = Path(
+        os.getenv(
+            "ATTACK_MAPPER_LOCAL_ADAPTER_PATH",
+            r"C:\Users\WillYoung\Downloads\CSC699\final_adapter_v3",
+        )
+    )
 
     # Retrieval / embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"

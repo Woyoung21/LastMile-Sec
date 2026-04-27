@@ -1,0 +1,304 @@
+I need you to create a detailed engineering plan to rewrite our Google Colab training notebook for a cybersecurity LoRA fine-tuning pipeline.
+
+Goal
+The ultimate goal is to train a local Mistral-based mapper that can take a technical summary of a vulnerability or network/security event and output the correct MITRE ATT&CK Enterprise technique ID(s) with much better coverage and less label collapse. Right now, the model appears to cluster to a small set of frequent MITRE IDs instead of learning a wider and more accurate mapping across many techniques.
+
+Context
+Our current production pipeline is a two-stage system:
+
+Reporter Agent generates a concise technical summary sentence for each finding.
+
+Mapper Agent uses Mistral-7B-Instruct-v0.1 + LoRA + RAG to map that summary to MITRE ATT&CK Enterprise technique IDs.
+
+A validation layer enforces:
+
+valid ATT&CK Enterprise IDs only,
+
+semantic filtering,
+
+consistency/policy checks,
+
+optional T1102 rejection with T1190 fallback in some cases.
+
+At inference time, the mapper:
+
+receives a short, normalized technical summary,
+
+may receive retrieved RAG examples,
+
+is grammar-constrained to output only ATT&CK-style IDs,
+
+is expected to emit a Python-list-style output such as ['T1190'].
+
+Current training issue
+The current LoRA notebook does not seem to teach the model the full label space effectively. It is overpredicting a few common IDs across very different summaries. I suspect the core problems are:
+
+class imbalance / long-tail label distribution in the dataset,
+
+prompt/training mismatch between notebook training format and production inference format,
+
+loss being applied to the full prompt instead of only the response tokens,
+
+lack of explicit handling for rare MITRE techniques,
+
+training on threat-report-style text that does not fully match our production technical summary style.
+
+Current notebook/training setup
+We currently use:
+
+base model: mistralai/Mistral-7B-Instruct-v0.1
+
+4-bit NF4 quantization
+
+PEFT LoRA
+
+target modules:
+["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+current LoRA config:
+
+r=16
+
+lora_alpha=16
+
+lora_dropout=0.05
+
+training dataset:
+tumeteor/Security-TTP-Mapping
+
+prompt format currently resembles:
+
+text
+<s>
+### Instruction:
+You are a cybersecurity assistant. Your task is to analyze a system log and assign the most appropriate MITRE ATT&CK technique(s).
+
+### Reference Examples from Database:
+[synthetic RAG section sometimes included]
+
+### Log:
+[input text]
+
+### Response:
+[label output]
+</s>
+The training code currently:
+
+renames labels to mitre_tags,
+
+uses example["text1"] as the input text,
+
+concatenates mitre_tags,
+
+injects synthetic RAG examples in ~20% of samples,
+
+trains with TRL SFTTrainer.
+
+What I want from you
+Please produce a structured rewrite plan for the notebook, not just scattered suggestions.
+
+Your response should include:
+
+1. Root-cause analysis
+Explain why the current approach is likely causing MITRE ID clustering / label collapse. Be specific about:
+
+class imbalance,
+
+multi-label long-tail behavior,
+
+decoder-style SFT on a classification-like problem,
+
+prompt/format mismatch,
+
+response formatting mismatch,
+
+domain mismatch between training text and inference text.
+
+2. Proposed notebook redesign
+Design a new notebook structure with clear sections/cells such as:
+
+environment + installs,
+
+dataset loading,
+
+exploratory label analysis,
+
+ATT&CK version normalization,
+
+dataset filtering/cleaning,
+
+class rebalancing,
+
+prompt construction,
+
+tokenizer/model loading,
+
+completion-only loss setup,
+
+trainer config,
+
+evaluation,
+
+artifact export.
+
+I want this to be practical and implementable in Colab.
+
+3. Dataset strategy
+Recommend how to rebuild the training data so it matches our actual task:
+technical summary -> MITRE ATT&CK Enterprise ID(s)
+
+Include a plan for:
+
+continuing to use tumeteor/Security-TTP-Mapping but not blindly,
+
+filtering to ATT&CK Enterprise IDs only,
+
+remapping/deprecating old IDs if needed,
+
+capping max techniques per sample,
+
+subsampling overrepresented IDs,
+
+oversampling or augmenting rare IDs,
+
+incorporating our own high-confidence production summaries/mappings,
+
+optionally using MITRE mapping datasets like Procedure+, Expert, TRAM,
+
+optionally adding network-event/NIDS-style labeled data,
+
+normalizing external text into our short technical-summary style.
+
+4. Training format redesign
+Recommend the exact target output format the model should learn so it matches inference.
+I want the model to learn outputs like:
+
+python
+['T1190']
+['T1059.004', 'T1190']
+not free-form prose.
+
+Also advise whether the prompt should exactly mirror our production mapper prompt, including:
+
+### Instruction
+
+### Reference Examples from Database
+
+### Log
+
+### Response
+
+and whether we should keep the current 20% RAG / 80% no-RAG pattern or change it.
+
+5. Loss and optimization improvements
+I want concrete recommendations for:
+
+completion-only loss or masking everything before ### Response:,
+
+whether to keep SFTTrainer or switch approaches,
+
+how to address label imbalance,
+
+whether to use weighted sampling, oversampling, or custom loss weighting,
+
+whether focal loss is worth it,
+
+learning rate / epochs / early stopping guidance,
+
+how to evaluate macro behavior rather than just easy-label accuracy.
+
+6. Evaluation plan
+Design an evaluation strategy that can catch clustering early. Include:
+
+train/validation/test split guidance,
+
+per-technique precision/recall/F1,
+
+macro-F1 vs micro-F1,
+
+confusion / collapse analysis,
+
+prediction diversity analysis,
+
+top-k coverage,
+
+failure buckets for common bad behaviors,
+
+testing on our real Reporter-generated technical summaries.
+
+7. Deliverables
+List the exact deliverables you think should come out of the rewrite, for example:
+
+a rewritten Colab notebook,
+
+helper preprocessing functions,
+
+dataset audit cells,
+
+evaluation cells,
+
+export/save logic for the final adapter,
+
+notes on how to keep train-time prompt format aligned with production inference.
+
+8. Implementation roadmap
+End with a phased execution plan:
+
+Phase 1: dataset audit and label histogram
+
+Phase 2: prompt/output alignment
+
+Phase 3: completion-only training rewrite
+
+Phase 4: imbalance mitigation
+
+Phase 5: evaluation on production-like summaries
+
+Phase 6: retraining and comparison against current v2
+
+Important constraints
+Keep the plan grounded in our current architecture: Mistral-7B-Instruct-v0.1 + LoRA + RAG.
+
+Do not suggest replacing the whole system with a different model unless absolutely necessary.
+
+Prioritize improvements that reduce MITRE ID clustering and improve mapping diversity/accuracy.
+
+Assume we want a notebook that still runs in Google Colab with practical GPU constraints.
+
+Favor steps that are implementable by an engineering team, not purely academic ideas.
+
+Extra request
+After the plan, include:
+
+a short “recommended first changes” section with the top 5 changes you would make immediately, and
+
+a “risks / tradeoffs” section explaining what might get worse when we rebalance for rare MITRE IDs.
+
+Be opinionated, concrete, and specific. If something in our current setup is a bad idea, say so clearly.
+
+My notes about the current problem
+Use these assumptions when forming the plan:
+
+Our production task is not generic CTI mapping; it is specifically mapping a one-sentence technical summary of a finding/event to ATT&CK ID(s).
+
+The current model likely learned frequent-label shortcuts instead of deeper semantic distinctions.
+
+Our output parser expects a strict ID-list format.
+
+Our inference stack already uses decoding guards and validation, so training should align with that behavior.
+
+We care more about correct ID association across a broad label set than raw training-loss reduction.
+
+If helpful, you can propose a revised notebook cell outline and pseudocode for the most important parts.
+
+Why this matters
+We need the retrained model to stop overusing a few common ATT&CK IDs and instead learn a broader, more accurate mapping distribution across the kinds of technical summaries our pipeline actually generates.
+
+A few guidance notes
+If you want Cursor to be even more forceful, add this at the end:
+
+“Do not give me generic ML advice. Tie every recommendation to the exact failure mode: overprediction of a small set of MITRE IDs.”
+
+“Whenever you suggest a notebook change, explain how it helps reduce clustering.”
+
+“Prefer actionable notebook rewrites over theoretical discussion.”

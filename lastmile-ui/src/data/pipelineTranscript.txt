@@ -1,0 +1,225 @@
+============================================================
+  Pipeline: Section 1 (run.py, langextract)
+============================================================
+
+Parsing: data\raw\Vulnerability Scan Report (By Issue)_Redacted1.pdf
+PDF parser: langextract
+--------------------------------------------------
+Source: Vulnerability Scan Report (By Issue)_Redacted1.pdf
+Type: vulnerability_report
+Findings: 21
+  Critical: 7
+  High: 6
+--------------------------------------------------
+Saved to: data\processed\Vulnerability Scan Report (By Issue)_Redacted1_f32f53c2.json
+
+LangExtract: model=gemini-2.5-flash [00:00]
+LangExtract: model=gemini-2.5-flash, current=19,742 chars, processed=0 chars:  [00:00]
+LangExtract: model=gemini-2.5-flash, current=19,742 chars, processed=0 chars:  [00:35]
+LangExtract: model=gemini-2.5-flash, current=4,756 chars, processed=19,742 chars:  [00:35]
+LangExtract: model=gemini-2.5-flash, current=4,756 chars, processed=19,742 chars:  [01:03]
+LangExtract: model=gemini-2.5-flash, current=4,756 chars, processed=19,742 chars:  [01:03]
+
+============================================================
+  Pipeline: Section 2 (run_section2.py)
+============================================================
+
+
+============================================================
+  Section 2 Pipeline: Vulnerability Scan Report (By Issue)_Redacted1_f32f53c2.json
+  Mapper routing: local (Mistral-7B LoRA)
+============================================================
+
+Loaded packet: 21 findings from Vulnerability Scan Report (By Issue)_Redacted1.pdf
+
+--- Step 1: Reporter Agent (Gemini summary generation) ---
+
+Processing packet with 21 findings...
+  OK 1/21 findings processed
+  OK 5/21 findings processed
+WARNING: summary failed validation, using fallback: Dnsmasq <= 2.86 Multiple Vulnerabilities affects the DOMAIN service and is associated with CVE-2021-45951.
+  OK 10/21 findings processed
+  OK 15/21 findings processed
+  OK 20/21 findings processed
+  Findings summarised: 21
+  Cache hit rate: 0%
+
+--- Step 2: Mapper Agent (Actian VectorAI RAG + local) ---
+  Local runtime mode: strict GPU
+  CUDA availability: True (configured_device=0)
+  CUDA device: NVIDIA RTX 2000 Ada Generation Laptop GPU
+
+Mapping 21 findings to MITRE ATT&CK...
+Loading base model: mistralai/Mistral-7B-Instruct-v0.1
+Attaching LoRA adapter from: project/final_adapter_v3
+  OK 1/21 findings mapped
+  OK 5/21 findings mapped
+  OK 10/21 findings mapped
+  OK 15/21 findings mapped
+  OK 20/21 findings mapped
+Saved mapped packet to: Vulnerability Scan Report (By Issue)_Redacted1_mapped_20260424_093920.json
+
+Pipeline complete. Output: data\mapped\Vulnerability Scan Report (By Issue)_Redacted1_mapped_20260424_093920.json
+
+Processed findings: 21
+Findings with valid MITRE IDs: 21
+Vector DB readiness: OK (ready=True, collection=mitre_v18_1, vectors=694)
+Mapper timing: avg_total=5086.71 ms, p95_total=3321.63 ms, max_total=59303.56 ms
+
+--- Sample results (3 of 21 mapped findings) ---
+
+  Title:   Nginx End of Life (EOL) Detection
+  Summary: The Nginx web server running on ports 80/TCP and 443/TCP has reached end-of-life, exposing the host
+  MITRE:   T1071.001
+  Valid:   True
+
+  Title:   jQuery End of Life (EOL) Detection - Linux
+  Summary: The jQuery library detected on the remote host is end-of-life and no longer receives security update
+  MITRE:   T1189
+  Valid:   True
+
+  Title:   jQuery End of Life (EOL) Detection
+  Summary: The jQuery library in use has reached end-of-life and no longer receives security updates, exposing
+  MITRE:   T1189
+  Valid:   True
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 103/103 [00:00<00:00, 6356.88it/s]
+BertModel LOAD REPORT from: sentence-transformers/all-MiniLM-L6-v2
+Key                     | Status     |  |
+------------------------+------------+--+-
+embeddings.position_ids | UNEXPECTED |  |
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+
+Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]
+Loading weights:   1%|          | 2/291 [00:00<00:40,  7.15it/s]
+Loading weights:   1%|▏         | 4/291 [00:00<00:29,  9.82it/s]
+Loading weights:   2%|▏         | 6/291 [00:00<00:29,  9.74it/s]
+Loading weights:   4%|▍         | 13/291 [00:00<00:14, 19.70it/s]
+Loading weights:   5%|▌         | 16/291 [00:01<00:14, 18.97it/s]
+Loading weights:   8%|▊         | 23/291 [00:01<00:09, 27.47it/s]
+Loading weights:  11%|█         | 31/291 [00:01<00:06, 37.74it/s]
+Loading weights:  12%|█▏        | 36/291 [00:01<00:06, 37.18it/s]
+Loading weights:  14%|█▍        | 41/291 [00:01<00:06, 37.75it/s]
+Loading weights:  16%|█▌        | 47/291 [00:01<00:05, 42.40it/s]
+Loading weights:  18%|█▊        | 52/291 [00:01<00:05, 40.99it/s]
+Loading weights:  20%|█▉        | 58/291 [00:01<00:05, 44.60it/s]
+Loading weights:  22%|██▏       | 63/291 [00:01<00:05, 43.43it/s]
+Loading weights:  24%|██▎       | 69/291 [00:02<00:05, 43.16it/s]
+Loading weights:  26%|██▋       | 77/291 [00:02<00:04, 50.09it/s]
+Loading weights:  29%|██▊       | 83/291 [00:02<00:04, 51.88it/s]
+Loading weights:  31%|███       | 89/291 [00:02<00:04, 44.40it/s]
+Loading weights:  32%|███▏      | 94/291 [00:02<00:04, 41.94it/s]
+Loading weights:  34%|███▍      | 99/291 [00:02<00:05, 34.50it/s]
+Loading weights:  35%|███▌      | 103/291 [00:03<00:05, 31.85it/s]
+Loading weights:  37%|███▋      | 107/291 [00:03<00:06, 27.16it/s]
+Loading weights:  38%|███▊      | 112/291 [00:03<00:06, 28.55it/s]
+Loading weights:  40%|███▉      | 116/291 [00:03<00:06, 25.89it/s]
+Loading weights:  42%|████▏     | 121/291 [00:03<00:06, 26.98it/s]
+Loading weights:  43%|████▎     | 124/291 [00:03<00:07, 23.04it/s]
+Loading weights:  45%|████▍     | 130/291 [00:04<00:06, 25.95it/s]
+Loading weights:  46%|████▌     | 133/291 [00:04<00:06, 23.02it/s]
+Loading weights:  48%|████▊     | 139/291 [00:04<00:06, 25.20it/s]
+Loading weights:  49%|████▉     | 142/291 [00:04<00:07, 20.32it/s]
+Loading weights:  51%|█████     | 148/291 [00:05<00:06, 23.23it/s]
+Loading weights:  52%|█████▏    | 151/291 [00:05<00:07, 19.69it/s]
+Loading weights:  53%|█████▎    | 155/291 [00:05<00:05, 22.69it/s]
+Loading weights:  54%|█████▍    | 158/291 [00:05<00:07, 18.75it/s]
+Loading weights:  55%|█████▌    | 161/291 [00:05<00:06, 19.14it/s]
+Loading weights:  57%|█████▋    | 166/291 [00:05<00:05, 21.45it/s]
+Loading weights:  58%|█████▊    | 169/291 [00:06<00:06, 18.96it/s]
+Loading weights:  60%|██████    | 175/291 [00:06<00:05, 21.94it/s]
+Loading weights:  61%|██████    | 178/291 [00:06<00:06, 18.35it/s]
+Loading weights:  62%|██████▏   | 181/291 [00:06<00:05, 20.03it/s]
+Loading weights:  63%|██████▎   | 184/291 [00:06<00:05, 20.28it/s]
+Loading weights:  64%|██████▍   | 187/291 [00:07<00:06, 16.68it/s]
+Loading weights:  65%|██████▌   | 190/291 [00:07<00:05, 18.71it/s]
+Loading weights:  66%|██████▋   | 193/291 [00:07<00:05, 18.94it/s]
+Loading weights:  67%|██████▋   | 196/291 [00:07<00:06, 15.30it/s]
+Loading weights:  68%|██████▊   | 199/291 [00:07<00:05, 17.79it/s]
+Loading weights:  69%|██████▉   | 202/291 [00:07<00:04, 18.87it/s]
+Loading weights:  70%|███████   | 205/291 [00:08<00:05, 15.85it/s]
+Loading weights:  71%|███████▏  | 208/291 [00:08<00:04, 18.03it/s]
+Loading weights:  73%|███████▎  | 211/291 [00:08<00:04, 18.69it/s]
+Loading weights:  74%|███████▎  | 214/291 [00:08<00:05, 15.39it/s]
+Loading weights:  75%|███████▍  | 218/291 [00:08<00:03, 19.78it/s]
+Loading weights:  76%|███████▌  | 221/291 [00:09<00:04, 16.90it/s]
+Loading weights:  77%|███████▋  | 224/291 [00:09<00:03, 17.08it/s]
+Loading weights:  78%|███████▊  | 227/291 [00:09<00:03, 19.28it/s]
+Loading weights:  79%|███████▉  | 230/291 [00:09<00:03, 15.68it/s]
+Loading weights:  80%|███████▉  | 232/291 [00:09<00:03, 15.23it/s]
+Loading weights:  81%|████████  | 236/291 [00:09<00:02, 19.90it/s]
+Loading weights:  82%|████████▏ | 239/291 [00:10<00:03, 16.50it/s]
+Loading weights:  83%|████████▎ | 242/291 [00:10<00:03, 16.25it/s]
+Loading weights:  84%|████████▍ | 245/291 [00:10<00:02, 18.45it/s]
+Loading weights:  85%|████████▌ | 248/291 [00:10<00:02, 15.24it/s]
+Loading weights:  86%|████████▌ | 250/291 [00:10<00:02, 15.02it/s]
+Loading weights:  88%|████████▊ | 256/291 [00:11<00:01, 19.93it/s]
+Loading weights:  89%|████████▉ | 259/291 [00:11<00:01, 16.77it/s]
+Loading weights:  90%|█████████ | 263/291 [00:11<00:01, 20.67it/s]
+Loading weights:  91%|█████████▏| 266/291 [00:11<00:01, 16.61it/s]
+Loading weights:  92%|█████████▏| 269/291 [00:11<00:01, 17.07it/s]
+Loading weights:  93%|█████████▎| 272/291 [00:11<00:00, 19.05it/s]
+Loading weights:  95%|█████████▍| 275/291 [00:12<00:01, 14.79it/s]
+Loading weights:  95%|█████████▌| 277/291 [00:12<00:00, 14.65it/s]
+Loading weights:  96%|█████████▌| 280/291 [00:12<00:00, 17.27it/s]
+Loading weights:  97%|█████████▋| 283/291 [00:12<00:00, 17.87it/s]
+Loading weights:  98%|█████████▊| 286/291 [00:12<00:00, 14.84it/s]
+Loading weights: 100%|█████████▉| 290/291 [00:13<00:00, 18.97it/s]
+Loading weights: 100%|██████████| 291/291 [00:13<00:00, 22.27it/s]
+
+============================================================
+  Pipeline: Section 3 (correlate)
+============================================================
+
+[OK] Correlated 60419c9f-2b9c-4861-ab97-91a92597d990 -> NIST SP 800-53 (Score: 1.33 [MITRE+vendor])
+[OK] Correlated 3f189815-f3bb-4f01-9533-0aa628aff840 -> NIST SP 800-53 (Score: 1.34 [MITRE+vendor])
+[OK] Correlated 44e06cd8-0cf7-4df0-861f-58627f44e73e -> NIST SP 800-53 (Score: 1.34 [MITRE+vendor])
+[OK] Correlated e86e159b-6519-45b9-bedc-9da729c40e23 -> NIST SP 800-53 (Score: 1.34 [MITRE+vendor])
+[OK] Correlated 289f4450-dd5d-4a39-ba61-cc16209a7e5f -> NIST SP 800-53 (Score: 1.32 [MITRE+vendor])
+[OK] Correlated 01a36425-a0f0-48c6-9b82-16c8f4fe6f0e -> Windows Server (Score: 1.08 [vendor])
+[OK] Correlated bd05a2d6-cd73-44de-91d2-2ac1dd4484b9 -> NIST SP 800-53 (Score: 1.32 [MITRE+vendor])
+[OK] Correlated ff3f1774-cf13-4b00-8749-22fe2899e7ff -> Windows 11 (Score: 1.09 [vendor])
+[OK] Correlated f14e0f7a-6bbe-4976-903f-4007286c0cba -> NIST SP 800-53 (Score: 1.33 [MITRE+vendor])
+[OK] Correlated 489aee8a-d9ac-4912-bbb3-1da6073f1305 -> Windows 11 (Score: 1.09 [vendor])
+[OK] Correlated 91910a08-46b5-4223-af4c-7a74ca6e5d53 -> NIST SP 800-53 (Score: 1.33 [MITRE+vendor])
+[OK] Correlated d9d750a4-e647-4081-bead-9e8e9c838255 -> Windows 11 (Score: 1.10 [vendor])
+[OK] Correlated 2ec65426-d049-4158-a7b6-67bdeeec8182 -> NIST SP 800-53 (Score: 1.31 [MITRE+vendor])
+[OK] Correlated a2ed6412-848c-44f9-be93-3e82aab249c3 -> Windows Server (Score: 0.94 [vendor])
+[OK] Correlated 4a9e52c5-1a33-45f6-b3f7-d8df0573f6f9 -> Windows Server (Score: 1.09 [vendor])
+[OK] Correlated 3934db55-fe62-4555-a305-dc3f7cea24a9 -> Windows Server (Score: 1.09 [vendor])
+[OK] Correlated 6fb43614-ecc5-4172-9ff4-5047ca360576 -> NIST SP 800-53 (Score: 1.32 [MITRE+vendor])
+[OK] Correlated 6df3b2c4-ea0b-4eb0-9998-1bfdf2ac6c1a -> NIST SP 800-53 (Score: 1.34 [MITRE+vendor])
+[OK] Correlated e322c67b-790b-4d8a-bc44-936ff247f5cb -> NIST SP 800-53 (Score: 1.32 [MITRE+vendor])
+[OK] Correlated 8ac74ac0-3de8-4ca8-85ed-802c92548b90 -> NIST SP 800-53 (Score: 1.34 [MITRE+vendor])
+[OK] Correlated 92ab6b23-148f-4bd4-b860-c444705abb5c -> NIST SP 800-53 (Score: 1.32 [MITRE+vendor])
+
+============================================================
+  Pipeline: Section 4 (remediate)
+============================================================
+
+
+Processing Vulnerability Scan Report (By Issue)_Redacted1_mapped_20260424_093920_correlated.json
+  [PASS] 60419c9f-2b9c-4861-ab97-91a92597d990 -> 5 steps (G:1.00 R:0.87 attempts:3 mode:graph_only)
+  [PASS] 3f189815-f3bb-4f01-9533-0aa628aff840 -> 5 steps (G:1.00 R:0.74 attempts:2 mode:graph_only)
+  [PASS] 44e06cd8-0cf7-4df0-861f-58627f44e73e -> 5 steps (G:1.00 R:0.75 attempts:2 mode:graph_only)
+  [PASS] e86e159b-6519-45b9-bedc-9da729c40e23 -> 5 steps (G:1.00 R:0.75 attempts:3 mode:graph_only)
+  [PASS] 289f4450-dd5d-4a39-ba61-cc16209a7e5f -> 5 steps (G:1.00 R:0.86 attempts:2 mode:graph_only)
+  [PASS] 01a36425-a0f0-48c6-9b82-16c8f4fe6f0e -> 4 steps (G:1.00 R:0.62 attempts:2 mode:graph_only)
+  [PASS] bd05a2d6-cd73-44de-91d2-2ac1dd4484b9 -> 5 steps (G:1.00 R:0.68 attempts:2 mode:graph_only)
+  [PASS] ff3f1774-cf13-4b00-8749-22fe2899e7ff -> 6 steps (G:1.00 R:0.88 attempts:2 mode:graph_only)
+  [FAIL] f14e0f7a-6bbe-4976-903f-4007286c0cba -> 6 steps (G:1.00 R:0.42 attempts:3 mode:graph_only)
+  [PASS] 489aee8a-d9ac-4912-bbb3-1da6073f1305 -> 6 steps (G:1.00 R:0.93 attempts:2 mode:graph_only)
+  [FAIL] 91910a08-46b5-4223-af4c-7a74ca6e5d53 -> 4 steps (G:1.00 R:0.88 attempts:3 mode:graph_only)
+  [PASS] d9d750a4-e647-4081-bead-9e8e9c838255 -> 5 steps (G:1.00 R:0.74 attempts:2 mode:graph_only)
+  [PASS] 2ec65426-d049-4158-a7b6-67bdeeec8182 -> 6 steps (G:1.00 R:0.85 attempts:2 mode:graph_only)
+  [PASS] a2ed6412-848c-44f9-be93-3e82aab249c3 -> 4 steps (G:1.00 R:0.95 attempts:2 mode:graph_only)
+  [PASS] 4a9e52c5-1a33-45f6-b3f7-d8df0573f6f9 -> 3 steps (G:1.00 R:0.72 attempts:2 mode:graph_only)
+  [PASS] 3934db55-fe62-4555-a305-dc3f7cea24a9 -> 3 steps (G:1.00 R:0.56 attempts:2 mode:graph_only)
+  [PASS] 6fb43614-ecc5-4172-9ff4-5047ca360576 -> 6 steps (G:1.00 R:0.92 attempts:2 mode:graph_only)
+  [PASS] 6df3b2c4-ea0b-4eb0-9998-1bfdf2ac6c1a -> 6 steps (G:1.00 R:0.77 attempts:2 mode:graph_only)
+  [PASS] e322c67b-790b-4d8a-bc44-936ff247f5cb -> 4 steps (G:1.00 R:0.81 attempts:2 mode:graph_only)
+  [PASS] 8ac74ac0-3de8-4ca8-85ed-802c92548b90 -> 4 steps (G:1.00 R:0.77 attempts:2 mode:graph_only)

@@ -221,12 +221,12 @@ def main() -> int:
         print(f"Error: ATT&CK corpus file not found: {args.attack_corpus}")
         return 1
 
-    if not args.mapped_dir.exists():
-        print(f"Error: mapped directory not found: {args.mapped_dir}")
-        return 1
-
     corpus_records = parse_attack_corpus(args.attack_corpus)
-    mapped_records = parse_mapped_findings(args.mapped_dir)
+    mapped_records = (
+        parse_mapped_findings(args.mapped_dir) if args.mapped_dir.exists() else []
+    )
+    if not args.mapped_dir.exists():
+        print(f"  Note: mapped directory missing ({args.mapped_dir}); using corpus rows only")
     merged_records = corpus_records + mapped_records
     deduped_records = dedupe_seed_records(merged_records)
 

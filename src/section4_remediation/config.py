@@ -29,6 +29,27 @@ def _float(key: str, default: float) -> float:
         return default
 
 
+def _int_env_prefer(*, legacy_key: str, global_key: str, default: int) -> int:
+    """Prefer legacy SECTION4_* override, then global GEMINI_*."""
+    v = os.environ.get(legacy_key)
+    if v is not None:
+        try:
+            return int(v)
+        except ValueError:
+            pass
+    return _int(global_key, default)
+
+
+def _float_env_prefer(*, legacy_key: str, global_key: str, default: float) -> float:
+    v = os.environ.get(legacy_key)
+    if v is not None:
+        try:
+            return float(v)
+        except ValueError:
+            pass
+    return _float(global_key, default)
+
+
 def _tech_stack_list(raw: str) -> list[str]:
     return [p.strip() for p in raw.split(",") if p.strip()]
 
@@ -36,6 +57,20 @@ def _tech_stack_list(raw: str) -> list[str]:
 # --- Gemini / LangChain ---
 GOOGLE_API_KEY: str | None = os.environ.get("GOOGLE_API_KEY")
 GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+# Extra application-level retries when google-genai still returns 429/503 after internal retries.
+# SECTION4_GEMINI_TRANSIENT_* overrides GEMINI_* for this section only (see src/common/gemini_transient.py).
+GEMINI_TRANSIENT_MAX_ATTEMPTS: int = _int_env_prefer(
+    legacy_key="SECTION4_GEMINI_TRANSIENT_MAX_ATTEMPTS",
+    global_key="GEMINI_MAX_ATTEMPTS",
+    default=6,
+)
+GEMINI_TRANSIENT_BASE_DELAY_SEC: float = _float_env_prefer(
+    legacy_key="SECTION4_GEMINI_TRANSIENT_BASE_DELAY_SEC",
+    global_key="GEMINI_BASE_DELAY",
+    default=3.0,
+)
+GEMINI_MAX_DELAY: float = _float("GEMINI_MAX_DELAY", 60.0)
+GEMINI_429_DELAY: float = _float("GEMINI_429_DELAY", 60.0)
 
 # --- Directories ---
 CORRELATED_JSON_DIR: Path = _path_from_env("CORRELATED_JSON_DIR", "data/correlate")

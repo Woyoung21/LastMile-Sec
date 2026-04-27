@@ -536,7 +536,7 @@ class TestPDFParserLangExtractErrorHandling:
 
 
 class TestLangExtractGeminiRetry:
-    """Retry/backoff for transient Gemini errors during lx.extract."""
+    """Retry/backoff for transient Gemini errors (shared gemini_transient)."""
 
     @pytest.fixture
     def parser(self):
@@ -554,7 +554,13 @@ class TestLangExtractGeminiRetry:
 
         assert not _is_retryable_gemini_error(Exception("401 Unauthorized"))
 
-    def test_retry_then_success(self, parser):
+    def test_retry_then_success(self, monkeypatch):
+        from src.common.gemini_transient import invoke_with_transient_retry
+
+        monkeypatch.setenv("GEMINI_MAX_ATTEMPTS", "6")
+        monkeypatch.setattr(
+            "src.common.gemini_transient.random.uniform", lambda a, b: 1.0
+        )
         calls = {"n": 0}
 
         def flaky():
@@ -568,32 +574,40 @@ class TestLangExtractGeminiRetry:
         def fake_sleep(s: float) -> None:
             sleeps.append(s)
 
-        result = parser._run_langextract_with_retry(flaky, sleep_fn=fake_sleep)
+        result = invoke_with_transient_retry(flaky, sleep_fn=fake_sleep)
         assert result is not None
         assert calls["n"] == 3
-        assert sum(sleeps) <= 60
-        assert sleeps == [2.0, 4.0]
+        assert len(sleeps) == 2
+        assert all(0.0 < s < 2.0 for s in sleeps)
 
-    def test_non_retryable_raises_immediately(self, parser):
+    def test_non_retryable_raises_immediately(self, monkeypatch):
+        from src.common.gemini_transient import invoke_with_transient_retry
+
+        monkeypatch.setenv("GEMINI_MAX_ATTEMPTS", "6")
         sleeps: list[float] = []
 
         def auth_fail():
             raise RuntimeError("403 Forbidden: invalid API key")
 
         with pytest.raises(RuntimeError, match="403"):
-            parser._run_langextract_with_retry(auth_fail, sleep_fn=lambda s: sleeps.append(s))
+            invoke_with_transient_retry(auth_fail, sleep_fn=lambda s: sleeps.append(s))
         assert sleeps == []
 
-    def test_backoff_budget_stops_sleeping(self, parser, monkeypatch):
-        monkeypatch.setenv("LANGEXTRACT_GEMINI_MAX_BACKOFF_SECONDS", "5")
+    def test_exhausts_attempts(self, monkeypatch):
+        from src.common.gemini_transient import invoke_with_transient_retry
+
+        monkeypatch.setenv("GEMINI_MAX_ATTEMPTS", "3")
+        monkeypatch.setattr(
+            "src.common.gemini_transient.random.uniform", lambda a, b: 0.0
+        )
         sleeps: list[float] = []
 
         def always_503():
             raise RuntimeError("503 UNAVAILABLE")
 
         with pytest.raises(RuntimeError, match="503"):
-            parser._run_langextract_with_retry(always_503, sleep_fn=lambda s: sleeps.append(s))
-        assert sum(sleeps) <= 5
+            invoke_with_transient_retry(always_503, sleep_fn=lambda s: sleeps.append(s))
+        assert len(sleeps) == 2
 
 
 if __name__ == "__main__":

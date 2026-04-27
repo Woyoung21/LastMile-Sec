@@ -212,9 +212,10 @@ The `MappingValidator` class is injected into the `Mapper` and runs after ID ext
 | Version | Notebook | Prompt Structure | Status |
 |---------|----------|-----------------|--------|
 | v1 | `CSC699LoRA.ipynb` | `### Instruction / ### Log / ### Response` (no RAG section) | Retired -- caused hallucination when RAG was injected at inference |
-| **v2** | `CSC699LoRA_RAG_v2.ipynb` | `### Instruction / ### Reference Examples from Database / ### Log / ### Response` | **Active** -- trained with synthetic RAG examples (20% with context, 80% without) |
+| v2 | `CSC699LoRA_RAG_v2.ipynb` | `### Instruction / ### Reference Examples from Database / ### Log / ### Response` | Prior release -- full-sequence SFT, old instruction/join labels |
+| **v3** | `CSC699LoRA_RAG_v3.ipynb` | Same headers as production `LOCAL_USER_PROMPT_TEMPLATE` | **Recommended** -- prompt+completion + `completion_only_loss`, v18.1 filter, tail oversample, optional `data/mapped` shard, anti-clustering eval (`top1_fraction`). Emit with `gen_v3_notebook.py`. |
 
-Both notebooks are in `src/section2_report_map/FineTuningNotebook/`. The v2 adapter is trained on `mistralai/Mistral-7B-Instruct-v0.1` with identical LoRA config (r=16, alpha=16, 7 target modules) and saves to `final_adapter_v2`.
+Notebooks live in `src/section2_report_map/FineTuningNotebook/`. Regenerate `CSC699LoRA_RAG_v3.ipynb` after editing `gen_v3_notebook.py` (`python gen_v3_notebook.py`). The generator embeds `mapper_preprocess.py` into the notebook so STIX allowlist, revoked-by remap, dedupe/cap, and weighted resample stay in one place; `gen_v3_notebook.py` also holds a copy of `LOCAL_USER_PROMPT_TEMPLATE` that must match `prompts.py` byte-for-byte (the notebook checks this on Drive). The v2 adapter path remains `final_adapter_v2`; v3 saves to `final_adapter_v3` (see notebook). Base model and LoRA hyperparameters match v2 (`mistralai/Mistral-7B-Instruct-v0.1`, r=16, alpha=16, seven target modules).
 
 ## Usage
 
