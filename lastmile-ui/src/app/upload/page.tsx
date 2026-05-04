@@ -4,16 +4,35 @@ import { useCallback, useId, useState } from "react";
 
 import { TelemetryTerminal } from "@/components/TelemetryTerminal";
 import { useJob } from "@/context/JobContext";
-import { useJobTicker } from "@/hooks/useJobTicker";
-import { useSimulatedTelemetry } from "@/hooks/useSimulatedTelemetry";
+import {
+  useSimulatedTelemetry,
+  type StreamProgressInfo,
+} from "@/hooks/useSimulatedTelemetry";
+import { jobStageForProgress } from "@/lib/jobStageForProgress";
 
 export default function UploadPage() {
   const { job, setJob, startSimulatedJob, resetJob } = useJob();
   const inputId = useId();
   const [drag, setDrag] = useState(false);
-  const lines = useSimulatedTelemetry(job.active, job.id ?? undefined);
 
-  useJobTicker(job.active, (fn) => setJob(fn));
+  const onStreamProgress = useCallback(
+    (info: StreamProgressInfo) => {
+      const { stage, message } = jobStageForProgress(info.progress);
+      setJob((j) => ({
+        ...j,
+        progress: info.progress,
+        stage,
+        message,
+      }));
+    },
+    [setJob],
+  );
+
+  const lines = useSimulatedTelemetry(
+    job.active,
+    job.id ?? undefined,
+    onStreamProgress,
+  );
 
   const onFiles = useCallback(() => {
     startSimulatedJob();
@@ -103,7 +122,7 @@ export default function UploadPage() {
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-black">
                 <div
-                  className="h-full bg-accent transition-[width] duration-500"
+                  className="h-full bg-accent transition-[width] duration-300"
                   style={{ width: `${job.progress}%` }}
                 />
               </div>

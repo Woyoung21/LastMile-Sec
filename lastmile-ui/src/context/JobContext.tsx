@@ -48,8 +48,8 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     setJobState({
       id,
       stage: "Ingestion",
-      progress: 4,
-      message: "Staging raw evidence buffers…",
+      progress: 0,
+      message: "Starting…",
       active: true,
     });
   }, []);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PIPELINE_TRANSCRIPT } from "@/data/pipelineTranscriptContent";
 
@@ -13,6 +13,12 @@ export type TelemetryLine =
   | { kind: "log"; t: string; level: LogLevel; text: string };
 
 export const BANNER_LINE = "============================================================";
+
+export type StreamProgressInfo = {
+  lineIndex: number;
+  lineCount: number;
+  progress: number;
+};
 
 /** Map raw stdout lines; promote === and `Pipeline: Section` rows to banner for section pauses. */
 function promoteBanners(lines: TelemetryLine[]): TelemetryLine[] {
@@ -56,9 +62,25 @@ function needsSectionPauseBeforeIndex(script: TelemetryLine[], i: number): boole
   );
 }
 
-const SECTION_PAUSE_MS = 1750;
-/** Short gap so long transcripts (~200+ lines) finish in ~30–45s. */
-const PLAIN_LINE_MS = 70;
+/** Section gaps vs plain line gaps, matching former 1750:70 ≈ 25:1. */
+const SECTION_WEIGHT = 1750;
+const PLAIN_WEIGHT = 70;
+
+export const TARGET_TELEMETRY_MS = 60_000;
+
+function buildGapDelaysMs(script: TelemetryLine[], targetTotalMs: number): number[] {
+  const n = script.length;
+  if (n <= 1) return [];
+  const ratio = SECTION_WEIGHT / PLAIN_WEIGHT;
+  const weights: number[] = [];
+  for (let i = 1; i < n; i++) {
+    weights.push(needsSectionPauseBeforeIndex(script, i) ? ratio : 1);
+  }
+  const totalWeight = weights.reduce((a, w) => a + w, 0);
+  if (totalWeight <= 0) return weights.map(() => 0);
+  const unit = targetTotalMs / totalWeight;
+  return weights.map((w) => w * unit);
+}
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => {
@@ -66,9 +88,15 @@ function delay(ms: number) {
   });
 }
 
-/** Async paced orchestrator log — section headers pause before body lines. */
-export function useSimulatedTelemetry(active: boolean, resetKey?: string) {
+/** Async paced orchestrator log — section headers pause before body lines; total duration ≈ TARGET_TELEMETRY_MS. */
+export function useSimulatedTelemetry(
+  active: boolean,
+  resetKey?: string,
+  onStreamProgress?: (info: StreamProgressInfo) => void,
+) {
   const [lines, setLines] = useState<TelemetryLine[]>([]);
+  const onProgressRef = useRef(onStreamProgress);
+  onProgressRef.current = onStreamProgress;
 
   useEffect(() => {
     if (!active) {
@@ -78,21 +106,26 @@ export function useSimulatedTelemetry(active: boolean, resetKey?: string) {
 
     const script = buildPipelineScript();
     setLines([]);
+    const gapDelays = buildGapDelaysMs(script, TARGET_TELEMETRY_MS);
+    const lineCount = script.length;
     let cancelled = false;
 
     void (async () => {
       for (let i = 0; i < script.length; i++) {
         if (cancelled) return;
         if (i > 0) {
-          if (needsSectionPauseBeforeIndex(script, i)) {
-            await delay(SECTION_PAUSE_MS);
-          } else {
-            await delay(PLAIN_LINE_MS);
-          }
+          await delay(gapDelays[i - 1] ?? 0);
         }
         if (cancelled) return;
         const row = script[i];
         setLines((prev) => [...prev, row].slice(-400));
+        const progress =
+          lineCount > 0 ? Math.min(100, Math.round((100 * (i + 1)) / lineCount)) : 100;
+        onProgressRef.current?.({
+          lineIndex: i,
+          lineCount,
+          progress,
+        });
       }
     })();
 
